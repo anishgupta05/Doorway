@@ -5,7 +5,8 @@
   "type": "module",
   "main": "src/model.ts",
   "scripts": {
-    "describe": "tsx --env-file=../../.env src/cli-describe.ts"
+    "describe": "tsx --env-file=../../.env src/cli-describe.ts",
+    "generate": "tsx --env-file=../../.env src/cli-generate.ts"
   },
   "dependencies": {
     "@doorway/schema": "*",

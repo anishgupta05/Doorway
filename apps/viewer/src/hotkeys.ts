@@ -13,8 +13,6 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "B", label: "How it's built" },
   { key: "T", label: "Try everything" },
   { key: "N", label: "Night" },
-  { key: "P", label: "Robot task" },
-  { key: "X", label: "Export for robots" },
   { key: "U", label: "New video" },
   { key: "L", label: "Your rooms" },
   { key: "R", label: "Reset" },

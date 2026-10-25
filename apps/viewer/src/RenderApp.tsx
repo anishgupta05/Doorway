@@ -17,6 +17,7 @@ import { Scene } from "@doorway/schema";
 import { Stage } from "./Stage";
 import { useApp } from "./store";
 import { pathDuration } from "./scene/cameraPath";
+import { modelsIdle } from "./scene/models";
 
 declare global {
   interface Window {
@@ -54,7 +55,7 @@ export function RenderApp() {
       open: (id, v = 1) => useApp.setState((s) => ({ joints: { ...s.joints, [id]: v } })),
     };
     // Give shaders, shadows and AO a moment to settle before declaring ready.
-    const t = setTimeout(() => window.doorway && (window.doorway.ready = true), 2500);
+    const t = setTimeout(() => void modelsIdle().then(() => window.doorway && (window.doorway.ready = true)), 2500);
     let raf = 0;
     if (params.get("record") === "1") {
       window.doorway.recording = new Promise<string>((resolve) => {

@@ -8,6 +8,7 @@ import * as THREE from "three";
 import type { MaterialKind, Part, SceneObject, Vec3 } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue } from "./Placed";
+import { ModelBody, modelFor } from "./models";
 
 type V3 = [number, number, number];
 
@@ -49,6 +50,11 @@ const steel = () => material("metal", "#2a2b2d");
 const brushed = () => material("metal", "#b9b7b2");
 
 export function ObjectBody({ obj }: { obj: SceneObject }) {
+  const model = obj.parts?.length ? null : modelFor(obj);
+  return model ? <ModelBody name={model} obj={obj} fallback={<ProceduralBody obj={obj} />} /> : <ProceduralBody obj={obj} />;
+}
+
+function ProceduralBody({ obj }: { obj: SceneObject }) {
   if (obj.parts?.length) return <Parts parts={obj.parts} fallback={mainMat(obj)} />;
   switch (obj.type) {
     case "door": return <Door o={obj} />;

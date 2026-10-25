@@ -149,7 +149,7 @@ const CHAIRS = ["ArmChair_01", "SchoolChair_01"];
 const FRONT = { side_table_01: 0, WoodenTable_01: 0, ArmChair_01: 0, SchoolChair_01: 0, sofa_02: 0, wooden_bookshelf_worn: 0, modern_wooden_cabinet: 0, desk_lamp_arm_01: 0, calathea_orbifolia_01: 0 };
 const gl = new GLTFLoader();
 const modelCache = {};
-const loadModel = (name) => modelCache[name] ??= new Promise((res) => gl.load(`/apps/realism-trial/assets/${name}/${name}.gltf`, (g) => res(g.scene)));
+const loadModel = (name) => modelCache[name] ??= new Promise((res) => gl.load(`/assets/models/${name}/${name}.gltf`, (g) => res(g.scene)));
 
 const groups = {}, realParts = {}, boxParts = {};
 let chairN = 0;

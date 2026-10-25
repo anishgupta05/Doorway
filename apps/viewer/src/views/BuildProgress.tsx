@@ -37,6 +37,8 @@ function useFilmstrip(src: string | null) {
         await new Promise<void>((r) => (v.onseeked = () => r()));
       }
       const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 10;
+      // Keep the clip's own proportions (a vertical phone video is tall, not squashed to 16:9).
+      if (v.videoWidth && v.videoHeight) c.height = Math.round((160 * v.videoHeight) / v.videoWidth);
       for (let i = 0; i < FRAMES && !dead; i++) {
         v.currentTime = (dur * (i + 0.5)) / FRAMES;
         await new Promise<void>((r) => (v.onseeked = () => r()));
@@ -153,7 +155,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 flex flex-col bg-ink">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 flex flex-col overflow-y-auto bg-ink">
       <div className="flex items-center justify-between px-8 pt-6">
         <input
           value={name}
@@ -172,12 +174,12 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
         </div>
       </div>
 
-      <div className="grid flex-1 grid-cols-[1fr_340px] gap-8 px-8 pt-6 pb-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(200px,40vh)_auto] gap-6 px-8 pt-6 pb-4 md:grid-cols-[minmax(0,1fr)_340px] md:grid-rows-[minmax(0,1fr)] md:gap-8">
         <div className="relative min-h-0 overflow-hidden rounded-2xl border border-line bg-black">
-          {building.src ? <video src={building.src} className="h-full w-full object-contain" autoPlay muted loop playsInline /> : <div className="grid h-full place-items-center text-muted">Your video</div>}
+          {building.src ? <video src={building.src} className="absolute inset-0 h-full w-full object-contain" autoPlay muted loop playsInline /> : <div className="grid h-full place-items-center text-muted">Your video</div>}
         </div>
 
-        <div className="flex flex-col justify-center gap-5">
+        <div className="flex min-w-0 flex-col justify-center gap-5">
           {error ? (
             <div className="rounded-xl border border-bad/50 bg-bad/10 p-4">
               <div className="text-[15px] font-semibold text-bad">That didn't work</div>
@@ -220,7 +222,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
       </div>
 
       {/* timeline: filmstrip with a playhead that follows overall progress */}
-      <div className="px-8 pb-8">
+      <div className="shrink-0 px-8 pb-8">
         <div className="mb-2 flex items-center justify-between text-[12px] text-muted">
           <span>{done ? "Your room is ready" : error ? "Stopped" : STEPS[Math.min(stepIdx, STEPS.length - 1)].title + "…"}</span>
           <span className="tabular">{!done && !error && <span className="mr-3">{left}</span>}{Math.round(pct)}%</span>

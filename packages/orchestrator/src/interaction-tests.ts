@@ -1,46 +1,13 @@
-// Guards every candidate fix must pass before it can be scored. A rejected branch
-// carries a human-readable reason, which the viewer stamps on its card.
-//
-// Hooks: the patch applies and the scene is valid, no object was deleted, no
-// articulation was removed or changed kind.
-// Interaction tests: every hinge sweeps its full range, and every drawer slides out,
-// without hitting a wall or another object's footprint. These check behaviour, not looks.
-import { applyPatch, deletedIds, type Patch, type Scene, type SceneObject } from "@doorway/schema";
+// Interaction tests: does the scene *behave* right, not just look right?
+// Every hinge must sweep its full range and every drawer must slide out without
+// hitting a wall or another object's footprint. The loop rejects branches that fail.
+// (Patch-level hooks such as "no deleted objects" live in branch.ts.)
+import type { Scene, SceneObject } from "@doorway/schema";
 
-export type Verdict = { ok: true; scene: Scene; tests: TestResult[] } | { ok: false; reason: string; scene?: Scene; tests?: TestResult[] };
 export type TestResult = { id: string; ok: boolean; text: string };
 
 /** Types that block movement. Rugs, lamps and monitors sit on or under things. */
 const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "other"]);
-
-export function guard(parent: Scene, patch: Patch): Verdict {
-  // Name deletions plainly before anything else can fail on their side effects.
-  const removed = patch
-    .map((op) => (op.op === "remove" ? /^\/objects\/(\d+)$/.exec(op.path) : null))
-    .filter((m): m is RegExpExecArray => !!m)
-    .map((m) => parent.objects[Number(m[1])]?.id)
-    .filter(Boolean);
-  if (removed.length) return { ok: false, reason: `Hook: deleted ${removed.join(", ")}` };
-  let child: Scene;
-  try {
-    child = applyPatch(parent, patch);
-  } catch (e) {
-    return { ok: false, reason: `Hook: invalid patch (${(e as Error).message.slice(0, 120)})` };
-  }
-  const gone = deletedIds(parent, child);
-  if (gone.length) return { ok: false, reason: `Hook: deleted ${gone.join(", ")}`, scene: child };
-  for (const p of parent.objects) {
-    const c = child.objects.find((o) => o.id === p.id)!;
-    if (p.articulation && !c.articulation) return { ok: false, reason: `Hook: removed ${p.id}'s ${p.articulation.kind}`, scene: child };
-    if (p.articulation && c.articulation && p.articulation.kind !== c.articulation.kind) {
-      return { ok: false, reason: `Hook: ${p.id} changed from ${p.articulation.kind} to ${c.articulation.kind}`, scene: child };
-    }
-  }
-  const tests = interactionTests(child);
-  const failed = tests.find((t) => !t.ok);
-  if (failed) return { ok: false, reason: `Interaction test: ${failed.id} ${failed.text}`, scene: child, tests };
-  return { ok: true, scene: child, tests };
-}
 
 type Box = { id: string; cx: number; cz: number; hw: number; hd: number; rot: number };
 

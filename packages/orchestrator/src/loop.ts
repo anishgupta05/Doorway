@@ -1,17 +1,21 @@
-// The verification loop. Each iteration:
+// The verification loop, built from Person 2's stages (compare.ts, fixes.ts, branch.ts).
+// Each iteration:
 //   render the current scene along the footage's camera path (the viewer's own renderer)
-//   → Argon compares footage vs renders and lists issues
-//   → Argon proposes N different patches
-//   → each branch, in parallel: guards (hooks + interaction tests) → render → Argon re-scores
+//   → Argon compares footage vs scene + renders and lists issues (compareScene)
+//   → Argon proposes N different patches, remembering earlier rejections (proposeFixes)
+//   → each branch, in parallel: hooks (branch.ts guards) → interaction tests → render → Argon re-scores
 //   → the best branch survives if it beats the current scene, otherwise the current scene stays.
 // Everything is written in the runs/<id> layout the viewer reads, and the manifest is
 // rewritten after every iteration with status "running", so the viewer updates live.
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { RunManifest, Scene, type Branch, type Issue, type Iteration } from "@doorway/schema";
-import { compare, propose, score, type Candidate, type Critique } from "./critique.js";
+import { RunManifest, Scene, applyPatch, type Branch, type Issue, type Iteration, type Patch } from "@doorway/schema";
+import { compareScene, type Comparison } from "./compare.js";
+import { proposeFixes, type Proposal } from "./fixes.js";
+import { guards } from "./branch.js";
+import type { Description } from "./describe.js";
 import { fakeCompare, fakePropose } from "./fake.js";
-import { guard, interactionTests, type TestResult } from "./guards.js";
+import { interactionTests, type TestResult } from "./interaction-tests.js";
 import { uploadVideo, type UploadedVideo } from "./model.js";
 import { Renderer, sampleTimes } from "./render.js";
 
@@ -37,6 +41,9 @@ export async function runLoop(o: LoopOptions) {
   const videoFile = ["video.mp4", "video.webm"].find((f) => existsSync(join(dir, f))) ?? null;
   if (!o.fake && videoFile !== "video.mp4") throw new Error(`runs/${o.id}/video.mp4 is required (run describe first)`);
   const video: UploadedVideo | undefined = o.fake ? undefined : await uploadVideo(join(dir, "video.mp4"));
+  const description: Description | null = o.fake ? null : JSON.parse(readFileSync(join(dir, "description.json"), "utf8"));
+  /** Rejected attempts, fed back to proposeFixes so it doesn't repeat them. */
+  const lessons: string[] = [];
 
   const write = (rel: string, data: unknown) => {
     mkdirSync(dirname(join(dir, rel)), { recursive: true });
@@ -59,10 +66,10 @@ export async function runLoop(o: LoopOptions) {
   const renderer = await new Renderer().start();
   const times = sampleTimes(v0.camera_path[v0.camera_path.length - 1].t, o.frames);
 
-  const critique = async (scene: Scene, rel: string): Promise<Critique> => {
+  const critique = async (scene: Scene, rel: string): Promise<Comparison> => {
     if (truth) return fakeCompare(truth, scene);
     const frames = await renderer.frames(o.id, rel, times);
-    return compare({ video: video!, scene, frames, times });
+    return compareScene(scene, description!, video, { frames, times });
   };
 
   try {
@@ -71,7 +78,7 @@ export async function runLoop(o: LoopOptions) {
     write("iter_0/branch_0/scene.json", v0);
     await renderer.thumb(o.id, "iter_0/branch_0/scene.json", join(dir, "iter_0/branch_0/thumb.png"));
     let current = { scene: v0, crit: await critique(v0, "iter_0/branch_0/scene.json") };
-    let currentScore = score(current.crit);
+    let currentScore = current.crit.score;
     write("iter_0/issues.json", current.crit.issues);
     write("iter_0/branch_0/tests.json", interactionTests(v0));
     manifest.iterations.push({
@@ -89,27 +96,42 @@ export async function runLoop(o: LoopOptions) {
         break;
       }
       progress("propose", k, `Argon proposing ${o.branches} fixes for ${current.crit.issues.length} issues`);
-      const candidates: Candidate[] = truth
+      const candidates: Proposal[] = truth
         ? fakePropose(truth, current.scene, current.crit.issues, o.branches, k)
-        : await propose({ scene: current.scene, issues: current.crit.issues, n: o.branches, video });
+        : await proposeFixes(current.scene, current.crit, o.branches, lessons, video);
 
       progress("test", k, `${candidates.length} branches: guards, interaction tests, render, re-score`);
       const results = await Promise.all(
-        candidates.map(async (c, i): Promise<{ branch: Branch; scene?: Scene; crit?: Critique; tests?: TestResult[] }> => {
+        candidates.map(async (c, i): Promise<{ branch: Branch; scene?: Scene; crit?: Comparison; tests?: TestResult[] }> => {
           const rel = `iter_${k}/branch_${i}/scene.json`;
           const thumb = `iter_${k}/branch_${i}/thumb.png`;
           const base = { i, hypothesis: c.hypothesis, scene: rel };
-          if (!c.patch) {
-            write(rel, current.scene);
-            return { branch: { ...base, score: 0, verdict: "fail", reason: `Hook: ${c.error}`, thumb: null } };
+          const reject = (reason: string, scene: Scene = current.scene) => {
+            write(rel, scene);
+            lessons.push(`${c.hypothesis} → rejected: ${reason}`);
+            return renderer
+              .thumb(o.id, rel, join(dir, thumb))
+              .catch(() => {})
+              .then(() => ({ branch: { ...base, score: 0, verdict: "fail" as const, reason, thumb } }));
+          };
+          const deleted = deletedByPatch(current.scene, c.patch);
+          if (deleted.length) return reject(`Hook: deleted ${deleted.join(", ")}`);
+          let child: Scene;
+          try {
+            child = applyPatch(current.scene, c.patch);
+          } catch (e) {
+            return reject(`Hook: ${(e as Error).message.split("\n")[0].slice(0, 140)}`);
           }
-          const v = guard(current.scene, c.patch);
-          write(rel, v.scene ?? current.scene);
-          if (v.tests) write(`iter_${k}/branch_${i}/tests.json`, v.tests);
+          const hook = guards(current.scene, child);
+          if (hook) return reject(hook, child);
+          const tests = interactionTests(child);
+          write(`iter_${k}/branch_${i}/tests.json`, tests);
+          const failed = tests.find((t) => !t.ok);
+          if (failed) return reject(`Interaction test: ${failed.id} ${failed.text}`, child);
+          write(rel, child);
           await renderer.thumb(o.id, rel, join(dir, thumb)).catch(() => {});
-          if (!v.ok) return { branch: { ...base, score: 0, verdict: "fail", reason: v.reason, thumb } };
-          const crit = await critique(v.scene, rel);
-          return { branch: { ...base, score: score(crit), verdict: "pass", reason: null, thumb }, scene: v.scene, crit, tests: v.tests };
+          const crit = await critique(child, rel);
+          return { branch: { ...base, score: crit.score, verdict: "pass", reason: null, thumb }, scene: child, crit, tests };
         }),
       );
 
@@ -143,4 +165,13 @@ export async function runLoop(o: LoopOptions) {
     await renderer.stop();
   }
   return manifest;
+}
+
+/** Object removals, named plainly before their side effects (dangling interactions) can mask them. */
+function deletedByPatch(scene: Scene, patch: Patch): string[] {
+  return patch
+    .map((op) => (op.op === "remove" ? /^\/objects\/(\d+)$/.exec(op.path) : null))
+    .filter((m): m is RegExpExecArray => !!m)
+    .map((m) => scene.objects[Number(m[1])]?.id)
+    .filter((id): id is string => !!id);
 }

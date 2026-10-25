@@ -2,7 +2,8 @@
 // key: "the footage" is a known ground-truth scene (runs/<id>/truth.json). Never used
 // for a real run; the CLI labels fake runs in their title.
 import type { Issue, Patch, Scene, SceneObject } from "@doorway/schema";
-import type { Candidate, Critique } from "./critique.js";
+import type { Comparison } from "./compare.js";
+import type { Proposal } from "./fixes.js";
 
 function diff(truth: SceneObject, o: SceneObject): Issue[] {
   const out: Issue[] = [];
@@ -16,18 +17,18 @@ function diff(truth: SceneObject, o: SceneObject): Issue[] {
   return out;
 }
 
-export function fakeCompare(truth: Scene, scene: Scene): Critique {
+export function fakeCompare(truth: Scene, scene: Scene): Comparison {
   const issues: Issue[] = [];
   for (const t of truth.objects) {
     const o = scene.objects.find((x) => x.id === t.id);
     if (!o) issues.push({ objectId: t.id, message: `${t.label ?? t.type} in the footage is missing`, severity: "high" });
     else issues.push(...diff(t, o));
   }
-  return { issues: issues.slice(0, 12), match: Math.max(0.2, 1 - issues.length * 0.06) };
+  return { issues: issues.slice(0, 8), score: Number(Math.max(0.2, 1 - issues.length * 0.08).toFixed(2)) };
 }
 
 /** Candidate 0 fixes the top two issues, 1 fixes one, 2 is a deliberately bad patch the guards must catch. */
-export function fakePropose(truth: Scene, scene: Scene, issues: Issue[], n: number, k: number): Candidate[] {
+export function fakePropose(truth: Scene, scene: Scene, issues: Issue[], n: number, k: number): Proposal[] {
   const fix = (issue: Issue): Patch => {
     const t = truth.objects.find((o) => o.id === issue.objectId)!;
     const i = scene.objects.findIndex((o) => o.id === issue.objectId);
@@ -37,7 +38,7 @@ export function fakePropose(truth: Scene, scene: Scene, issues: Issue[], n: numb
   const ids = [...new Set(issues.map((x) => x.objectId))];
   const first = issues.filter((x) => x.objectId === ids[0]);
   const second = issues.filter((x) => x.objectId === ids[1]);
-  const out: Candidate[] = [];
+  const out: Proposal[] = [];
   if (ids[0]) out.push({ hypothesis: `Fix ${ids.slice(0, 2).join(" and ")} to match the footage`, patch: [...fix(first[0]), ...(second[0] ? fix(second[0]) : [])] });
   if (ids[0]) out.push({ hypothesis: `Fix only ${ids[0]}`, patch: fix(first[0]) });
   const victim = scene.objects.findIndex((o) => o.type === "chair");

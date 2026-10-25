@@ -100,7 +100,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
         >
           + New video
         </button>
-        <div className="rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[12px] backdrop-blur">
+        <div title="How closely the 3D room matches your video" className="cursor-help rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[12px] backdrop-blur">
           <span className="text-muted">Match </span>
           <span className={`tabular ${preview ? "text-bad" : "text-accent"}`}>{branch ? (branch.verdict === "fail" ? "thrown out" : `${Math.round(branch.score * 100)}%`) : "—"}</span>
         </div>

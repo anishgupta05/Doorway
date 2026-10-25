@@ -146,17 +146,19 @@ Keep `main` demo-ready at all times. Nobody commits to it directly.
 
 ## The verification loop
 ```bash
-# once per room: Person 2's stages (needs .env with GEMINI_API_KEY, and ffmpeg)
+# once per room (needs .env with GEMINI_API_KEY, and ffmpeg): video → description.json → scene.v0.json
 npm run describe -w @doorway/orchestrator -- --id room1 --video path/to/room1.mov
 npm run generate -w @doorway/orchestrator -- --id room1
+# optional: inspect a single step without writing a run
+npm run step -w @doorway/orchestrator -- --id room1
 # then, with the viewer running (npm run dev), iterate:
 npm run loop -- --id room1 --iters 3 --branches 3 --live
 ```
 Each iteration, the loop:
 1. Renders the current scene along the footage's camera path, using the viewer's own render mode.
-2. Has Argon compare the footage with the renders and list issues and a match score.
-3. Has Argon propose N different JSON patches.
-4. Tests each branch in parallel: **hooks** (no deleted objects, no removed or changed joints, valid scene) and **interaction tests** (every door sweeps its full swing and every drawer slides out without hitting a wall or furniture). Branches that pass are rendered and re-scored by Argon.
+2. Has Argon compare the footage with the scene and those renders, and list issues and a match score (`compare.ts`).
+3. Has Argon propose N different JSON patches, after telling it which earlier attempts were rejected (`fixes.ts`).
+4. Tests each branch in parallel: **hooks** (`branch.ts`: no deleted objects, no removed or changed joints, valid scene) and **interaction tests** (`interaction-tests.ts`: (every door sweeps its full swing and every drawer slides out without hitting a wall or furniture). Branches that pass are rendered and re-scored by Argon.
 5. Keeps the best branch only if it beats the current scene.
 
 It writes `runs/<id>/manifest.json` after every iteration (`status: "running"`), so with `--live` the viewer's convergence panel fills in as the loop runs. `--backup` also makes the run the demo backup. Progress: `runs/<id>/progress.json`.

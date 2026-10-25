@@ -1,0 +1,446 @@
+{
+  "version": 1,
+  "name": "Compact Office Phone Booth",
+  "room": {
+    "width": 1.9,
+    "depth": 2.3,
+    "height": 2.6,
+    "wallColor": "ececed",
+    "floorColor": "7e8085",
+    "floorMaterial": "carpet",
+    "openings": [
+      {
+        "wall": "north",
+        "kind": "door",
+        "offset": 0,
+        "width": 0.95,
+        "height": 2.1,
+        "sill": 0,
+        "view": "indoors"
+      },
+      {
+        "wall": "south",
+        "kind": "window",
+        "offset": 0,
+        "width": 1.8,
+        "height": 2.5,
+        "sill": 0,
+        "view": "indoors"
+      }
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "objects": [
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "grey upholstered armchair",
+      "position": [
+        0.42,
+        0,
+        -0.35
+      ],
+      "rotationY": -0.85,
+      "size": [
+        0.85,
+        0.85,
+        0.85
+      ],
+      "color": "c2c4c7",
+      "material": "fabric",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.22,
+            0
+          ],
+          "size": [
+            0.7,
+            0.4,
+            0.7
+          ],
+          "color": "c2c4c7",
+          "material": "fabric"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.6,
+            -0.3
+          ],
+          "size": [
+            0.8,
+            0.45,
+            0.2
+          ],
+          "color": "c2c4c7",
+          "material": "fabric"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            -0.35,
+            0.48,
+            0
+          ],
+          "size": [
+            0.15,
+            0.35,
+            0.7
+          ],
+          "color": "c2c4c7",
+          "material": "fabric"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0.35,
+            0.48,
+            0
+          ],
+          "size": [
+            0.15,
+            0.35,
+            0.7
+          ],
+          "color": "c2c4c7",
+          "material": "fabric"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            -0.25,
+            0.1,
+            -0.25
+          ],
+          "size": [
+            0.06,
+            0.2,
+            0.06
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0.25,
+            0.1,
+            -0.25
+          ],
+          "size": [
+            0.06,
+            0.2,
+            0.06
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            -0.25,
+            0.1,
+            0.25
+          ],
+          "size": [
+            0.06,
+            0.2,
+            0.06
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0.25,
+            0.1,
+            0.25
+          ],
+          "size": [
+            0.06,
+            0.2,
+            0.06
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        }
+      ],
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 12,
+        "friction": 0.6,
+        "collider": "box",
+        "damping": 0.5
+      }
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "adjustable laptop stand table",
+      "position": [
+        -0.32,
+        0,
+        0.25
+      ],
+      "rotationY": 2.5,
+      "size": [
+        0.55,
+        0.7,
+        0.4
+      ],
+      "color": "bfa17c",
+      "material": "wood",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.68,
+            0
+          ],
+          "size": [
+            0.55,
+            0.03,
+            0.4
+          ],
+          "color": "bfa17c",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.34,
+            -0.12
+          ],
+          "size": [
+            0.05,
+            0.66,
+            0.05
+          ],
+          "color": "ffffff",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.015,
+            0
+          ],
+          "size": [
+            0.4,
+            0.03,
+            0.35
+          ],
+          "color": "ffffff",
+          "material": "metal"
+        }
+      ],
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 5,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 0.5
+      }
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "round wooden stool",
+      "position": [
+        0.22,
+        0,
+        0.32
+      ],
+      "rotationY": 3.1416,
+      "size": [
+        0.35,
+        0.45,
+        0.35
+      ],
+      "color": "d2a679",
+      "material": "wood",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.43,
+            0
+          ],
+          "size": [
+            0.35,
+            0.04,
+            0.35
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.21,
+            0
+          ],
+          "size": [
+            0.25,
+            0.4,
+            0.25
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.02,
+            0
+          ],
+          "size": [
+            0.32,
+            0.04,
+            0.32
+          ],
+          "color": "d2a679",
+          "material": "wood"
+        }
+      ],
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 4,
+        "friction": 0.6,
+        "collider": "cylinder",
+        "damping": 0.5
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "push",
+      "target": "chair_1"
+    },
+    {
+      "verb": "push",
+      "target": "table_1"
+    },
+    {
+      "verb": "push",
+      "target": "chair_2"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        0,
+        1.5,
+        0.6
+      ],
+      "lookAt": [
+        -0.1,
+        0.3,
+        0.25
+      ]
+    },
+    {
+      "t": 4,
+      "position": [
+        -0.1,
+        1.5,
+        0.5
+      ],
+      "lookAt": [
+        0.05,
+        0.4,
+        -0.1
+      ]
+    },
+    {
+      "t": 8,
+      "position": [
+        -0.1,
+        1.5,
+        0.4
+      ],
+      "lookAt": [
+        0.15,
+        0.5,
+        -0.35
+      ]
+    },
+    {
+      "t": 20,
+      "position": [
+        0,
+        1.5,
+        0
+      ],
+      "lookAt": [
+        0,
+        2.5,
+        0
+      ]
+    },
+    {
+      "t": 29,
+      "position": [
+        0,
+        1.5,
+        0
+      ],
+      "lookAt": [
+        0,
+        1,
+        -1.1
+      ]
+    },
+    {
+      "t": 39,
+      "position": [
+        0.3,
+        1.5,
+        -0.5
+      ],
+      "lookAt": [
+        0.1,
+        0.4,
+        0.1
+      ]
+    },
+    {
+      "t": 42,
+      "position": [
+        0.2,
+        1.5,
+        -0.5
+      ],
+      "lookAt": [
+        -0.2,
+        0.4,
+        0.3
+      ]
+    }
+  ]
+}

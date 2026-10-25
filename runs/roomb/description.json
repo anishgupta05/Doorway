@@ -1,0 +1,110 @@
+{
+  "summary": "This is a compact office phone booth designed for individual focused work or calls. It has a cozy and functional feel with acoustic privacy, comfortable seating, and a modern minimalist aesthetic.",
+  "room": {
+    "width_m": 1.9,
+    "depth_m": 2.3,
+    "height_m": 2.6,
+    "wall_color": "#ececed",
+    "floor_material": "carpet",
+    "floor_color": "#7e8085",
+    "ceiling_color": "#f2f3f5",
+    "openings": [
+      {
+        "kind": "door",
+        "wall": "north",
+        "width_m": 0.95,
+        "height_m": 2.1,
+        "position_along_wall": "center",
+        "sill_m": 0
+      },
+      {
+        "kind": "window",
+        "wall": "south",
+        "width_m": 1.8,
+        "height_m": 2.5,
+        "position_along_wall": "center",
+        "sill_m": 0
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "grey upholstered armchair",
+      "material": "fabric",
+      "color": "#c2c4c7",
+      "size_m": [
+        0.85,
+        0.85,
+        0.85
+      ],
+      "x_m": 0.15,
+      "z_m": -0.35,
+      "base_y_m": 0,
+      "location": "towards the north wall and east corner, facing south",
+      "facing": "south",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        4,
+        8,
+        39,
+        42
+      ]
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "adjustable laptop stand table",
+      "material": "wood",
+      "color": "#bfa17c",
+      "size_m": [
+        0.55,
+        0.7,
+        0.4
+      ],
+      "x_m": -0.25,
+      "z_m": 0.25,
+      "base_y_m": 0,
+      "location": "in front of chair_1 toward the west wall",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        2,
+        5,
+        40,
+        42
+      ]
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "round wooden stool",
+      "material": "wood",
+      "color": "#d2a679",
+      "size_m": [
+        0.35,
+        0.45,
+        0.35
+      ],
+      "x_m": 0.2,
+      "z_m": 0.3,
+      "base_y_m": 0,
+      "location": "south of chair_1, right of table_1",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        2,
+        4,
+        40,
+        42
+      ]
+    }
+  ],
+  "uncertain": [
+    "Exact thickness of the glass partitions and precise dimensions of exterior office space"
+  ]
+}

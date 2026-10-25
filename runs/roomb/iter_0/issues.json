@@ -1,0 +1,22 @@
+[
+  {
+    "objectId": "chair_1",
+    "message": "chair_1 should be rotated about 30 to 45 degrees clockwise (towards the southwest) to face table_1, rather than facing straight south.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "chair_1",
+    "message": "chair_1 has a boxy, rectangular geometry, whereas the footage shows a rounded, tub-style upholstered armchair with curved armrests and backrest.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "chair_1",
+    "message": "chair_1 is positioned about 0.15 m too far from the east wall; in the footage its backrest touches or nearly touches the east wall.",
+    "severity": "low"
+  },
+  {
+    "objectId": "table_1",
+    "message": "table_1 should be rotated slightly counterclockwise so its rectangular top aligns diagonally with the angled armchair, and its support post should be offset toward the back edge of the base rather than centered.",
+    "severity": "low"
+  }
+]

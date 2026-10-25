@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useApp, type Mode } from "./store";
 import { setMuted, sfx } from "./sfx";
 import { goToStep } from "./robot/useRobotTask";
+import { ROBOT } from "./features";
 
 export const KEYS: { key: string; label: string }[] = [
   { key: "1", label: "Compare" },
@@ -12,8 +13,6 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "B", label: "How it's built" },
   { key: "T", label: "Try everything" },
   { key: "N", label: "Night" },
-  { key: "P", label: "Robot task" },
-  { key: "X", label: "Export for robots" },
   { key: "U", label: "New video" },
   { key: "L", label: "Your rooms" },
   { key: "R", label: "Reset" },
@@ -96,6 +95,7 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           sfx.tick();
           break;
         case "KeyP":
+          if (!ROBOT) break;
           useApp.setState({ robotOpen: !s.robotOpen, robotDone: {}, mission: null, joints: {} });
           if (!s.robotOpen) {
             if (s.robotTab === "compare") goToStep(0);
@@ -116,6 +116,7 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           }
           break;
         case "KeyX":
+          if (!ROBOT) break;
           useApp.setState({ exportOpen: !s.exportOpen });
           sfx.tick();
           break;

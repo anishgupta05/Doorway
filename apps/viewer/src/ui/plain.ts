@@ -5,7 +5,7 @@ const ID = /\b([a-z]+)_\d+\b/g;
 export const plain = (t: string | null | undefined) =>
   (t ?? "")
     .replace(/^(Hook|Interaction test):\s*/i, "")
-    .replace(ID, (_, w: string) => w)
+    .replace(ID, (_, w: string) => (w === "other" ? "another object" : w))
     .replace(/\s*\(range[^)]*\)?/i, "")
     .replace(/^./, (c) => c.toLowerCase());
 
@@ -30,6 +30,7 @@ export const cap = (t: string) => t.replace(/^./, (c) => c.toUpperCase());
 /** One fix idea in everyday words. Extra ";"-separated changes collapse to "+ N more". */
 export const hypothesis = (t: string | null | undefined) => {
   if (/^one-pass/i.test(t ?? "")) return "Doorway's first attempt, straight from your video";
+  if (/^no branch beat/i.test(t ?? "")) return "Nothing beat the current room, so it stayed as it was";
   const parts = (t ?? "").split(/;\s*/).filter(Boolean);
   const main = plain(parts[0])
     .replace(/#[0-9a-f]{6}\b/gi, (h) => colorName(h))
@@ -41,6 +42,16 @@ export const hypothesis = (t: string | null | undefined) => {
   const more = parts.length - 1;
   return cap(main) + (more > 0 ? ` (+${more} more ${more === 1 ? "change" : "changes"})` : "");
 };
+
+/** An issue message for the Compare list: no ids, no "fix its hinge…" instructions meant for the model. */
+export const issueText = (msg: string, nameOf: (id: string) => string | undefined) =>
+  cap(
+    (msg ?? "")
+      .replace(/^Interaction test fails:\s*/i, "")
+      .replace(/\s*Fix its [^.]*\.?\s*$/i, "")
+      .replace(/\b([a-z]+_\d+)\b/g, (id) => (nameOf(id) ?? id.replace(/_\d+$/, "")).toLowerCase())
+      .trim(),
+  );
 
 /** Why a guard threw an idea out, as a consequence a visitor understands. */
 export const reason = (t: string | null | undefined) => {

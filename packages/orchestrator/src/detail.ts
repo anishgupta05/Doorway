@@ -6,7 +6,7 @@ import { Look, MaterialKind, Part, Scene, checkScene } from "@doorway/schema";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import { normalizeColors } from "./generate.js";
 
-const DetailPart = Part.extend({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe("hex of this part, exactly #rrggbb, e.g. #1d2a44; every part needs its own") });
+const DetailPart = Part.omit({ texture: true }).extend({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe("hex of this part, exactly #rrggbb, e.g. #1d2a44; every part needs its own") });
 
 export const DetailUpdates = z.object({
   updates: z.array(z.object({
@@ -24,6 +24,7 @@ For every object that is NOT a door, drawer or lamp, return "parts": that object
 - Colours are "#rrggbb" hex, taken from the footage. Never colour words, never pure white.
 - Be specific. A laptop is a thin base slab plus a tilted thin lid with a dark screen. A sandal is a flat sole plus two straps over it. A jacket or hoodie on a chair is 6 to 10 lumpy boxes and spheres of different sizes, slightly rotated looking, never one slab. A can is a cylinder with a lid ring and a label band. A stool is a round top on a pedestal with a base. An upholstered chair is a seat, a back, two arms and four legs with rounded proportions (use spheres or cylinders to soften edges).
 - Use "look" when a surface has a pattern: weave for upholstery, plush for soft fabric or toys, paper for notebooks and signs.
+- Surface images: for a part whose surface carries visible detail a plain colour cannot show (laptop keyboard and trackpad, the logo on a lid, a can's label, a book cover, a poster, a sign, a rug print), set "textureHint" to what image to paint on it (e.g. "MacBook keyboard and trackpad from directly above", "back of a MacBook lid with a centred Apple logo, space grey aluminium") and "textureFace" to the face it goes on ("top" for keyboards and tabletops, "front" or "back" for lids, labels and covers: front is the +z side). Use it on at most 6 parts per scene, only for details you can actually see in the footage. Omit it for plain parts.
 - Skip objects you cannot see well. Return one update per object you improve, keyed by its id.`;
 
 export async function detailScene(scene: Scene, video?: UploadedVideo): Promise<{ scene: Scene; notes: string[] }> {

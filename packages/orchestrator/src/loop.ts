@@ -15,7 +15,7 @@ import { proposeFixes, type Proposal } from "./fixes.js";
 import { guards } from "./branch.js";
 import type { Description } from "./describe.js";
 import { fakeCompare, fakePropose } from "./fake.js";
-import { normalizeColors, toHex } from "./generate.js";
+import { normalizeColors, resolveLayout, toHex } from "./generate.js";
 import { interactionTests, type TestResult } from "./interaction-tests.js";
 import { uploadVideo, type UploadedVideo } from "./model.js";
 import { Renderer, sampleTimes } from "./render.js";
@@ -121,7 +121,7 @@ export async function runLoop(o: LoopOptions) {
           if (deleted.length) return reject(`Hook: deleted ${deleted.join(", ")}`);
           let child: Scene;
           try {
-            child = applyPatch(current.scene, c.patch);
+            child = applyPatch(current.scene, c.patch, (sc) => { resolveLayout(sc); }); // small overlaps are nudged apart, not rejected
           } catch (e) {
             return reject(`Hook: ${readableError(e as Error)}`);
           }

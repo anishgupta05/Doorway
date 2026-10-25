@@ -19,7 +19,9 @@
     "export:mjcf": "tsx scripts/export-mjcf.ts",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
     "loop": "npm run loop -w @doorway/orchestrator --",
-    "detail": "npm run detail -w @doorway/orchestrator --"
+    "detail": "npm run detail -w @doorway/orchestrator --",
+    "texture": "npm run texture -w @doorway/orchestrator --",
+    "affordance": "npm run affordance -w @doorway/orchestrator --"
   },
   "devDependencies": {
     "playwright-core": "^1.64.1",

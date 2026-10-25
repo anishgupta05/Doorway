@@ -20,6 +20,7 @@ import { RobotSim } from "./robot/RobotSim";
 import { MissionSim } from "./robot/MissionSim";
 import type { Mission } from "./robot/mission";
 import type { Vec2 } from "./robot/planner";
+import { ROBOT } from "./features";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { sfx } from "./sfx";
 
@@ -57,9 +58,9 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
-  const compareOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
+  const compareOn = ROBOT && !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
   // Either robot view hides the camera trail and issue markers, so the robot's work is clear.
-  const robotOn = compareOn || (!!mission && mode === "overview");
+  const robotOn = compareOn || (ROBOT && !!mission && mode === "overview");
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}

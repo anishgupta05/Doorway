@@ -5,6 +5,7 @@ import { Edges, Html, Line } from "@react-three/drei";
 import * as THREE from "three";
 import type { Scene, SceneObject } from "@doorway/schema";
 import { ACCENT } from "./materials";
+import { cap } from "../ui/plain";
 
 type Change = { id: string; label: string; from?: SceneObject; to?: SceneObject; notes: string[] };
 
@@ -17,7 +18,7 @@ export function diffScenes(prev: Scene, next: Scene): Change[] {
   const out: Change[] = [];
   for (const [id, to] of after) {
     const from = before.get(id);
-    const label = to.label ?? id;
+    const label = to.label ?? (to.type === "other" ? "Object" : to.type);
     if (!from) {
       out.push({ id, label, to, notes: ["added"] });
       continue;
@@ -35,7 +36,7 @@ export function diffScenes(prev: Scene, next: Scene): Change[] {
     }
     if (notes.length) out.push({ id, label, from, to, notes });
   }
-  for (const [id, from] of before) if (!after.has(id)) out.push({ id, label: from.label ?? id, from, notes: ["removed"] });
+  for (const [id, from] of before) if (!after.has(id)) out.push({ id, label: from.label ?? (from.type === "other" ? "Object" : from.type), from, notes: ["removed"] });
   return out;
 }
 
@@ -60,8 +61,8 @@ export function DiffGhosts({ prev, scene }: { prev: Scene; scene: Scene }) {
             )}
             {a && b && a.distanceTo(b) > 0.04 && <Line points={[a, b]} color={ACCENT} lineWidth={1.5} dashed dashSize={0.06} gapSize={0.04} toneMapped={false} />}
             <Html position={anchor} center zIndexRange={[20, 0]}>
-              <div className="pointer-events-none whitespace-nowrap rounded-md border border-accent/40 bg-ink/85 px-2 py-1 font-mono text-[10.5px] leading-tight text-fg shadow-lg backdrop-blur">
-                <span className="text-accent">{c.id}</span>
+              <div className="pointer-events-none whitespace-nowrap rounded-md border border-accent/40 bg-ink/85 px-2.5 py-1 text-[11.5px] leading-tight text-fg shadow-lg backdrop-blur">
+                <span className="font-medium text-accent">{cap(c.label)}</span>
                 <span className="text-muted"> · {c.notes.join(" · ")}</span>
               </div>
             </Html>

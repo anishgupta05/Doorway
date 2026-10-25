@@ -12,6 +12,7 @@ const CACHE_DIR = join(ROOT, "runs", ".cache");
 
 export const models = {
   argon: () => process.env.ARGON_MODEL ?? "gemini-4-argon",
+  image: () => process.env.IMAGE_MODEL ?? "gemini-3.1-flash-image",
 };
 
 let client: GoogleGenAI | undefined;
@@ -174,4 +175,19 @@ function flattenTuples(node: unknown): void {
     n.minItems = n.maxItems = items.length;
   }
   Object.values(n).forEach(flattenTuples);
+}
+
+/** Image generation: a reference photo plus an instruction in, a PNG out (cached by both, as base64 text). */
+export async function callImage(c: { prompt: string; reference?: Buffer; mimeType?: string }): Promise<Buffer> {
+  const key = sha(JSON.stringify({ m: models.image(), p: c.prompt, r: c.reference ? sha(c.reference) : null }));
+  const b64 = await cached(key, async () => {
+    const parts: Part[] = [];
+    if (c.reference) parts.push({ inlineData: { mimeType: c.mimeType ?? "image/jpeg", data: c.reference.toString("base64") } });
+    parts.push({ text: c.prompt });
+    const r = await ai().models.generateContent({ model: models.image(), contents: [{ role: "user", parts }], config: { responseModalities: ["IMAGE"] } });
+    const img = r.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
+    if (!img) throw new Error("image model returned no image");
+    return img.inlineData!.data!;
+  });
+  return Buffer.from(b64, "base64");
 }

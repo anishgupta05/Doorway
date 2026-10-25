@@ -7,6 +7,7 @@ import { MissionPanel } from "./robot/MissionPanel";
 import { actionsFor } from "./robot/actions";
 import { planMission } from "./robot/mission";
 import { startPoint } from "./robot/tasks";
+import { ROBOT } from "./features";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
@@ -72,8 +73,8 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={robotOpen && robotTab === "compare" ? robot : null}
-          mission={robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen && robotTab === "compare" ? robot : null}
+          mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
         />
       </div>
       <TopBar current={current} />
@@ -84,8 +85,8 @@ export function App() {
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
-        {robotOpen && mode === "overview" && robotTab === "compare" && <RobotPanel key="robot" t={robot} />}
-        {robotOpen && mode === "overview" && robotTab === "mission" && scene && <MissionPanel key="mission" scene={scene} actions={actions} mission={mission} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "compare" && <RobotPanel key="robot" t={robot} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "mission" && scene && <MissionPanel key="mission" scene={scene} actions={actions} mission={mission} />}
         {uploadOpen && <UploadPanel key="upload" />}
         {roomsOpen && <RoomsPanel key="rooms" />}
         {building2 && <BuildProgress key="progress" building={building2} />}

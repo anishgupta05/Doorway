@@ -78,6 +78,13 @@ export function Walk({ scene }: { scene: Scene }) {
   const want = useMemo(() => new THREE.Vector3(), []);
   const centre = useMemo(() => new THREE.Vector2(0, 0), []);
   const from = useRef({ pos: new THREE.Vector3(), quat: new THREE.Quaternion() });
+  // You are the "player" point; the camera can pull back behind it (scroll or - / =) to see more of the room.
+  const player = useRef(new THREE.Vector3());
+  const synced = useRef(false);
+  const zoom = useRef({ target: 0, value: 0 });
+  const dir = useMemo(() => new THREE.Vector3(), []);
+  const marker = useRef<THREE.Group>(null!);
+  const maxBack = Math.max(3.2, Math.max(scene.room.width, scene.room.depth) * 1.1);
   // Start a few steps from the door, facing it: the judge's first move is to open it.
   const to = useMemo(() => {
     const door = scene.objects.find((o) => o.type === "door");
@@ -108,6 +115,8 @@ export function Walk({ scene }: { scene: Scene }) {
     intro.current = 0;
     const down = (e: KeyboardEvent) => {
       keys.current[e.code] = true;
+      if (e.code === "Minus" || e.code === "NumpadSubtract") zoom.current.target = Math.min(1, zoom.current.target + 0.2);
+      if (e.code === "Equal" || e.code === "NumpadAdd") zoom.current.target = Math.max(0, zoom.current.target - 0.2);
       if (e.code === "KeyE") {
         const st = useApp.getState();
         if (st.hovered) interact(scene, st.hovered, camera, st.hoveredPart);
@@ -118,10 +127,13 @@ export function Walk({ scene }: { scene: Scene }) {
       const st = useApp.getState();
       if (st.hovered && document.pointerLockElement) interact(scene, st.hovered, camera, st.hoveredPart);
     };
+    const wheel = (e: WheelEvent) => void (zoom.current.target = THREE.MathUtils.clamp(zoom.current.target + e.deltaY * 0.0015, 0, 1));
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("mousedown", click);
+    window.addEventListener("wheel", wheel, { passive: true });
     return () => {
+      window.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("mousedown", click);
@@ -156,7 +168,11 @@ export function Walk({ scene }: { scene: Scene }) {
     vel.current.x = THREE.MathUtils.damp(vel.current.x, want.x, 10, dt);
     vel.current.z = THREE.MathUtils.damp(vel.current.z, want.z, 10, dt);
 
-    const p = camera.position;
+    if (!synced.current) {
+      player.current.copy(camera.position);
+      synced.current = true;
+    }
+    const p = player.current;
     p.x += vel.current.x * dt;
     p.z += vel.current.z * dt;
     collide(p, scene);
@@ -164,9 +180,25 @@ export function Walk({ scene }: { scene: Scene }) {
     const moving = Math.hypot(vel.current.x, vel.current.z);
     p.y = THREE.MathUtils.damp(p.y, EYE + Math.sin(performance.now() / 160) * 0.012 * Math.min(moving / 1.5, 1), 12, dt);
 
+    // Camera sits behind the player along the view direction when zoomed out, kept inside the room.
+    const z = zoom.current;
+    z.value = THREE.MathUtils.damp(z.value, z.target, 8, dt);
+    const back = z.value * maxBack;
+    camera.getWorldDirection(dir);
+    camera.position.copy(p).addScaledVector(dir, -back);
+    camera.position.y += back * 0.2;
+    const { width: rw, depth: rd } = scene.room;
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -rw / 2 + 0.2, rw / 2 - 0.2);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -rd / 2 + 0.2, rd / 2 - 0.2);
+    camera.position.y = THREE.MathUtils.clamp(camera.position.y, 0.3, scene.room.height - 0.15);
+    if (marker.current) {
+      marker.current.visible = z.value > 0.04;
+      marker.current.position.set(p.x, 0.02, p.z);
+    }
+
     // Crosshair hover. 20 Hz is plenty and keeps the scene-wide raycast off most frames.
     if (++frame.current % 3 !== 0) return;
-    ray.setFromCamera(centre, camera);
+    ray.set(p, dir);
     ray.far = REACH;
     const hits = ray.intersectObjects(three.children, true);
     let hovered: string | null = null;
@@ -188,7 +220,22 @@ export function Walk({ scene }: { scene: Scene }) {
   });
 
   // No selector: any click while walking (re)captures the mouse, including the cover overlay.
-  return <PointerLockControls makeDefault />;
+  return (
+    <>
+      <PointerLockControls makeDefault />
+      {/* "you are here" disc, only visible once the camera has pulled back */}
+      <group ref={marker} visible={false}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.22, 0.3, 40]} />
+          <meshBasicMaterial color="#c6f36b" transparent opacity={0.95} toneMapped={false} depthWrite={false} />
+        </mesh>
+        <mesh position={[0, 0.9, 0]}>
+          <capsuleGeometry args={[0.16, 1.2, 6, 14]} />
+          <meshStandardMaterial color="#c6f36b" emissive="#c6f36b" emissiveIntensity={0.35} transparent opacity={0.8} />
+        </mesh>
+      </group>
+    </>
+  );
 }
 
 /** Keeps the viewer inside the room and outside solid furniture footprints. */

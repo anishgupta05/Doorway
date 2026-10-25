@@ -89,6 +89,8 @@ export function separation(a: Rect, b: Rect): { depth: number; dx: number; dz: n
 
 /** Objects that take up floor space and block walking; rugs lie flat, drawers sit inside furniture, decor is garnish, doors are checked separately. */
 const solid = (o: Obj) => !o.decor && o.type !== "rug" && o.type !== "door" && o.type !== "drawer";
+/** A door a person walks through, as opposed to a cabinet door (also type "door", but small). */
+export const isRoomDoor = (o: Obj) => o.type === "door" && o.size[1] >= 1.6;
 const OVERLAP_TOLERANCE = 0.1; // chairs tuck under tables a little
 export const DOOR_CLEARANCE = 0.45; // metres kept free on each side of a door
 /** The patch of floor a door needs clear on both sides, as a rectangle in the door's frame. */
@@ -112,7 +114,7 @@ export function checkLayout(scene: Scene): string[] {
       const sep = separation(r, footprint(b));
       if (sep && sep.depth > OVERLAP_TOLERANCE) problems.push(`${a.id} and ${b.id} overlap by ${sep.depth.toFixed(2)} m`);
     }
-    for (const d of scene.objects.filter((o) => o.type === "door")) {
+    for (const d of scene.objects.filter(isRoomDoor)) {
       if (a.position[1] > 1.8) continue;
       const sep = separation(doorZone(d), r);
       if (sep && sep.depth > 0.02) problems.push(`${a.id} blocks ${d.id} (needs ${DOOR_CLEARANCE} m clear in front of it)`);
@@ -128,7 +130,8 @@ export function checkLayout(scene: Scene): string[] {
 }
 
 /** Applies the patch to a copy and re-validates; throws if the result is not a valid Scene. */
-export function applyPatch(scene: Scene, patch: Patch): Scene {
+/** `settle` may adjust the patched scene (e.g. nudge overlapping furniture apart) before it is validated. */
+export function applyPatch(scene: Scene, patch: Patch, settle?: (scene: Scene) => void): Scene {
   const next = structuredClone(scene) as any;
   for (const { op, path, value } of Patch.parse(patch)) {
     const keys = path.split("/").slice(1).map(unescape);
@@ -149,6 +152,7 @@ export function applyPatch(scene: Scene, patch: Patch): Scene {
     else node[last] = value;
   }
   const result = Scene.parse(next);
+  settle?.(result);
   const problems = checkScene(result);
   if (problems.length) throw new Error(problems.join("; "));
   return result;

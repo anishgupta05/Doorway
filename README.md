@@ -149,8 +149,6 @@ Keep `main` demo-ready at all times. Nobody commits to it directly.
 # once per room (needs .env with GEMINI_API_KEY, and ffmpeg): video → description.json → scene.v0.json
 npm run describe -w @doorway/orchestrator -- --id room1 --video path/to/room1.mov
 npm run generate -w @doorway/orchestrator -- --id room1
-# optional: inspect a single step without writing a run
-npm run step -w @doorway/orchestrator -- --id room1
 # then, with the viewer running (npm run dev), iterate:
 npm run loop -- --id room1 --iters 3 --branches 3 --live
 ```

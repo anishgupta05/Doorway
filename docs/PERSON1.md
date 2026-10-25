@@ -25,3 +25,6 @@ All optional, old scenes still parse.
 
 ## Detail pass (`npm run detail -- --id <run>`)
 After the layout is accepted, rebuilds how objects look (`parts`, `look`, `material`) from the footage. It cannot change `position`, `rotationY` or `size` (not in its answer schema) and drops parts outside the object's box. Writes `scene.v0.json` and keeps `scene.v0.nodetail.json`. `generate` now also maps colour words to hex (white capped at #d7d7d7) and flips a door's swing if the inward swing would hit furniture.
+
+## Textures and affordances (pipeline order after `generate`)
+`npm run affordance -- --id X` (drawers and cabinet doors become separate openable objects) -> `npm run detail -- --id X` (looks, texture hints) -> `npm run texture -- --id X` (image model paints flat surface images from the footage frame where the object is seen; files in `runs/X/tex/`, referenced by `part.texture`, served at `/runs/<path>`). `?models=1` still shows the old Poly Haven library. generate also: `snapFacing`, `fitRoom`, riders (objects resting on furniture move with it).

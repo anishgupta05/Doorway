@@ -79,6 +79,7 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
                 <span><Key>W A S D</Key> move</span>
                 <span><Key>mouse</Key> look</span>
                 <span><Key>E</Key> interact</span>
+                <span><Key>scroll</Key> zoom out</span>
                 <span><Key>Esc</Key> release</span>
               </div>
             </div>

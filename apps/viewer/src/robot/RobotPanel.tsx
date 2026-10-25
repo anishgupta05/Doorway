@@ -16,14 +16,19 @@ export function RobotPanel({ t }: { t: ReturnType<typeof useRobotTask> }) {
       </Shell>
     );
   }
-  const { p0, p1, hit, blocker } = plans;
+  const { p0, p1, hit, blocker, opened0, opened1 } = plans;
+  const doorNote = (ids: string[]) =>
+    ids.length ? <div className="mt-1 font-mono text-[10.5px] text-muted">{ids.join(", ")} was closed: opened it first, waiting clear of the swing</div> : null;
   const steps: { n: 1 | 2 | 3; title: string; sub: string; result: React.ReactNode }[] = [
     {
       n: 1,
       title: "Plan in the first-pass room",
       sub: "What a robot would do with the one-pass reconstruction.",
       result: p0.ok ? (
-        <Metrics items={[["path", `${p0.length.toFixed(2)} m`], ["tightest gap", cm(p0.minGap)], ["planned in", `${p0.ms.toFixed(1)} ms`]]} good />
+        <>
+          <Metrics items={[["path", `${p0.length.toFixed(2)} m`], ["tightest gap", cm(p0.minGap)], ["planned in", `${p0.ms.toFixed(1)} ms`]]} good />
+          {doorNote(opened0)}
+        </>
       ) : (
         <Bad>{p0.reason}</Bad>
       ),
@@ -47,7 +52,10 @@ export function RobotPanel({ t }: { t: ReturnType<typeof useRobotTask> }) {
       title: "Replan in the verified room",
       sub: "What the robot does once the replica is checked.",
       result: p1.ok ? (
-        <Metrics items={[["path", `${p1.length.toFixed(2)} m`], ["tightest gap", cm(p1.minGap)], ["planned in", `${p1.ms.toFixed(1)} ms`]]} good />
+        <>
+          <Metrics items={[["path", `${p1.length.toFixed(2)} m`], ["tightest gap", cm(p1.minGap)], ["planned in", `${p1.ms.toFixed(1)} ms`]]} good />
+          {doorNote(opened1)}
+        </>
       ) : (
         <Good>
           No safe path: <span className="font-mono">{blocker}</span> is in the way. The robot knows <span className="text-fg">before it moves</span>.

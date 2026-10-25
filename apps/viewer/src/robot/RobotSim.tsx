@@ -8,10 +8,14 @@ import * as THREE from "three";
 import { ACCENT } from "../scene/materials";
 import { RobotBody, ROBOT_MESH_RADIUS } from "../scene/Robot";
 import { CELL, ROBOT_RADIUS, densify, type Grid, type Vec2 } from "./planner";
+import { useApp } from "../store";
+import { sfx } from "../sfx";
 
 export type SimRun = {
   /** Changes whenever a new drive should start. */
   key: string;
+  /** Doors the robot opens before it sets off. */
+  open?: string[];
   path: Vec2[];
   /** Stop after this many metres (the first collision), or drive to the end. */
   stopAt: number | null;
@@ -74,12 +78,16 @@ export function RobotSim({
 
 function Driver({ start, run, onDone }: { start: Vec2; run: SimRun | null; onDone: (key: string) => void }) {
   const g = useRef<THREE.Group>(null!);
-  const st = useRef({ s: 0, done: false, key: "" });
+  const st = useRef<{ s: number; done: boolean; key: string; wait?: number }>({ s: 0, done: false, key: "" });
   const pts = useMemo(() => (run ? densify(run.path, 0.01) : []), [run]);
   const total = useMemo(() => pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0), [pts]);
 
   useEffect(() => {
     st.current = { s: 0, done: false, key: run?.key ?? "" };
+    if (run?.open?.length) {
+      useApp.setState((a) => ({ joints: { ...a.joints, ...Object.fromEntries(run.open!.map((id) => [id, 1])) } }));
+      sfx.creak(true);
+    }
     const p = run?.path[0] ?? start;
     g.current.position.set(p[0], 0, p[1]);
     if (run && run.path.length > 1) g.current.rotation.y = Math.atan2(run.path[1][0] - p[0], run.path[1][1] - p[1]);
@@ -88,6 +96,8 @@ function Driver({ start, run, onDone }: { start: Vec2; run: SimRun | null; onDon
   useFrame((_, rawDt) => {
     if (!run || st.current.done || pts.length < 2) return;
     const dt = Math.min(rawDt, 1 / 30);
+    // Let an opening door swing clear before rolling.
+    if (run.open?.length && (st.current.wait = (st.current.wait ?? 0) + dt) < 1.4) return;
     const end = Math.min(total, run.stopAt ?? total);
     st.current.s = Math.min(end, st.current.s + dt * 0.38);
     // Find the point at arc length s.

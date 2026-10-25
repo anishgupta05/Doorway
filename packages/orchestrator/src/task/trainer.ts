@@ -7,14 +7,15 @@ import type { SimSpec, TaskType } from "./compile.js";
 
 /** The template's cost names and default weights (packages/sim/sim/rewards.py). */
 export const REWARD: Record<TaskType, Record<string, number>> = {
-  go_to: { dist: 2.0 },
-  push_door: { reach: 1.0, angle: 4.0 },
-  push_object: { reach: 1.0, dist: 4.0 },
+  go_to: { dist: 2.0, disturb: 2.0 },
+  push_door: { reach: 1.0, angle: 4.0, disturb: 2.0 },
+  push_object: { reach: 1.0, dist: 4.0, disturb: 2.0 },
 };
 const COSTS: Record<string, string> = {
   dist: "metres between the robot (or pushed object) and the goal",
   reach: "metres between the robot and where it has to be to push (the door's face, or behind the object)",
   angle: "radians the door is short of the goal angle",
+  disturb: "metres other loose objects (not the task's) have been shoved from where they were (a growing cost, so a penalty)",
 };
 const LIMITS = { steps: [50_000, 1_500_000], seconds: [8, 30], weight: [0.25, 4] } as const;
 
@@ -39,14 +40,20 @@ function offline(spec: SimSpec, history: Feedback[]): Omit<Plan, "by"> {
   const last = history[history.length - 1];
   const reward = { ...REWARD[spec.type] };
   if (!last) return { train_steps: spec.train_steps, max_seconds: spec.max_seconds, reward, note: "Default budget and reward for this kind of task." };
-  // Nearly there: same shaping, more practice. Far off: also lean harder on getting into position.
+  // Knocking things over: make it cost more. Far off: lean harder on getting into position. Either way, more practice.
   const n = history.length;
+  const knocks = /knock|shov|moved other/i.test(last.feedback);
+  if (knocks) reward.disturb *= 2 ** (n + 1);
   if (last.success_rate < 0.4 && "reach" in reward) reward.reach *= 2;
   return {
     train_steps: spec.train_steps * 2 ** n,
     max_seconds: spec.max_seconds + 5 * n,
     reward,
-    note: last.success_rate < 0.4 ? "Mostly failing: doubling the budget, longer episodes, and twice the reward for getting into position." : "Close: doubling the budget and lengthening episodes.",
+    note: knocks
+      ? `It was knocking other things around: ${2 ** (n + 1)}x the penalty for moving them, and twice the budget.`
+      : last.success_rate < 0.4
+        ? "Mostly failing: doubling the budget, longer episodes, and twice the reward for getting into position."
+        : "Close: doubling the budget and lengthening episodes.",
   };
 }
 

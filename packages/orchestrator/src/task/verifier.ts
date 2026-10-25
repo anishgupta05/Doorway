@@ -43,8 +43,14 @@ function offline(v: Verdict, r: ReturnType<typeof rule>) {
   if (r.pass)
     return { text: `It works: the robot did it in ${pct} of 10 test runs from different starting spots, in about ${secs.toFixed(1)} s each.`, feedback: "Passed." };
   const near = v.per_episode.some((e) => !e.success && (e.final_distance ?? 99) < 0.6);
+  const knocked = [...new Set(v.per_episode.flatMap((e) => e.moved_other_objects))];
   return {
     text: `Not reliable yet: it ${r.problems.join(", and ")}.`,
-    feedback: v.success_rate === 0 && !near ? "It never gets close: it probably isn't getting into position. More weight on reach and more training." : "It gets close but doesn't finish reliably: more training and longer episodes.",
+    feedback:
+      r.knocked > 0.2
+        ? `It knocks other objects out of place (${knocked.join(", ")}): raise the disturb penalty.`
+        : v.success_rate === 0 && !near
+          ? "It never gets close: it probably isn't getting into position. More weight on reach and more training."
+          : "It gets close but doesn't finish reliably: more training and longer episodes.",
   };
 }

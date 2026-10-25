@@ -8,10 +8,11 @@ COMMON = dict(success=10.0, time=0.01, action=0.005, collision=0.5)
 
 # Per type: cost name -> reward per unit of decrease. Costs come from RoomTaskEnv._costs().
 TEMPLATES = {
-    "go_to": {"dist": 2.0},                    # m from goal region
-    "push_door": {"reach": 1.0, "angle": 4.0},  # m from door face, rad short of goal angle
-    "push_object": {"reach": 1.0, "dist": 4.0},  # m from push pose behind object, m object is from target
+    "go_to": {"dist": 2.0, "disturb": 2.0},                    # m from goal region
+    "push_door": {"reach": 1.0, "angle": 4.0, "disturb": 2.0},  # m from door face, rad short of goal angle
+    "push_object": {"reach": 1.0, "dist": 4.0, "disturb": 2.0},  # m from push pose behind object, m object is from target
 }
+# "disturb" (every type): metres other loose objects have been shoved from where they started.
 
 
 def weights(kind, override=None):

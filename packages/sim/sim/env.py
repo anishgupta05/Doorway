@@ -55,6 +55,10 @@ class RoomTaskEnv(gym.Env):
         sx, sy, syaw = spec.get("start", [*home, 0.0])
         self.start = np.array([sx - home[0], sy - home[1], syaw])  # in robot qpos units
         self.robot_geoms = set(np.flatnonzero(m.geom_bodyid == self.robot))
+        # Loose things the task isn't about (free joints): pushing them around costs reward ("disturb").
+        task_body = spec.get("object") if self.kind == "push_object" else None
+        self.others = np.array([m.jnt_bodyid[j] for j in range(m.njnt) if int(m.jnt_type[j]) == int(mujoco.mjtJoint.mjJNT_FREE)
+                                and m.body(m.jnt_bodyid[j]).name != task_body], dtype=int)
         self.static_geoms = set(np.flatnonzero(m.body_weldid[m.geom_bodyid] == 0))
 
         mujoco.mj_forward(m, self.d)
@@ -118,7 +122,14 @@ class RoomTaskEnv(gym.Env):
         return self.d.xpos[self.obj, :2].copy()
 
     def _costs(self):
-        """Task costs that shrink to 0 (rewards.py weights their decrease) plus the success flag."""
+        """Task costs that shrink to 0 (rewards.py weights their decrease) plus the success flag.
+        Every task also has "disturb": how far the robot has shoved things it wasn't asked to touch."""
+        costs, success = self._task_costs()
+        moved = np.linalg.norm(self.d.xpos[self.others, :2] - self.others_at, axis=1) if len(self.others) else np.zeros(0)
+        costs["disturb"] = float(np.maximum(moved - 0.03, 0).sum())
+        return costs, success
+
+    def _task_costs(self):
         xy = self.robot_pose()[:2]
         if self.kind == "go_to":
             g = self._goal(xy)
@@ -187,6 +198,7 @@ class RoomTaskEnv(gym.Env):
             q += self.np_random.uniform(-1, 1, 3) * [JITTER_XY, JITTER_XY, JITTER_YAW]
         self.d.qpos[self.qadr] = q
         mujoco.mj_forward(self.m, self.d)
+        self.others_at = self.d.xpos[self.others, :2].copy()
         self.steps = 0
         self.costs, _ = self._costs()
         return self._obs(), {}

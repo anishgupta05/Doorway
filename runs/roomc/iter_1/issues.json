@@ -1,0 +1,42 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 hits other_7 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_2",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_2 hits cabinet_1 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Cabinet is too narrow at 2.0 m wide and positioned too far east at x = 0.9 m, leaving a gap on the left where other_5 floats; increase width to about 2.8 m and shift position x to 0.4 m.",
+    "severity": "high"
+  },
+  {
+    "objectId": "other_5",
+    "message": "Paper trimmer is floating in mid-air above the waste bins at x = -0.55 m because cabinet_1 stops at x = -0.1 m; once cabinet_1 is widened to x = -1.0 m, or shift other_5 east to rest on the counter surface.",
+    "severity": "high"
+  },
+  {
+    "objectId": "other_2",
+    "message": "Paper shredder is placed at x = -0.65 m where cabinet_1 should extend; shift it about 0.4 m west to sit between the copier and the base cabinet.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_3",
+    "message": "Black waste bin is placed at x = -0.2 m where cabinet_1 should extend; shift it about 0.5 m west to sit beside the shredder and left of the base cabinet.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Wall cabinet is slightly too narrow at 2.1 m wide; increase width to about 2.4 m and shift position x to 0.8 m to match the 6-door upper cabinet span.",
+    "severity": "low"
+  },
+  {
+    "objectId": "door_1",
+    "message": "The east wall entryway is an open glass-partitioned doorway in the footage rather than a solid hinged door panel.",
+    "severity": "low"
+  }
+]

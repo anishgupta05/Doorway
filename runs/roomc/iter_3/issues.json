@@ -1,0 +1,32 @@
+[
+  {
+    "objectId": "cabinet_2",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_2 swings only 57°. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Width is shrunk from 2.8m in the survey to 2.0m and shifted right to x=0.9m, leaving a 0.2m gap from the east wall and causing items on the right end to float or hang off.",
+    "severity": "high"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Width is shrunk from 2.4m to 2.1m and shifted right to x=0.95m, leaving a 0.1m gap from the east wall whereas in the footage it is flush against the east wall.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_5",
+    "message": "Shifted 0.5m east to x=-0.05m because cabinet_1 was shrunk, placing it too close to other_6 compared to the footage.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_1",
+    "message": "Shifted 0.15m east to x=-1.1m, causing it to overlap by about 0.23m with other_2 (paper shredder).",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_3",
+    "message": "Shifted 0.15m west to x=-0.35m, causing it to overlap slightly (about 0.02m) with other_2.",
+    "severity": "low"
+  }
+]

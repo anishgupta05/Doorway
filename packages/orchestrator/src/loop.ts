@@ -1,4 +1,4 @@
-// The verification loop, built from Person 2's stages (compare.ts, fixes.ts, branch.ts).
+// The verification loop, built from the compare, fixes and branch stages.
 // Each iteration:
 //   render the current scene along the footage's camera path (the viewer's own renderer)
 //   → Argon compares footage vs scene + renders and lists issues (compareScene)

@@ -1,203 +1,139 @@
 # Doorway
 
-**A 60-second phone video of a real room becomes an interactive, sim-ready 3D replica. Doorway then checks it against the footage and corrects it until it matches.**
+**A phone video of a real room becomes an interactive, sim-ready 3D replica. Doorway then checks it against the footage and corrects it until it matches.**
 
-Robotics engineers spend days hand-building sim environments of the real spaces their robots will work in. Scanners and Gaussian splats produce frozen geometry: they don't know what a door is. Doorway uses **Argon** (Gemini: video understanding, long decode, 1M context) to watch the video and write the whole room as a scene graph in one pass, with objects that work. Doors open, chairs move, lights switch.
+**Live demo: [doorway-iota.vercel.app](https://doorway-iota.vercel.app/?run=roomb)**
 
-A verification loop then refines it:
+Robotics engineers spend days hand-building sim environments of the real spaces their robots will work in. Scanners and Gaussian splats produce frozen geometry: they don't know what a door is. Doorway uses **Argon** (Gemini: video understanding, long decode, 1M context) to watch the video and write the whole room as a scene graph in one pass, with objects that work. Doors open, drawers slide, lights switch, small things can be picked up.
+
+A verification loop then refines it, and every step is something you can see in the viewer:
 
 1. Render the scene in headless Chrome along the same camera path as the original video.
 2. Argon compares the render with the real footage and flags specific mistakes.
-3. Several sandboxes try different fixes in parallel.
-4. Guard hooks reject any patch that breaks the scene, deletes an object, or stops the door from opening. An interaction-test tool checks that objects *behave* correctly, not just that they look right.
+3. Several branches try different fixes in parallel.
+4. Guard hooks reject any patch that breaks the scene, deletes an object, or stops a door from opening. Interaction tests check that objects *behave* correctly, not just that they look right.
 5. The best-scoring branch survives, and the loop repeats.
 
-Long term, this becomes an open-source tool that exports to Isaac and MuJoCo.
+The result exports to MuJoCo (MJCF), and a robot can plan and run tasks in it.
 
----
-
-## Constraints
-- **Under 12 hours, 3 people.**
-- **The demo must be flawless.** The viewer runs entirely from files in `runs/`, so nothing on stage depends on a live API call.
-- **Models:** Argon (Gemini) via `@google/genai`. Videos go up through the Files API, and outputs use structured JSON (`responseSchema`).
-
-## Architecture
+## How it works
 ```
-video.mp4 ─► ingest (ffmpeg keyframes) ─► Argon: generate scene.json (v0)
-          ─► loop k = 1..K (K≈4):
-               render(scene, camera_path)        → frames      [Playwright + headless Chrome]
-               Argon: compare(real, render)      → issues[]    (object id + what's wrong)
-               fan out N≈3–4 branches            → scene_i     (each tries a different fix)
-               guard hooks + interaction tests   → reject | score
-               keep the best scene_i             → scene(k)
-          ─► viewer: walkable scene, E to interact, side by side with the real video
+video ─► describe (Argon): structured survey of the room, objects with x/z positions
+      ─► generate (Argon): scene.json, validated, layout-checked, doors added
+      ─► detail / affordance / texture: how things look, drawers and cabinet doors, painted surfaces
+      ─► loop, k = 1..K:
+           render(scene, camera_path)        → frames      [Playwright + headless Chrome]
+           Argon: compare(footage, render)   → score + issues[] (object id + what's wrong)
+           Argon: N different patches        → branches    (each tries a different fix)
+           guard hooks + interaction tests   → reject | re-score
+           keep the best branch only if it beats the current scene
+      ─► viewer: walkable scene, E to interact, side by side with the real video
 ```
+Argon is used for the survey, the scene, the judging and the fixes. Nothing else is learned or trained: the loop is test-time search with deterministic checks that can veto any branch.
+
+## Results
+Scores are Argon's own judgement of how closely the scene matches the footage (0 to 1), on real phone videos:
+
+| Video | Start | After the loop |
+|---|---|---|
+| Screen recording of our own room | 0.36 | **0.94** |
+| Phone booth (30 s, 1.8 × 2 m) | 0.58 | **0.75** |
+| Office (33 s) | 0.78 to 0.80 | **0.85** |
+| Second office video (50 s) | 0.65 | **0.85** |
+
+A full run (describe, generate, three iterations) takes about 5 minutes. The score measures layout, not photorealism: it can plateau around 0.85, and a score alone does not prove a room looks right, so the viewer lets you judge by eye. See [`docs/pipeline.md`](docs/pipeline.md).
+
+## See it
+Real footage on the left, our replica on the right, flown along the camera path Argon estimated from the video:
+- [Office phone-booth room (`roomb`), 47 s](docs/media/roomb.mp4)
+- [Office copy and mail room (`roomc3`), 57 s](docs/media/roomc3.mp4)
+
+The replica's camera is Argon's estimate (no SLAM), so the two are close but not frame-accurate. `npx tsx scripts/side-by-side.ts <runId>` makes one for any room.
+
+## Quick start
+```bash
+npm install
+cp .env.example .env     # add GEMINI_API_KEY; ffmpeg must be installed for new videos
+npm run demo             # production build + preview on http://localhost:4173
+```
+The viewer reads whatever is in `runs/` (committed runs play with no API calls and no network). `runs/index.json` picks the rooms: `{ "live": "<runId>", "backup": "<runId>" }`.
+
+**Build a room from your own video.** In the viewer, press **New video** and drop a clip (mp4, mov, m4v or webm, up to 600 MB). The local builder runs describe → generate → loop and the room appears in **Rooms** when it is done (about 5 minutes; needs the API key and ffmpeg). On a static host the same button replays a finished build in demo mode.
+
+Or from the command line:
+```bash
+npm run describe -w @doorway/orchestrator -- --id myroom --video path/to/clip.mov
+npm run generate -w @doorway/orchestrator -- --id myroom
+npm run loop -- --id myroom --iters 3 --branches 3 --live   # with the viewer running (npm run dev)
+```
+The loop writes `runs/<id>/manifest.json` after every iteration, so with `--live` the viewer's convergence panel fills in as it runs. Self-test with no API key: `npx tsx scripts/loop-selftest.ts`.
+
+## In the viewer
+| Key | What |
+|---|---|
+| `1` | Real footage vs the first draft, with a drag wipe. `←` `→` step iterations: issue markers turn green and a toast says what was fixed |
+| `2` | Convergence: parallel branches, guards stamp REJECTED, the survivor glows, the room morphs |
+| `F` | Before / after: first draft next to the final room |
+| `B` | The room builds itself from `scene.json` |
+| `T` | Interaction tests: door swing, drawer travel, lamp, push |
+| `3` | The pre-converged backup run |
+| `N` | Night (lamps on) |
+| `X` | Export to MuJoCo (MJCF download) |
+| `P` | Robot jobs: ask the robot to open a cabinet or door, or compare a first-pass plan with the verified room |
+| `4` | Explore: click, WASD, `E` to open doors and drawers, pick up and set down small objects |
+| `R` / `Esc` / `M` | Reset joints / back to overview / mute |
+
+Idle in overview for 20 s and it drifts into attract mode.
 
 ## The contract: `scene.json`
-Freeze this together in **hour 0–1**. Every track depends on it. It's defined as a zod schema in `packages/schema`.
+Defined as a zod schema in `packages/schema`; everything else depends on it.
 
 | Field | Contents |
 |---|---|
 | `room` | dimensions, wall/floor/ceiling materials, openings |
-| `objects[]` | `id`, `type` (door, chair, table, lamp, cabinet…), `primitive` or composite parts, `pose`, `size`, `color` |
+| `objects[]` | `id`, `type` (door, chair, table, lamp, cabinet…), parts, `position`, `rotationY`, `size`, `color` |
 | `objects[].articulation` | `{ kind: hinge \| slide \| free \| switch, axis, pivot, range }` |
+| `objects[].physics` | `{ body: static \| dynamic \| kinematic, mass, friction, collider }` |
 | `interactions[]` | `{ verb: "open", target: "door_1" }`, `{ verb: "toggle", target: "lamp_2", effect: "light" }` |
 | `camera_path[]` | `{ t, position, lookAt }`, estimated by Argon from the video (no SLAM) |
 
-A hand-written `fixtures/sample_room.json` is committed in hour 1, so the UI and guards tracks can build without waiting on the model.
+Patches are RFC 6902 (`add` / `replace` / `remove`, at most 12 ops), applied with `applyPatch` and re-validated. Details and the optional fields are in [`docs/scene-format.md`](docs/scene-format.md).
 
-## Repo layout (TypeScript, pnpm workspaces)
+## Repo layout
 ```
-packages/schema/        zod scene schema, types, diffScenes()
-packages/runtime/       Three.js: buildScene(json), articulation controllers, interact(id, verb),
-                        window.renderPath(cameraPath) for Playwright
-packages/orchestrator/  model.ts (Gemini adapter), ingest.ts, render.ts, score.ts, loop.ts
-packages/guards/        hooks + testInteractions(scene)
-apps/viewer/            the demo UI (Vite + Three.js)
-runs/<id>/iter_k/branch_i/   scene.json, frames/, score.json, verdict.json
-runs/backup/            pre-converged judging-room run, committed before the demo
-fixtures/               sample_room.json, test video
+packages/schema/        zod scene schema, patches, layout and safety checks
+packages/orchestrator/  model.ts (Gemini adapter with a call cache), describe, generate, compare, fixes,
+                        branch (guard hooks), interaction-tests, render, loop, detail, affordance, texture
+packages/export/        MJCF export for MuJoCo
+apps/viewer/            the demo UI (React Three Fiber) and the local builder API
+apps/realism-trial/     standalone page used to try real furniture models, HDRI and ambient occlusion
+runs/<id>/              video, description.json, scene.v0.json, manifest.json, iter_k/branch_i/…
+fixtures/               sample_room.json, a test video
+assets/models/          optional Poly Haven (CC0) furniture models
+scripts/                loop-selftest, smoke-ui, walk-test, validate, thumbs, mock run, export
+docs/                   scene format and pipeline reference
 ```
 
----
-
-## Team plan
-
-### Person 1: UI & demo (owns the stage)
-The demo is the product. This person's only job is that the viewer looks great and never breaks on stage. They don't touch the model loop.
-
-**Build (in this order)**
-1. **Viewer shell (hours 1–3):** a Vite app that loads any `runs/<id>/iter_k/` from disk, using `packages/runtime` to build the scene. First-person walk with PointerLockControls and WASD. Press **E** to interact with whatever's under the crosshair. Show a crosshair hint ("E · Open door") when looking at an interactive object.
-2. **Visual quality (hours 3–5):** this is what makes the room look real rather than like grey boxes.
-   - Soft shadows, ACES tone mapping, an HDRI environment for reflections, SSAO, and subtle bloom on lamps.
-   - Eased articulation animations: the door swings with a slight overshoot, and the light fades on instead of popping.
-   - Smooth camera transitions between views. Keep a constant 60fps on the demo laptop.
-3. **Side-by-side view (hours 4–6):** real video on the left, render on the right, both driven by one shared timeline scrubber so the render follows `camera_path` in sync. Flagged issues from Argon appear as pins on the render ("chair_3: wrong position") and fade out when fixed.
-4. **Convergence panel (hours 6–8):** shows iterations as columns and branches as cards. Each card has a thumbnail, a score, and a ✓ or ✗ with the hook's reason ("deleted chair_3", "door no longer opens"). The surviving branch glows and slides forward into the next column. A score sparkline climbs across the top. The panel animates in replay mode from saved run files, and in live mode it polls `runs/`.
-5. **Version picker plus "Take the keyboard" mode (hours 8–9):** switch v0 / latest / backup with a crossfade. A full-screen walk mode with all chrome hidden, for handing the keyboard to a judge.
-
-**Design direction:** dark, minimal, technical. Use one accent color for "verified" states, monospace for object IDs, and generous spacing. No default browser styling should be visible anywhere.
-
-**Flawless-demo checklist (owned by Person 1)**
-- [ ] Every demo screen works with **Wi-Fi off** (backup run plus local video).
-- [ ] Hotkeys for each demo beat: `1` footage vs v0, `2` convergence, `3` backup, `4` walk mode, `R` reset the door and lights.
-- [ ] Tested on the actual demo laptop, at projector resolution, with the browser at full screen.
-- [ ] Two full timed rehearsals (≤3 min) with Persons 2 and 3 watching.
-- [ ] A recorded screen capture of a perfect run, kept as the last-resort fallback.
-
-### Person 2: model loop (Gemini)
-Owns everything that calls Argon or Flash, and produces the `runs/` files Person 1 renders.
-
-1. **Kickoff checks (hour 0):** confirm the Argon and Flash model IDs, the video input limits, quota for about 4 parallel branches × 4 iterations, and **whether the event's Managed Agents run on Argon or only on Flash**.
-   - Argon available: each branch is one managed-agent session on Argon that patches and self-checks.
-   - Flash only: Argon stays in the orchestrator to generate, compare, and propose N fix hypotheses. Flash agents only apply a patch, render, and score.
-   - Neither: run the branches locally with `Promise.all`. `runBranch` has both implementations behind a flag.
-2. **`model.ts` (hours 1–2):** the single adapter (`generate`, `compare`, `proposeFixes`, `runBranch`). It reads `GEMINI_API_KEY` and the model IDs from `.env`.
-3. **One-pass generation (hours 2–4):** the video goes to Argon, which returns a schema-valid `scene.json`, including `camera_path` and articulations. If the scene fails validation, retry once with the zod error included in the prompt. If direct video upload fails, fall back to 1 fps keyframes.
-4. **Compare and fix (hours 4–6):** Argon gets real frames and rendered frames at matched timestamps and returns `issues[]`. It then proposes N different fixes as JSON patches over the scene, never full rewrites, so the guards can diff them.
-5. **`loop.ts` and `score.ts` (hours 6–7):** the score blends frame similarity (SSIM) with the Argon issue count. Each iteration writes `runs/<id>/iter_k/branch_i/*`. Stop at K=4 or when there are no high-severity issues.
-6. **Judging-room run (as soon as the room is assigned):** record the 60s video and start the background run. Hand the best run to Person 3 to freeze as `runs/backup`.
-7. **Stretch:** `export/toMJCF(scene)` (boxes become geoms, hinges become joints) and load the result in MuJoCo for one screenshot.
-
-### Person 3: render pipeline, guards, and integration
-Owns the parts that make the loop trustworthy, and keeps all three tracks connected.
-
-1. **Schema and fixture (hours 0–1):** write the zod schema and `fixtures/sample_room.json` with the team, then publish the types.
-2. **Runtime core (hours 1–3):** `buildScene(json)` plus the articulation controllers (hinge, slide, free, switch) and `interact(id, verb)`. Person 1 uses this for visuals, so agree early on where the style hooks go.
-3. **Headless render (hours 3–5):** `render.ts`, where Playwright loads the runtime and calls `window.renderPath(cameraPath)` to capture frames deterministically at fixed timestamps. Make it run in the sandbox if the sandbox supports Chrome, and locally otherwise.
-4. **Guard hooks (hours 4–6):** these run on every patch, and any failure rejects it.
-   - The schema validates.
-   - The scene builds without runtime errors.
-   - No object ids are deleted relative to the parent scene.
-   - Every articulated object keeps its articulation.
-5. **Interaction-test tool (hours 5–7):** `testInteractions(scene)` loads the scene headless and runs each declared interaction, then asserts its effect. For example, the door's hinge angle changes by >60° and its swept volume doesn't hit a wall, the lamp's light intensity toggles, and the chair moves. If Managed Agents support custom tools, expose it to the agents as a tool.
-6. **Integration (hours 7–9):** wire the guards into branch selection in `loop.ts` and write a `verdict.json` for each branch, which is what Person 1's panel shows. Freeze and commit `runs/backup`.
-7. **Release check (hours 9+):** fresh clone, `pnpm i`, offline demo run end to end.
-
----
-
-## Timeline at a glance
-| Hours | Person 1 (UI) | Person 2 (model) | Person 3 (pipeline/guards) |
-|---|---|---|---|
-| 0–1 | Freeze schema together · start viewer scaffold | Kickoff checks (Managed Agents on Argon?) | Schema + fixture |
-| 1–4 | Walk + interact, visual quality | Adapter, one-pass generation | Runtime core, start headless render |
-| 4–7 | Side-by-side + issue pins | Compare → parallel fixes → score | Guards + interaction tests |
-| 7–9 | Convergence panel, version picker, walk mode | Judging-room run → backup | Integration, freeze backup |
-| 9–12 | Polish + 2 rehearsals | Stretch: MJCF export | Fresh-clone offline check |
-
-## Git workflow
-Keep `main` demo-ready at all times. Nobody commits to it directly.
-
-1. **Branch per unit of work** off the latest `main`: `feat/<area>-<thing>`, `fix/<area>-<thing>`, `docs/<thing>`.
-   - Areas: `ui`, `runtime`, `schema`, `orchestrator`, `guards`, `render`, `demo`.
-   - Examples: `feat/ui-convergence-panel`, `feat/guards-interaction-tests`.
-2. **Commit at every important step:** each working milestone, not one big commit at the end. Use small, imperative messages: `Add hinge articulation controller`, `Wire guards into branch selection`.
-3. **Push and open a PR** with `gh pr create`. The description says what changed, how it was tested, and a screenshot or GIF for any UI change.
-4. **Merge** once it builds and its checks in [Verification](#verification) pass. Then `git switch main && git pull` before starting the next branch.
-5. **Schema changes** (`packages/schema`) get their own PR and a heads-up to the whole team, because all three tracks depend on the schema.
-6. **Tag demo-ready states:** `git tag demo-v1`, and so on, so you can always roll back to a version that worked on stage.
-
-## Demo script (~3 min)
-1. **Hook:** "This is the judging room, from a 60-second phone video." Real footage next to **v0**, which Argon generated in one pass.
-2. **Loop:** the convergence panel. Parallel branches, hooks rejecting bad patches with reasons, the score climbing.
-3. **Clean finish:** switch to the pre-converged **backup**.
-4. **The moment:** hand a judge the keyboard. They walk to the door, press **E**, and it opens. Flip the light.
-5. **Close:** "Splats give you frozen geometry. This knows what a door is." Then the path to Isaac and MuJoCo export.
-
-## The verification loop
+## Checks
 ```bash
-# once per room (needs .env with GEMINI_API_KEY, and ffmpeg): video → description.json → scene.v0.json
-npm run describe -w @doorway/orchestrator -- --id room1 --video path/to/room1.mov
-npm run generate -w @doorway/orchestrator -- --id room1
-# then, with the viewer running (npm run dev), iterate:
-npm run loop -- --id room1 --iters 3 --branches 3 --live
+npm run typecheck                                  # schema, export, orchestrator, viewer
+npm run test:patch                                 # patch and layout rules
+npm run smoke                                      # API key and model reachable
+npx tsx scripts/smoke-ui.ts http://localhost:4173  # every hotkey, no page errors
+npx tsx scripts/walk-test.ts                       # pointer lock, doors open, pick-up works
 ```
-Each iteration, the loop:
-1. Renders the current scene along the footage's camera path, using the viewer's own render mode.
-2. Has Argon compare the footage with the scene and those renders, and list issues and a match score (`compare.ts`).
-3. Has Argon propose N different JSON patches, after telling it which earlier attempts were rejected (`fixes.ts`).
-4. Tests each branch in parallel: **hooks** (`branch.ts`: no deleted objects, no removed or changed joints, valid scene) and **interaction tests** (`interaction-tests.ts`: every door sweeps its full swing and every drawer slides out without hitting a wall or furniture). Branches that pass are rendered and re-scored by Argon.
-5. Keeps the best branch only if it beats the current scene.
+Before presenting: Wi-Fi off, reload, run the whole script (fonts, sounds, video and runs are all local).
 
-It writes `runs/<id>/manifest.json` after every iteration (`status: "running"`), so with `--live` the viewer's convergence panel fills in as the loop runs. `--backup` also makes the run the demo backup. Progress: `runs/<id>/progress.json`.
+## Contributing
+`main` stays demo-ready; nobody commits to it directly.
+1. Branch per unit of work off the latest `main`: `feat/<area>-<thing>`, `fix/<area>-<thing>`, `docs/<thing>`.
+2. Commit at every working step with small imperative messages.
+3. Open a PR (`gh pr create`) that says what changed and how it was tested, with a screenshot for any UI change.
+4. Merge once it builds and the checks above pass.
+5. Schema changes (`packages/schema`) get their own PR and a heads-up, because everything depends on the schema.
+6. Tag demo-ready states (`git tag demo-v1`) so you can roll back to a version that worked on stage.
 
-Self-test without an API key: `npx tsx scripts/loop-selftest.ts` (fake model against a known ground truth; the run title is marked `[FAKE MODEL]`).
+## Models
+Argon (`gemini-4-argon`) via `@google/genai`; videos go up through the Files API and outputs use structured JSON (`responseSchema`). All model calls are cached in `runs/.cache` (git-ignored), so a replay costs nothing.
 
-## Running the demo
-```bash
-npm install
-npm run dev            # http://localhost:5173 (development)
-npm run demo           # production build + preview on http://localhost:4173 (present from this)
-```
-The viewer reads whatever is in `runs/`. `runs/index.json` picks the runs: `{ "live": "<runId>", "backup": "<runId>" }`.
-To show a real run, point `backup` at it and run `npm run thumbs -- <runId>` to render branch thumbnails.
-
-| Key | Beat |
-|---|---|
-| `1` | Real footage vs v0, with a drag wipe. `←` `→` step iterations: issue markers turn green and a toast shows what was fixed |
-| `2` | Convergence: parallel branches, guards stamp REJECTED, the survivor glows, the room morphs. Click a rejected card to load it |
-| `F` | Before / after: v0 next to the final room |
-| `B` | The room builds itself from `scene.json` |
-| `T` | Interaction tests: door swing, drawer travel, lamp, push |
-| `3` | Switch to the pre-converged backup run |
-| `N` | Night (lamps on) |
-| `X` | Export to MuJoCo (MJCF download) |
-| `P` | Robot task: A* on the replica's occupancy grid. `Enter` steps through: plan in v0 → run that plan in the verified room (does it crash?) → replan in the verified room |
-| `4` | Walk: click, WASD, `E` to open the door. A robot rolls in |
-| `R` / `Esc` / `M` | Reset joints / back to overview / mute |
-
-Idle in overview for 20 s and it drifts into attract mode with rotating captions.
-
-**Before presenting**
-- [ ] `npx tsx scripts/smoke-ui.ts http://localhost:4173`: every hotkey runs with no page errors
-- [ ] `npx tsx scripts/walk-test.ts`: pointer lock works, the door opens, the robot comes in
-- [ ] Wi-Fi off, reload, run the whole script (fonts, sounds, video and runs are all local)
-- [ ] Chrome full screen on the projector; sleep and notifications off
-
-**Scripts:** `npm run mock` (regenerate the mock run), `npm run record-truth` (stand-in footage for the mock), `npm run shot -- <url> <dir> <name=Key@ms>…` (screenshots), `npm run export:mjcf -- scene.json out.xml`.
-
-## Verification
-- `pnpm --filter guards test`: rejects patches that delete an object, remove the door hinge, or break the schema. `testInteractions` passes on the fixture and fails on a door with `range: 0`.
-- `pnpm --filter orchestrator loop -- --video fixtures/test.mp4 --iters 2 --branches 3`: writes `runs/<id>/iter_*/branch_*`, and the selected score is ≥ the parent's.
-- `pnpm --filter viewer dev`: v0, latest, and backup all load. The door opens, the lamp toggles, and the side-by-side video stays in sync.
-- Offline rehearsal with Wi-Fi off: the full demo runs from `runs/backup`.
+Built at the Gemini 4 Argon SF Hackathon.

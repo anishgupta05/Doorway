@@ -1,0 +1,523 @@
+{
+  "version": 1,
+  "name": "Minimalist Home Office and Study",
+  "room": {
+    "width": 4.2,
+    "depth": 4.8,
+    "height": 2.6,
+    "wallColor": "ded8c8",
+    "floorColor": "d4bd9c",
+    "floorMaterial": "wood",
+    "openings": [
+      {
+        "wall": "north",
+        "kind": "window",
+        "offset": -0.1,
+        "width": 1.6,
+        "height": 1.2,
+        "sill": 0.9
+      },
+      {
+        "wall": "east",
+        "kind": "door",
+        "offset": 1.15,
+        "width": 0.85,
+        "height": 2.05,
+        "sill": 0
+      }
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "objects": [
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "study desk",
+      "position": [
+        -0.45,
+        0,
+        -1.85
+      ],
+      "rotationY": 0,
+      "size": [
+        1.15,
+        0.74,
+        0.6
+      ],
+      "color": "d4ae80",
+      "material": "wood",
+      "physics": {
+        "body": "static",
+        "mass": 22,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "computer monitor",
+      "position": [
+        -0.55,
+        0.74,
+        -1.95
+      ],
+      "rotationY": 0,
+      "size": [
+        0.5,
+        0.38,
+        0.14
+      ],
+      "color": "1e2028",
+      "material": "plastic",
+      "articulation": {
+        "kind": "switch",
+        "initial": true
+      },
+      "physics": {
+        "body": "static",
+        "mass": 4,
+        "friction": 0.5,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "lamp_1",
+      "type": "lamp",
+      "label": "black desk lamp",
+      "position": [
+        -0.08,
+        0.74,
+        -1.92
+      ],
+      "rotationY": 0,
+      "size": [
+        0.18,
+        0.38,
+        0.18
+      ],
+      "color": "181818",
+      "material": "metal",
+      "articulation": {
+        "kind": "switch",
+        "initial": true
+      },
+      "light": {
+        "color": "ffe4b5",
+        "intensity": 1.2,
+        "distance": 3
+      },
+      "physics": {
+        "body": "static",
+        "mass": 1.5,
+        "friction": 0.5,
+        "collider": "cylinder"
+      }
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "blue desk chair",
+      "position": [
+        -0.6,
+        0,
+        -1.35
+      ],
+      "rotationY": 3.1416,
+      "size": [
+        0.48,
+        0.82,
+        0.48
+      ],
+      "color": "38586e",
+      "material": "fabric",
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 5.5,
+        "friction": 0.55,
+        "collider": "box",
+        "damping": 0.8
+      }
+    },
+    {
+      "id": "shelf_1",
+      "type": "shelf",
+      "label": "tall dark wood bookcase",
+      "position": [
+        -1.92,
+        0,
+        -1.25
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.85,
+        1.8,
+        0.32
+      ],
+      "color": "2c1d11",
+      "material": "darkwood",
+      "physics": {
+        "body": "static",
+        "mass": 35,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "label": "topiary plant in pot",
+      "position": [
+        -1.85,
+        0,
+        -0.35
+      ],
+      "rotationY": 0,
+      "size": [
+        0.34,
+        0.85,
+        0.34
+      ],
+      "color": "2f5e2e",
+      "material": "plant",
+      "physics": {
+        "body": "static",
+        "mass": 6,
+        "friction": 0.6,
+        "collider": "cylinder"
+      }
+    },
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "metal filing cabinet",
+      "position": [
+        1.86,
+        0,
+        -1.8
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.44,
+        0.72,
+        0.48
+      ],
+      "color": "7a8086",
+      "material": "metal",
+      "articulation": {
+        "kind": "slide",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range": [
+          0,
+          0.34
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 28,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "orange accent chair",
+      "position": [
+        0.2,
+        0,
+        -0.1
+      ],
+      "rotationY": 3.5,
+      "size": [
+        0.5,
+        0.82,
+        0.5
+      ],
+      "color": "bf6045",
+      "material": "fabric",
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 6,
+        "friction": 0.55,
+        "collider": "box",
+        "damping": 0.8
+      }
+    },
+    {
+      "id": "rug_1",
+      "type": "rug",
+      "label": "peach area rug",
+      "position": [
+        -0.4,
+        0,
+        0.5
+      ],
+      "rotationY": 0,
+      "size": [
+        1.7,
+        0.012,
+        1.2
+      ],
+      "color": "d4957d",
+      "material": "fabric",
+      "physics": {
+        "body": "static",
+        "mass": 3,
+        "friction": 0.9,
+        "collider": "none"
+      }
+    },
+    {
+      "id": "sofa_1",
+      "type": "sofa",
+      "label": "two-seater sofa",
+      "position": [
+        0.95,
+        0,
+        0.55
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        1.45,
+        0.78,
+        0.78
+      ],
+      "color": "9fa89d",
+      "material": "fabric",
+      "physics": {
+        "body": "static",
+        "mass": 45,
+        "friction": 0.75,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "door_1",
+      "type": "door",
+      "label": "interior room door",
+      "position": [
+        2.06,
+        0,
+        1.15
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.85,
+        2.05,
+        0.06
+      ],
+      "color": "dcd6c6",
+      "material": "paint",
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          0.425,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          1.5
+        ]
+      },
+      "physics": {
+        "body": "kinematic",
+        "mass": 25,
+        "friction": 0.5,
+        "collider": "box"
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "open",
+      "target": "door_1",
+      "effect": "hinge"
+    },
+    {
+      "verb": "open",
+      "target": "cabinet_1",
+      "effect": "slide"
+    },
+    {
+      "verb": "toggle",
+      "target": "lamp_1",
+      "effect": "light"
+    },
+    {
+      "verb": "push",
+      "target": "chair_1",
+      "effect": "move"
+    },
+    {
+      "verb": "push",
+      "target": "chair_2",
+      "effect": "move"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        0.6,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        -0.6,
+        0.9,
+        -1.7
+      ]
+    },
+    {
+      "t": 4,
+      "position": [
+        0.2,
+        1.5,
+        -0.1
+      ],
+      "lookAt": [
+        -0.8,
+        0.9,
+        -1.6
+      ]
+    },
+    {
+      "t": 7,
+      "position": [
+        -0.4,
+        1.5,
+        -0.3
+      ],
+      "lookAt": [
+        -1.9,
+        0.9,
+        -1
+      ]
+    },
+    {
+      "t": 9.5,
+      "position": [
+        -0.4,
+        1.5,
+        -0.5
+      ],
+      "lookAt": [
+        -0.8,
+        0.4,
+        -1.2
+      ]
+    },
+    {
+      "t": 10.5,
+      "position": [
+        0.2,
+        1.5,
+        -0.7
+      ],
+      "lookAt": [
+        1.5,
+        0.4,
+        -1.6
+      ]
+    },
+    {
+      "t": 12,
+      "position": [
+        0.4,
+        1.5,
+        -0.6
+      ],
+      "lookAt": [
+        1.8,
+        0.5,
+        -1.8
+      ]
+    },
+    {
+      "t": 14.5,
+      "position": [
+        -0.2,
+        1.5,
+        -0.5
+      ],
+      "lookAt": [
+        0.8,
+        0.5,
+        0.4
+      ]
+    },
+    {
+      "t": 17,
+      "position": [
+        -0.3,
+        1.5,
+        -0.3
+      ],
+      "lookAt": [
+        1.2,
+        0.7,
+        0.8
+      ]
+    },
+    {
+      "t": 19.5,
+      "position": [
+        -0.3,
+        1.5,
+        -0.3
+      ],
+      "lookAt": [
+        1.8,
+        1.1,
+        1.1
+      ]
+    },
+    {
+      "t": 22,
+      "position": [
+        -0.2,
+        1.5,
+        -0.2
+      ],
+      "lookAt": [
+        0.9,
+        0.7,
+        -1.5
+      ]
+    },
+    {
+      "t": 24,
+      "position": [
+        -0.3,
+        1.5,
+        -0.2
+      ],
+      "lookAt": [
+        -0.4,
+        0.85,
+        -1.9
+      ]
+    }
+  ]
+}

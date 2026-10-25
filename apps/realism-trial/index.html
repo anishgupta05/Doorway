@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doorway realism trial</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0d0f12; overflow: hidden; font: 13px/1.5 ui-monospace, Menlo, monospace; color: #cfd6df; }
+  canvas { display: block; }
+  .box { position: fixed; padding: 8px 12px; background: rgba(13,15,18,.72); border: 1px solid #2a2f37; border-radius: 6px; }
+  #hud { left: 16px; bottom: 16px; } #hud b { color: #6ee7b7; font-weight: 600; }
+  #mode { top: 16px; left: 16px; color: #6ee7b7; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="mode" class="box">loading…</div>
+<div id="hud" class="box"><b>R</b> real models / boxes &nbsp; <b>A</b> ambient occlusion &nbsp; <b>O</b> door &nbsp; <b>L</b> lamp &nbsp; <b>1-4</b> camera views &nbsp; drag = orbit</div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+const sceneUrl = new URLSearchParams(location.search).get("scene") ?? "/fixtures/sample_room.json";
+const S = await (await fetch(sceneUrl)).json();
+const R = S.room;
+const W = R.width, D = R.depth, H = R.height, T = 0.1;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#bcd3e8");
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 60);
+const controls = new OrbitControls(camera, renderer.domElement);
+const VIEWS = {
+  Digit1: [[W * 0.42, 1.75, D * 0.42], [-W * 0.1, 0.8, -D * 0.15]],
+  Digit2: [[W * 0.45, 1.6, -D * 0.4], [-W * 0.2, 0.6, D * 0.2]],
+  Digit3: [[-W * 0.42, 1.6, D * 0.42], [W * 0.15, 0.7, -D * 0.2]],
+  Digit4: [[0, 8.5, 4.5], [0, 0.3, 0]],
+};
+const setView = (k) => { if (typeof ceiling !== "undefined") ceiling.visible = k !== "Digit4"; const [p, t] = VIEWS[k]; camera.position.set(...p); controls.target.set(...t); controls.update(); };
+let ceiling; // assigned once the room is built
+setView("Digit1");
+
+// ---------- lighting: a real HDRI for reflections and fill, plus one warm sun through the window ----------
+const pmrem = new THREE.PMREMGenerator(renderer);
+const hdr = await new Promise((res) => new RGBELoader().load("/apps/realism-trial/tex/env.hdr", res));
+scene.environment = pmrem.fromEquirectangular(hdr).texture;
+scene.environmentIntensity = 0.85;
+const sun = new THREE.DirectionalLight("#fff0d8", 3.0);
+sun.position.set(-2, 6, -8); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 5; sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.02;
+Object.assign(sun.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: 0.5, far: 25 });
+scene.add(new THREE.HemisphereLight("#fff7ec", "#c9bba6", 0.25));
+
+// ---------- surfaces ----------
+const loader = new THREE.TextureLoader();
+const texCache = {};
+function tex(name, srgb) {
+  const k = name + srgb;
+  if (!texCache[k]) { const t = loader.load(`/apps/realism-trial/tex/${name}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 8; texCache[k] = t; }
+  return texCache[k];
+}
+function surface(set, repeatX, repeatY, color = "#ffffff", diffuse = true) {
+  const rep = (t) => { const c = t.clone(); c.needsUpdate = true; c.repeat.set(repeatX, repeatY); return c; };
+  const m = new THREE.MeshStandardMaterial({ roughnessMap: rep(tex(`${set}_rough`, false)), normalMap: rep(tex(`${set}_nor`, false)), roughness: 1, color });
+  if (diffuse) m.map = rep(tex(`${set}_diff`, true));
+  return m;
+}
+const flat = (c, rough = 0.6, metal = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: metal });
+const add = (geo, mat, x, y, z, parent = scene) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; parent.add(m); return m; };
+const box = (w, h, d, mat, x, y, z, p) => add(new THREE.BoxGeometry(w, h, d), mat, x, y, z, p);
+
+// room shell
+add(new THREE.BoxGeometry(W + 2 * T, T, D + 2 * T), surface("floor", W / 2, D / 2), 0, -T / 2, 0);
+ceiling = add(new THREE.BoxGeometry(W + 2 * T, T, D + 2 * T), flat("#efece6", 0.9), 0, H + T / 2, 0);
+const wallMat = () => surface("wall", 2, 1.2, R.wallColor);
+function wall(side) {
+  const horizontal = side === "north" || side === "south";
+  const along = horizontal ? W : D, sign = side === "north" || side === "west" ? -1 : 1;
+  const piece = (len, h, c, y) => horizontal ? box(len, h, T, wallMat(), c, y, sign * (D / 2 + T / 2)) : box(T, h, len, wallMat(), sign * (W / 2 + T / 2), y, c);
+  const o = R.openings.find((q) => q.wall === side);
+  if (!o) return piece(along + 2 * T, H, 0, H / 2);
+  const lo = o.offset - o.width / 2, hi = o.offset + o.width / 2, sill = o.sill ?? 0;
+  piece(lo + along / 2, H, (lo - along / 2) / 2, H / 2);
+  piece(along / 2 - hi, H, (hi + along / 2) / 2, H / 2);
+  if (sill > 0) piece(o.width, sill, o.offset, sill / 2);
+  const top = H - sill - o.height; piece(o.width, top, o.offset, sill + o.height + top / 2);
+  if (o.kind === "window") {
+    const glass = new THREE.MeshPhysicalMaterial({ color: "#dff0fb", transparent: true, opacity: 0.12, roughness: 0.03, envMapIntensity: 2 });
+    const g = horizontal ? box(o.width, o.height, 0.01, glass, o.offset, sill + o.height / 2, sign * (D / 2 + T / 2)) : box(0.01, o.height, o.width, glass, sign * (W / 2 + T / 2), sill + o.height / 2, o.offset);
+    g.castShadow = false;
+    const frame = flat("#f4f1ea", 0.5), f = 0.05;
+    if (horizontal) { for (const dx of [-1, 1]) box(f, o.height, 0.08, frame, o.offset + dx * o.width / 2, sill + o.height / 2, sign * (D / 2 + T / 2)); for (const dy of [0, 1]) box(o.width, f, 0.08, frame, o.offset, sill + dy * o.height, sign * (D / 2 + T / 2)); }
+  }
+}
+["north", "south", "east", "west"].forEach(wall);
+// baseboard
+for (const [w, d, x, z] of [[W, 0.02, 0, -D / 2 + 0.01], [W, 0.02, 0, D / 2 - 0.01], [0.02, D, -W / 2 + 0.01, 0], [0.02, D, W / 2 - 0.01, 0]]) box(w, 0.09, d, flat("#f2efe8", 0.5), x, 0.045, z);
+
+// ---------- objects: real GLB models where we have one, careful primitives otherwise ----------
+const ASSET = { table: "WoodenTable_01", sofa: "sofa_02", shelf: "wooden_bookshelf_worn", cabinet: "modern_wooden_cabinet", lamp: "desk_lamp_arm_01", plant: "calathea_orbifolia_01" };
+const CHAIRS = ["ArmChair_01", "SchoolChair_01"];
+// Rotation (rad) that turns each model's own front toward +z, tuned by eye.
+const FRONT = { WoodenTable_01: 0, ArmChair_01: 0, SchoolChair_01: 0, sofa_02: 0, wooden_bookshelf_worn: 0, modern_wooden_cabinet: 0, desk_lamp_arm_01: 0, calathea_orbifolia_01: 0 };
+const gl = new GLTFLoader();
+const modelCache = {};
+const loadModel = (name) => modelCache[name] ??= new Promise((res) => gl.load(`/apps/realism-trial/assets/${name}/${name}.gltf`, (g) => res(g.scene)));
+
+const groups = {}, realParts = {}, boxParts = {};
+let chairN = 0;
+const interactive = { door: null, lamp: null };
+const lampLight = new THREE.PointLight("#ffd29a", 0, 5, 1.6); lampLight.castShadow = true; lampLight.shadow.bias = -0.002;
+
+async function build(o) {
+  const g = new THREE.Group(); g.position.set(...o.position); g.rotation.y = o.rotationY ?? 0; scene.add(g);
+  const [w, h, d] = o.size, real = new THREE.Group(), prim = new THREE.Group();
+  g.add(real, prim); realParts[o.id] = real; boxParts[o.id] = prim;
+  const asset = o.type === "chair" ? CHAIRS[chairN++ % CHAIRS.length] : ASSET[o.type];
+  if (asset) {
+    const m = (await loadModel(asset)).clone(true);
+    m.rotation.y = FRONT[asset] ?? 0;
+    m.updateMatrixWorld(true);
+    const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+    const k = o.type === "plant" ? Math.min(h / sz.y, w / sz.x, d / sz.z) : h / sz.y; // match the described height; width and depth follow the model's own proportions
+    const wrap = new THREE.Group(); wrap.add(m);
+    m.position.set(-c.x, -b.min.y, -c.z); wrap.scale.setScalar(k);
+    wrap.traverse((n) => { if (n.isMesh) { n.castShadow = n.receiveShadow = true; if (n.material) n.material.envMapIntensity = 1; } });
+    real.add(wrap);
+  }
+  // primitive version (fallback + comparison, and the only version for door / drawer / monitor / rug)
+  const P = (mat, ww, hh, dd, x, y, z) => box(ww, hh, dd, mat, x, y, z, prim);
+  const col = o.color ?? "#bbbbbb";
+  switch (o.type) {
+    case "door": {
+      const pv = o.articulation?.pivot ?? [-w / 2, 0, 0]; const pivot = new THREE.Group(); pivot.position.set(pv[0], 0, 0); prim.add(pivot);
+      const wood = surface("woodtab", 1.2, 2.4, col); const leaf = box(w, h, d, wood, -pv[0], h / 2, 0, pivot);
+      for (const sz of [-1, 1]) box(w * 0.7, h * 0.36, 0.012, flat(col, 0.55), -pv[0], h * 0.28 + (sz > 0 ? h * 0.42 : 0), sz * (d / 2 + 0.004), pivot); // raised panels
+      box(0.035, 0.035, 0.1, flat("#b9b4a8", 0.25, 1), -pv[0] * 2 - 0.1 + (pv[0] > 0 ? 0.2 : 0), h * 0.47, 0.045, pivot);
+      interactive.door = { pivot, range: o.articulation?.range ?? [0, 1.6], sign: pv[0] > 0 ? 1 : -1, t: 0, target: 0 };
+      realParts[o.id].visible = false; break; }
+    case "monitor": {
+      P(flat("#15171a", 0.4), w, h, 0.03, 0, h / 2 + 0.09, 0);
+      P(flat("#1b1d20", 0.4, 0.4), 0.06, 0.09, 0.05, 0, 0.045, 0); P(flat("#1b1d20", 0.4, 0.4), 0.22, 0.012, 0.15, 0, 0.006, 0);
+      const screen = P(new THREE.MeshStandardMaterial({ color: "#0b1a2b", emissive: "#17446d", emissiveIntensity: 0.9, roughness: 0.2 }), w * 0.95, h * 0.9, 0.004, 0, h / 2 + 0.09, 0.018); screen.castShadow = false; break; }
+    case "rug": add(new THREE.BoxGeometry(w, h, d), surface("rug", Math.max(1, w / 0.6), Math.max(1, d / 0.6), col, true), 0, h / 2, 0, prim); break;
+    case "drawer": P(flat(col, 0.35, 0.7), w, h, 0.02, 0, 0, d / 2); break;
+    case "lamp": P(flat(col, 0.4, 0.6), 0.04, h, 0.04, 0, h / 2, 0); break;
+    case "table": P(surface("woodtab", w, d, "#ffffff"), w, 0.04, d, 0, h - 0.02, 0); for (const a of [-1, 1]) for (const c of [-1, 1]) P(flat("#2b2b2b"), 0.05, h - 0.04, 0.05, a * (w / 2 - 0.05), (h - 0.04) / 2, c * (d / 2 - 0.05)); break;
+    default: P(surface("rug", 2, 2, col, false), w, h, d, 0, h / 2, 0);
+  }
+  if (o.type === "lamp") { lampLight.position.set(0, h * 0.82, 0); g.add(lampLight); interactive.lamp = { target: 0, level: 0 }; }
+  if (o.type === "door") { prim.visible = true; real.visible = false; } // the door is always the hand-built one
+  groups[o.id] = g;
+}
+await Promise.all(S.objects.map(build));
+
+// ---------- post: ambient occlusion makes contact shadows read as real ----------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
+gtao.output = GTAOPass.OUTPUT.Default; gtao.updateGtaoMaterial({ radius: 0.35, distanceExponent: 1.5, thickness: 1, scale: 1.2, samples: 12 });
+composer.addPass(gtao); composer.addPass(new OutputPass());
+
+// ---------- modes ----------
+let useReal = true, aoOn = true;
+const modeEl = document.getElementById("mode");
+function apply() {
+  for (const id in groups) {
+    const hasReal = realParts[id].children.length > 0 && S.objects.find((q) => q.id === id).type !== "door";
+    realParts[id].visible = useReal && hasReal; boxParts[id].visible = !(useReal && hasReal);
+  }
+  gtao.enabled = aoOn;
+  modeEl.textContent = `${useReal ? "real models" : "primitive boxes"} · AO ${aoOn ? "on" : "off"}`;
+}
+addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  if (k === "r") { useReal = !useReal; apply(); }
+  if (k === "a") { aoOn = !aoOn; apply(); }
+  if (k === "o" && interactive.door) interactive.door.target = interactive.door.target ? 0 : 1;
+  if (k === "l" && interactive.lamp) interactive.lamp.target = interactive.lamp.target ? 0 : 1;
+  if (VIEWS[e.code]) setView(e.code);
+});
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
+apply();
+window.__ready = true;
+
+const ease = (x) => x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2;
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta();
+  const dr = interactive.door; if (dr) { dr.t += (dr.target - dr.t) * Math.min(1, dt * 4); dr.pivot.rotation.y = dr.sign * ease(dr.t) * dr.range[1]; }
+  const lp = interactive.lamp; if (lp) { lp.level += (lp.target - lp.level) * Math.min(1, dt * 6); lampLight.intensity = lp.level * 6; }
+  controls.update();
+  composer.render();
+});
+</script>
+</body>
+</html>

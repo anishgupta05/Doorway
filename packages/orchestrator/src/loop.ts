@@ -184,6 +184,7 @@ function deletedByPatch(scene: Scene, patch: Patch): string[] {
 
 /** Interaction-test failures are issues too: they lower the score and tell proposeFixes what to repair. */
 function withTestIssues(c: Comparison, scene: Scene): Comparison {
+  if (process.env.DOORWAY_TESTISSUES === "0") return c; // experiment: do not treat test failures as issues
   const fails = interactionTests(scene)
     .filter((t) => !t.ok)
     .map((t): Issue => ({ objectId: t.id, severity: "high", message: `Interaction test fails: ${t.id} ${t.text}. Fix its hinge side, pivot, range or clearance so it can really be used.` }));

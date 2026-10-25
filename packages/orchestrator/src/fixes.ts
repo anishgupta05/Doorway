@@ -52,6 +52,7 @@ export async function proposeFixes(
   const r = await callJson({
     model: models.argon(),
     prompt: PROMPT(n),
+    temperature: process.env.DOORWAY_TEMP ? Number(process.env.DOORWAY_TEMP) : undefined,
     schema: Proposals,
     video,
     context: [

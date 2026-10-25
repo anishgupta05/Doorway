@@ -130,7 +130,8 @@ export function checkLayout(scene: Scene): string[] {
 }
 
 /** Applies the patch to a copy and re-validates; throws if the result is not a valid Scene. */
-export function applyPatch(scene: Scene, patch: Patch): Scene {
+/** `settle` may adjust the patched scene (e.g. nudge overlapping furniture apart) before it is validated. */
+export function applyPatch(scene: Scene, patch: Patch, settle?: (scene: Scene) => void): Scene {
   const next = structuredClone(scene) as any;
   for (const { op, path, value } of Patch.parse(patch)) {
     const keys = path.split("/").slice(1).map(unescape);
@@ -151,6 +152,7 @@ export function applyPatch(scene: Scene, patch: Patch): Scene {
     else node[last] = value;
   }
   const result = Scene.parse(next);
+  settle?.(result);
   const problems = checkScene(result);
   if (problems.length) throw new Error(problems.join("; "));
   return result;

@@ -55,6 +55,12 @@ export const Part = z.object({
   size: Vec3,
   color: z.string().optional(),
   material: MaterialKind.optional(),
+  /** What surface image this part needs, e.g. "laptop keyboard and trackpad from above". Written by the detail pass, read by the texture step. */
+  textureHint: z.string().optional(),
+  /** Which face of the box the image goes on. Default: top for flat parts, front otherwise. */
+  textureFace: z.enum(["top", "front", "back", "left", "right"]).optional(),
+  /** Generated image, relative to runs/ (e.g. "booth1/tex/laptop_1_0.png"). Served at /runs/<path>. */
+  texture: z.string().optional(),
 });
 export type Part = z.infer<typeof Part>;
 

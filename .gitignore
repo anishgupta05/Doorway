@@ -19,3 +19,4 @@ runs/*/progress.json
 # raw footage dropped in the repo root
 /*.mp4
 /*.mov
+.vercel

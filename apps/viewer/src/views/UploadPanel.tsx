@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useApp } from "../store";
 
 const close = () => useApp.setState({ uploadOpen: false });
-const guess = (f: File) => f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").replace(/^IMG \d+$/i, "").trim();
 
 export function UploadPanel() {
   const input = useRef<HTMLInputElement>(null);
@@ -21,12 +20,11 @@ export function UploadPanel() {
     if (url) URL.revokeObjectURL(url);
     setFile(f);
     setUrl(URL.createObjectURL(f));
-    if (!name) setName(guess(f));
   };
 
   const build = () => {
     if (!file || !url) return;
-    useApp.setState({ building: { id: null, name: name.trim() || "New room", src: url, file }, uploadOpen: false });
+    useApp.setState({ building: { id: null, name: name.trim(), src: url, file }, uploadOpen: false });
   };
 
   return (
@@ -80,7 +78,7 @@ export function UploadPanel() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Home office, Kitchen, Judging room…"
+            placeholder="Optional: we'll name it for you"
             className="mt-1 w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-[14px] text-fg outline-none transition focus:border-accent/60"
           />
         </label>

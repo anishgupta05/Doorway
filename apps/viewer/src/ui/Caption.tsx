@@ -41,6 +41,8 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   if (mode === "walk" || mode === "convergence") return null;
   return (
     <div className={`pointer-events-none absolute z-10 max-w-3xl ${building ? "bottom-16 left-[440px]" : "bottom-16 left-6"}`}>
+      {/* soft shade so the text stays readable over any room */}
+      <div className="absolute -bottom-16 -left-6 -z-10 h-[26rem] w-[64rem] max-w-[100vw] bg-[radial-gradient(ellipse_at_bottom_left,rgba(11,12,14,0.88),rgba(11,12,14,0.55)_45%,transparent_72%)]" />
       <AnimatePresence mode="wait">
         <motion.div key={title} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.45 }}>
           <div className="text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] text-fg [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">{title}</div>
@@ -59,7 +61,7 @@ const NUM = ["", "a", "two", "three", "four", "five", "six"];
 function describe(scene: Scene) {
   const counts = new Map<string, number>();
   scene.objects.filter((o) => o.type !== "door" && o.type !== "drawer").forEach((o) => counts.set(o.type, (counts.get(o.type) ?? 0) + 1));
-  const things = [...counts].map(([t, n]) => (n === 1 ? `a ${t}` : `${NUM[n] ?? n} ${t}s`));
+  const things = [...counts].map(([t, n]) => (t === "other" ? `${n} smaller things` : n === 1 ? `a ${t}` : `${NUM[n] ?? n} ${t}s`));
   const label = (id: string) => (scene.objects.find((o) => o.id === id)?.label ?? id).toLowerCase();
   const verbs = scene.interactions.filter((i) => i.verb === "open" || i.verb === "toggle").map((i) => (i.verb === "open" ? `open the ${label(i.target)}` : `switch the ${label(i.target)} on`));
   const pushed = scene.interactions.filter((i) => i.verb === "push").map((i) => scene.objects.find((o) => o.id === i.target)?.type).filter(Boolean);
@@ -72,7 +74,7 @@ function Stats({ scene }: { scene: Scene; manifest: RunManifest | undefined }) {
   return (
     <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-fg/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.8)]">
       {things.length > 0 && <>Inside you'll find {list(things)}. </>}
-      {verbs.length > 0 && <>Go ahead and {list(verbs)}.</>}
+      {verbs.length > 0 && <>Go ahead and {list(verbs.slice(0, 3))}{verbs.length > 3 ? ", and more" : ""}.</>}
     </p>
   );
 }

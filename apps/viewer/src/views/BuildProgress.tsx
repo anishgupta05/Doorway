@@ -60,6 +60,8 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
   const [t0] = useState(() => Date.now());
   const [now, setNow] = useState(Date.now());
   const started = useRef(false);
+  const nameRef = useRef(building.name);
+  nameRef.current = name;
   // No local builder (static host): replay a finished build on a timeline, clearly labelled.
   const [demo] = useState(() => !useApp.getState().apiOk);
   const frames = useFilmstrip(building.src);
@@ -106,7 +108,12 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
         setJob(j);
         if (j.stage === "checking") setLoop(await getProgress(id));
         if (j.stage === "error") return setError(j.message ?? "Something went wrong.");
-        if (j.stage === "done") return sfx.pass();
+        if (j.stage === "done") {
+          sfx.pass();
+          // No name typed: take the one the model chose.
+          if (!nameRef.current.trim()) fetch(`/runs/${id}/manifest.json`, { cache: "no-store" }).then((r) => r.json()).then((m) => m.title && setName(m.title)).catch(() => {});
+          return;
+        }
       } catch {
         /* the job file appears a moment after the upload finishes */
       }
@@ -129,6 +136,11 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
     return s.from + (s.to - s.from) * 0.9 * (1 - Math.exp(-elapsed / 45));
   }, [done, stepIdx, upload, loop, now, t0]);
 
+  // Rough time left from overall progress (a real build is ~5 minutes; the demo replay ~26 s).
+  const total = demo ? 26 : 300;
+  const secs = Math.max(0, total * (1 - pct / 100));
+  const left = secs < 20 ? "Almost there" : secs < 75 ? "Under a minute left" : `About ${Math.round(secs / 60)} min left`;
+
   const detail =
     stage === "uploading" ? `${Math.round(upload * 100)}%` :
     stage === "checking" && loop ? (loop.k === 0 ? "Scoring the first draft" : `Trying fixes, round ${Math.min(loop.k, ROUNDS)} of ${ROUNDS}`) :
@@ -148,6 +160,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
           onChange={(e) => setName(e.target.value)}
           onBlur={save}
           onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+          placeholder="Naming your room…"
           aria-label="Room name"
           className="w-[360px] rounded-lg border border-transparent bg-transparent px-2 py-1 text-2xl font-semibold tracking-tight outline-none transition hover:border-line focus:border-accent/60 focus:bg-panel"
         />
@@ -210,7 +223,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
       <div className="px-8 pb-8">
         <div className="mb-2 flex items-center justify-between text-[12px] text-muted">
           <span>{done ? "Your room is ready" : error ? "Stopped" : STEPS[Math.min(stepIdx, STEPS.length - 1)].title + "…"}</span>
-          <span className="tabular">{Math.round(pct)}%</span>
+          <span className="tabular">{!done && !error && <span className="mr-3">{left}</span>}{Math.round(pct)}%</span>
         </div>
         <div className="relative h-[72px] overflow-hidden rounded-xl border border-line bg-panel">
           <div className="flex h-full">

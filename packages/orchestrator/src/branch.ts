@@ -29,6 +29,8 @@ export function guards(parent: Scene, child: Scene): string | null {
   const limit = 0.75 * Math.min(child.room.width, child.room.depth);
   for (const o of child.objects) {
     const before = parent.objects.find((x) => x.id === o.id);
+    // A thin decor panel (whiteboard, mural, poster) is a wall surface, not furniture: it may span a wall.
+    if (o.decor && Math.min(...o.size) <= 0.1) continue;
     const longest = Math.max(o.size[0], o.size[2]);
     // Only new objects and objects that got longer count: an already-long desk must not doom every patch that touches it.
     if (before && longest <= Math.max(before.size[0], before.size[2])) continue;

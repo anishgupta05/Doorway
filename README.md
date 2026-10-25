@@ -125,6 +125,18 @@ Owns the parts that make the loop trustworthy, and keeps all three tracks connec
 | 7–9 | Convergence panel, version picker, walk mode | Judging-room run → backup | Integration, freeze backup |
 | 9–12 | Polish + 2 rehearsals | Stretch: MJCF export | Fresh-clone offline check |
 
+## Git workflow
+Keep `main` demo-ready at all times. Nobody commits to it directly.
+
+1. **Branch per unit of work** off the latest `main`: `feat/<area>-<thing>`, `fix/<area>-<thing>`, `docs/<thing>`.
+   - Areas: `ui`, `runtime`, `schema`, `orchestrator`, `guards`, `render`, `demo`.
+   - Examples: `feat/ui-convergence-panel`, `feat/guards-interaction-tests`.
+2. **Commit at every important step:** each working milestone, not one big commit at the end. Use small, imperative messages: `Add hinge articulation controller`, `Wire guards into branch selection`.
+3. **Push and open a PR** with `gh pr create`. The description says what changed, how it was tested, and a screenshot or GIF for any UI change.
+4. **Merge** once it builds and its checks in [Verification](#verification) pass. Then `git switch main && git pull` before starting the next branch.
+5. **Schema changes** (`packages/schema`) get their own PR and a heads-up to the whole team, because all three tracks depend on the schema.
+6. **Tag demo-ready states:** `git tag demo-v1`, and so on, so you can always roll back to a version that worked on stage.
+
 ## Demo script (~3 min)
 1. **Hook:** "This is the judging room, from a 60-second phone video." Real footage next to **v0**, which Argon generated in one pass.
 2. **Loop:** the convergence panel. Parallel branches, hooks rejecting bad patches with reasons, the score climbing.

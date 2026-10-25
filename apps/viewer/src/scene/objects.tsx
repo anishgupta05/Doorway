@@ -8,6 +8,7 @@ import * as THREE from "three";
 import type { MaterialKind, Part, SceneObject, Vec3 } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue } from "./Placed";
+import { Fronts } from "./Fronts";
 import { ModelBody, modelFor } from "./models";
 
 type V3 = [number, number, number];
@@ -51,7 +52,13 @@ const brushed = () => material("metal", "#b9b7b2");
 
 export function ObjectBody({ obj }: { obj: SceneObject }) {
   const model = obj.parts?.length ? null : modelFor(obj);
-  return model ? <ModelBody name={model} obj={obj} fallback={<ProceduralBody obj={obj} />} /> : <ProceduralBody obj={obj} />;
+  return (
+    <>
+      {model ? <ModelBody name={model} obj={obj} fallback={<ProceduralBody obj={obj} />} /> : <ProceduralBody obj={obj} />}
+      {/* Doors and drawers move as a whole; everything else moves its front (cabinet doors, drawer fronts, status lights). */}
+      <Fronts obj={obj} />
+    </>
+  );
 }
 
 function ProceduralBody({ obj }: { obj: SceneObject }) {

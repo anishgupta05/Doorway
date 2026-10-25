@@ -2,7 +2,7 @@
 
 **A phone video of a real room becomes an interactive, sim-ready 3D replica. Doorway then checks it against the footage and corrects it until it matches.**
 
-**Live demo: LIVE_DEMO_URL**
+**Live demo: [doorway-iota.vercel.app](https://doorway-iota.vercel.app/?run=roomb)**
 
 Robotics engineers spend days hand-building sim environments of the real spaces their robots will work in. Scanners and Gaussian splats produce frozen geometry: they don't know what a door is. Doorway uses **Argon** (Gemini: video understanding, long decode, 1M context) to watch the video and write the whole room as a scene graph in one pass, with objects that work. Doors open, drawers slide, lights switch, small things can be picked up.
 
@@ -42,6 +42,13 @@ Scores are Argon's own judgement of how closely the scene matches the footage (0
 | Second office video (50 s) | 0.65 | **0.85** |
 
 A full run (describe, generate, three iterations) takes about 5 minutes. The score measures layout, not photorealism: it can plateau around 0.85, and a score alone does not prove a room looks right, so the viewer lets you judge by eye. See [`docs/pipeline.md`](docs/pipeline.md).
+
+## See it
+Real footage on the left, our replica on the right, flown along the camera path Argon estimated from the video:
+- [Office phone-booth room (`roomb`), 47 s](docs/media/roomb.mp4)
+- [Office copy and mail room (`roomc3`), 57 s](docs/media/roomc3.mp4)
+
+The replica's camera is Argon's estimate (no SLAM), so the two are close but not frame-accurate. `npx tsx scripts/side-by-side.ts <runId>` makes one for any room.
 
 ## Quick start
 ```bash

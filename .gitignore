@@ -25,3 +25,6 @@ runs/*/progress.json
 /*.mov
 /*.MOV
 /*.mp4
+
+# raw recordings used to build docs/media/*.mp4
+docs/media/*.render.webm

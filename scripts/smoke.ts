@@ -10,7 +10,7 @@ for await (const m of await ai.models.list({ config: { pageSize: 100 } })) names
 const interesting = names.filter((n) => /argon|gemini-4|3\.8|3\.6|image|veo|live/i.test(n));
 console.log(`${names.length} models visible. Relevant:\n  ` + interesting.join("\n  "));
 
-for (const id of [process.env.ARGON_MODEL, process.env.FLASH_MODEL]) {
+for (const id of [process.env.ARGON_MODEL]) {
   if (!id) continue;
   try {
     const r = await ai.models.generateContent({ model: id, contents: "Reply with the single word: ok" });

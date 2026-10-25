@@ -19,7 +19,7 @@ Long term, this becomes an open-source tool that exports to Isaac and MuJoCo.
 ## Constraints
 - **Under 12 hours, 3 people.**
 - **The demo must be flawless.** The viewer runs entirely from files in `runs/`, so nothing on stage depends on a live API call.
-- **Models:** Argon and Flash (Gemini) via `@google/genai`. Videos go up through the Files API, and outputs use structured JSON (`responseSchema`).
+- **Models:** Argon (Gemini) via `@google/genai`. Videos go up through the Files API, and outputs use structured JSON (`responseSchema`).
 
 ## Architecture
 ```

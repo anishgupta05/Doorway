@@ -12,7 +12,6 @@ const CACHE_DIR = join(ROOT, "runs", ".cache");
 
 export const models = {
   argon: () => process.env.ARGON_MODEL ?? "gemini-4-argon",
-  flash: () => process.env.FLASH_MODEL ?? "gemini-3.8-flash",
 };
 
 let client: GoogleGenAI | undefined;

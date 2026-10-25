@@ -12,6 +12,8 @@ export function UploadPanel() {
   const [name, setName] = useState("");
   const [over, setOver] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const needsCode = useApp((s) => s.needsCode);
+  const accessCode = useApp((s) => s.accessCode);
 
   const pick = (f: File | undefined) => {
     if (!f) return;
@@ -83,9 +85,22 @@ export function UploadPanel() {
           />
         </label>
 
+        {needsCode && (
+          <label className="mt-3 block text-[12px] text-muted">
+            Access code
+            <input
+              type="password"
+              value={accessCode}
+              onChange={(e) => useApp.setState({ accessCode: e.target.value })}
+              placeholder="Ask whoever shared this link"
+              className="mt-1 w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-[14px] text-fg outline-none transition focus:border-accent/60"
+            />
+          </label>
+        )}
+
         <div className="mt-5 flex items-center justify-between">
           <div className="min-w-0 truncate text-[12px] text-muted">{file ? `${file.name} · ${(file.size / 1e6).toFixed(1)} MB` : "MP4, MOV or WebM"}</div>
-          <button disabled={!file} onClick={build} className="rounded-full bg-accent px-5 py-2 text-[13px] font-semibold text-ink transition enabled:hover:brightness-110 disabled:opacity-40">
+          <button disabled={!file || (needsCode && !accessCode)} onClick={build} className="rounded-full bg-accent px-5 py-2 text-[13px] font-semibold text-ink transition enabled:hover:brightness-110 disabled:opacity-40">
             Build my room
           </button>
         </div>

@@ -38,6 +38,7 @@ export function uploadVideo(file: File, name: string, onProgress: (p: number) =>
     x.open("POST", "/api/runs");
     x.setRequestHeader("x-filename", file.name);
     x.setRequestHeader("x-name", encodeURIComponent(name));
+    x.setRequestHeader("x-access-code", useApp.getState().accessCode);
     x.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
     x.onload = () => {
       let body: { id?: string; error?: string } = {};

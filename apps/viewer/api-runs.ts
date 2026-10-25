@@ -131,7 +131,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
       req.pipe(file);
       file.on("finish", () => {
         if (failed) return;
-        writeFileSync(join(dir, "meta.json"), JSON.stringify({ name: name || "New room" }));
+        if (name) writeFileSync(join(dir, "meta.json"), JSON.stringify({ name }));
         setJob(id, { stage: "watching", step: 0, startedAt: Date.now() });
         runJob(id, upload);
         json(res, 200, { id });

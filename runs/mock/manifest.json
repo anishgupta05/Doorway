@@ -1,7 +1,7 @@
 {
   "id": "mock",
   "title": "Sample office",
-  "video": null,
+  "video": "video.webm",
   "status": "done",
   "iterations": [
     {
@@ -16,7 +16,7 @@
           "reason": null,
           "hypothesis": "One-pass generation from video",
           "scene": "iter_0/branch_0/scene.json",
-          "thumb": null
+          "thumb": "iter_0/branch_0/thumb.png"
         }
       ]
     },
@@ -32,7 +32,7 @@
           "reason": null,
           "hypothesis": "Add lamp_1 on desk",
           "scene": "iter_1/branch_0/scene.json",
-          "thumb": null
+          "thumb": "iter_1/branch_0/thumb.png"
         },
         {
           "i": 1,
@@ -41,7 +41,7 @@
           "reason": null,
           "hypothesis": "Flip door_1 hinge to the left jamb; add lamp_1 on desk",
           "scene": "iter_1/branch_1/scene.json",
-          "thumb": null
+          "thumb": "iter_1/branch_1/thumb.png"
         },
         {
           "i": 2,
@@ -50,7 +50,7 @@
           "reason": "Hook: deleted chair_2",
           "hypothesis": "Replace chair_2 + chair_1 with a single bench",
           "scene": "iter_1/branch_2/scene.json",
-          "thumb": null
+          "thumb": "iter_1/branch_2/thumb.png"
         }
       ]
     },
@@ -66,7 +66,7 @@
           "reason": "Interaction test: door_1 no longer opens (range collapsed to 0)",
           "hypothesis": "Re-fit door_1 to opening width",
           "scene": "iter_2/branch_0/scene.json",
-          "thumb": null
+          "thumb": "iter_2/branch_0/thumb.png"
         },
         {
           "i": 1,
@@ -75,7 +75,7 @@
           "reason": null,
           "hypothesis": "Shift desk group 0.4 m west; stretch shelf_1 to 1.9 m",
           "scene": "iter_2/branch_1/scene.json",
-          "thumb": null
+          "thumb": "iter_2/branch_1/thumb.png"
         },
         {
           "i": 2,
@@ -84,7 +84,7 @@
           "reason": null,
           "hypothesis": "Stretch shelf_1 to 1.9 m",
           "scene": "iter_2/branch_2/scene.json",
-          "thumb": null
+          "thumb": "iter_2/branch_2/thumb.png"
         }
       ]
     },
@@ -100,7 +100,7 @@
           "reason": null,
           "hypothesis": "Enlarge rug_1 to 2.2 × 1.5 m",
           "scene": "iter_3/branch_0/scene.json",
-          "thumb": null
+          "thumb": "iter_3/branch_0/thumb.png"
         },
         {
           "i": 1,
@@ -109,7 +109,7 @@
           "reason": null,
           "hypothesis": "Turn chair_2 toward the sofa and move it 0.7 m in; enlarge rug_1",
           "scene": "iter_3/branch_1/scene.json",
-          "thumb": null
+          "thumb": "iter_3/branch_1/thumb.png"
         },
         {
           "i": 2,
@@ -118,7 +118,7 @@
           "reason": "Interaction test: chair_1 intersects desk_1 after push",
           "hypothesis": "Tuck chair_1 under desk",
           "scene": "iter_3/branch_2/scene.json",
-          "thumb": null
+          "thumb": "iter_3/branch_2/thumb.png"
         }
       ]
     },
@@ -134,7 +134,7 @@
           "reason": "Interaction test: drawer_1 no longer opens",
           "hypothesis": "Merge drawer_1 into cabinet_1 geometry",
           "scene": "iter_4/branch_0/scene.json",
-          "thumb": null
+          "thumb": "iter_4/branch_0/thumb.png"
         },
         {
           "i": 1,
@@ -143,7 +143,7 @@
           "reason": null,
           "hypothesis": "Shift sofa_1 to warm grey #8c8f86",
           "scene": "iter_4/branch_1/scene.json",
-          "thumb": null
+          "thumb": "iter_4/branch_1/thumb.png"
         },
         {
           "i": 2,
@@ -152,7 +152,7 @@
           "reason": null,
           "hypothesis": "Retint walls slightly warmer",
           "scene": "iter_4/branch_2/scene.json",
-          "thumb": null
+          "thumb": "iter_4/branch_2/thumb.png"
         }
       ]
     }

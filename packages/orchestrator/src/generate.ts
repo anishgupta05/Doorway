@@ -136,7 +136,15 @@ export function fixDoorSwing(scene: Scene, margin = 0.05): string[] {
 }
 
 /** Argon writes colours as "e5e4df", "rgb(230,231,226)" or even a mangled markdown link; recover a #rrggbb when there is one. */
+const NAMED: Record<string, string> = {
+  white: "#ffffff", black: "#000000", grey: "#808080", gray: "#808080", red: "#cc2222", green: "#2e8b3e", blue: "#2255cc", yellow: "#e8c832",
+  orange: "#e8832a", brown: "#6b4a2b", beige: "#d8c8a8", tan: "#c8a878", cream: "#f2ead3", silver: "#c0c0c0", pink: "#e89ab0", purple: "#7a4fa0",
+  teal: "#2a8a8a", navy: "#1f2f5f", gold: "#d4af37", wood: "#a8794a", "light grey": "#c8c8c8", "dark grey": "#505050", "light gray": "#c8c8c8", "dark gray": "#505050",
+};
+
 export function repairColour(v: string): string {
+  const named = NAMED[v.trim().toLowerCase()];
+  if (named) return named;
   if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v;
   if (/^[0-9a-f]{3,8}$/i.test(v)) return `#${v}`;
   const hex = /#([0-9a-f]{6})\b/i.exec(v);

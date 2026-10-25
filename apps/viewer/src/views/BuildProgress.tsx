@@ -62,6 +62,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
   const [t0] = useState(() => Date.now());
   const [now, setNow] = useState(Date.now());
   const started = useRef(false);
+  const [aspect, setAspect] = useState(16 / 9);
   const nameRef = useRef(building.name);
   nameRef.current = name;
   // No local builder (static host): replay a finished build on a timeline, clearly labelled.
@@ -175,8 +176,10 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(200px,40vh)_auto] gap-6 px-8 pt-6 pb-4 md:grid-cols-[minmax(0,1fr)_340px] md:grid-rows-[minmax(0,1fr)] md:gap-8">
-        <div className="relative min-h-0 overflow-hidden rounded-2xl border border-line bg-black">
-          {building.src ? <video src={building.src} className="absolute inset-0 h-full w-full object-contain" autoPlay muted loop playsInline /> : <div className="grid h-full place-items-center text-muted">Your video</div>}
+        <div className="grid min-h-0 place-items-center">
+        <div className="relative h-full max-w-full overflow-hidden rounded-2xl border border-line bg-black" style={{ aspectRatio: String(aspect) }}>
+          {building.src ? <video src={building.src} onLoadedMetadata={(e) => e.currentTarget.videoWidth && setAspect(e.currentTarget.videoWidth / e.currentTarget.videoHeight)} className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline /> : <div className="grid h-full place-items-center text-muted">Your video</div>}
+        </div>
         </div>
 
         <div className="flex min-w-0 flex-col justify-center gap-5">

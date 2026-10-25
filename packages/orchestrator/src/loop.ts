@@ -213,6 +213,10 @@ export function repairScene(scene: Scene): Scene {
     const o = byId.get(i.target);
     if (!o) return false;
     if (i.verb === "toggle" && !o.articulation) o.articulation = { kind: "switch", initial: false };
+    // Furniture meant to open but given no joint gets front doors (a hinge), rather than losing the action.
+    if (i.verb === "open" && !o.articulation && ["cabinet", "shelf", "box", "other"].includes(o.type)) {
+      o.articulation = { kind: "hinge", axis: [0, 1, 0], pivot: [-o.size[0] / 2, 0, o.size[2] / 2], range: [0, 1.6] };
+    }
     if (i.verb === "toggle") return o.articulation?.kind === "switch";
     if (i.verb === "open") return o.articulation?.kind === "hinge" || o.articulation?.kind === "slide";
     return true;

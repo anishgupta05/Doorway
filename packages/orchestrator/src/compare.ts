@@ -16,6 +16,7 @@ Scene conventions: metres, y-up, origin = centre of the floor; x grows east (rig
 
 Check, in this order: missing or extra objects, positions (relative to walls and to each other), sizes, orientation, colours and materials, then whether doors/drawers/lamps can do what the footage suggests.
 - List at most 8 issues, worst first. Each must name ONE object and say what is wrong with a measurable amount in metres or a clear direction ("about 0.5 m too far from the west wall", "faces the wrong way, should face north").
+- Also check the wall openings (room.openings): is each door or window on the right wall, at the right distance along it from the wall's middle (name the opening by its kind and wall, e.g. "south door"), the right width and height? A doorway is rarely exactly in the middle of a wall.
 - Do not list nitpicks. If the scene is already good, return few or no issues.
 - match_score is 0-10: 10 = indistinguishable layout, 7 = recognisably the same room with some errors, 4 = same kind of room but many objects wrong, 0 = unrelated.`;
 

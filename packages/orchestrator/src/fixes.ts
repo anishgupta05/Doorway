@@ -41,6 +41,7 @@ Rules:
 - Objects with "decor": true are purely visual: never add or change "articulation" or "physics" on them. To make something usable or movable, leave decor false (do not flip it to true on an object that has articulation or physics).
 - Paths contain no spaces: "/objects/3/position/0", never "/ objects ...".
 - If an issue says an interaction test fails (a door hits a wall, a drawer is blocked), fix that first: flip the hinge side/pivot, shrink the range, or move what is in the way.
+- Wall openings are fixed with /room/openings/<index>/offset (metres from the wall's middle; +x for north/south walls, +z for east/west walls), /width, /height, /sill. Use this when an issue says a door or window is at the wrong place along its wall.
 - Keep objects inside the room and off each other. Positions are the footprint centre at the base.
 - Keep every repair SMALL: touch at most 3 objects, and move an object by at most 0.4 m unless an issue says it is in the wrong place entirely. A repair that rearranges the whole room is rejected. The room is small: moving one object into another's space, or into the 0.45 m clear zone in front of a door, is rejected too (tiny overlaps are nudged apart automatically).
 - The ${n} repairs must take different approaches: the first fixes only the single worst issue precisely; each other one targets a DIFFERENT issue (different object) from the list. Do not submit near-duplicates, and do not bundle every issue into one patch.

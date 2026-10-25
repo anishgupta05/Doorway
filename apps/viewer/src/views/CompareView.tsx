@@ -1,7 +1,7 @@
 // Real footage under the render, with a draggable wipe between them. The 3D
 // camera follows the recovered path at the video's current time (see CompareRig),
 // so dragging the divider shows exactly where the reconstruction is right or wrong.
-import { cap, roundName } from "../ui/plain";
+import { cap, issueText, roundName } from "../ui/plain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Issue, RunManifest, Scene } from "@doorway/schema";
@@ -107,7 +107,7 @@ export function CompareView({
       </Tag>
 
       {/* issues found by Argon for this iteration */}
-      <div className="absolute top-24 right-5 z-10 w-72">
+      <div className="absolute top-24 right-5 z-10 max-h-[calc(100vh-15rem)] w-72 overflow-y-auto pr-1">
         <div className="mb-2 inline-block rounded-full bg-ink/80 px-2.5 py-1 text-[11px] text-muted backdrop-blur">
           Spotted {issues.length} {issues.length === 1 ? "difference" : "differences"}
         </div>
@@ -125,7 +125,7 @@ export function CompareView({
                 <span className={`h-1.5 w-1.5 rounded-full ${i.severity === "high" ? "bg-bad" : i.severity === "medium" ? "bg-warn" : "bg-muted"}`} />
                 <span className="text-fg">{cap(scene.objects.find((o) => o.id === i.objectId)?.label ?? i.objectId.replace(/_\d+$/, ""))}</span>
               </div>
-              <div className="mt-0.5 text-[12px] leading-snug text-muted">{cap(i.message)}</div>
+              <div className="mt-0.5 text-[12px] leading-snug text-muted">{issueText(i.message, (id) => scene.objects.find((o) => o.id === id)?.label ?? scene.objects.find((o) => o.id === id)?.type)}</div>
             </motion.div>
           ))}
         </AnimatePresence>

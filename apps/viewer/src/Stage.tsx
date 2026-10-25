@@ -17,6 +17,7 @@ import { Html } from "@react-three/drei";
 import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
 import { RobotSim } from "./robot/RobotSim";
+import { ROBOT } from "./features";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { sfx } from "./sfx";
 
@@ -52,7 +53,7 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
-  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
+  const robotOn = ROBOT && !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}

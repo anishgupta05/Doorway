@@ -9,7 +9,6 @@ const ATTRACT = [
   ["A phone video in.", "A working simulation out."],
   ["Doors open. Drawers slide. Lights switch.", "Every object knows what it is."],
   ["Checked against your video", "and fixed until it matches."],
-  ["Ready for the robot.", "Exports straight to a robot simulator."],
 ];
 
 export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManifest | undefined }) {

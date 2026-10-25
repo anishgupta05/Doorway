@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { Stage, type SplitPair } from "./Stage";
 import { useRobotTask } from "./robot/useRobotTask";
 import { RobotPanel } from "./robot/RobotPanel";
+import { ROBOT } from "./features";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
@@ -55,7 +56,7 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={robotOpen ? robot : null} />
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen ? robot : null} />
       </div>
       <TopBar current={current} />
       {scene && <Caption scene={scene} manifest={manifest} />}
@@ -65,7 +66,7 @@ export function App() {
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
-        {robotOpen && mode === "overview" && <RobotPanel key="robot" t={robot} />}
+        {ROBOT && robotOpen && mode === "overview" && <RobotPanel key="robot" t={robot} />}
         {uploadOpen && <UploadPanel key="upload" />}
         {roomsOpen && <RoomsPanel key="rooms" />}
         {building2 && <BuildProgress key="progress" building={building2} />}

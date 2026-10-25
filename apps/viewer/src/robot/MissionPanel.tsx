@@ -6,6 +6,7 @@ import type { Scene } from "@doorway/schema";
 import { useApp } from "../store";
 import { sfx } from "../sfx";
 import { gridOf } from "../scene/Fronts";
+import { PROFILES, profileById } from "./profiles";
 import type { Action } from "./actions";
 import type { Mission } from "./mission";
 
@@ -53,6 +54,7 @@ export function MissionPanel({ scene, actions, mission }: { scene: Scene; action
         <RobotTabs />
       </div>
 
+      <RobotPicker />
       <Ask scene={scene} actions={actions} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
@@ -115,17 +117,18 @@ export function MissionPanel({ scene, actions, mission }: { scene: Scene; action
             const leg = mission?.legs[i];
             const status = run?.status[i];
             return (
-              <li key={`${id}-${i}`} className="flex items-center gap-2 text-[12.5px]">
+              <li key={`${id}-${i}`} className="flex flex-wrap items-center gap-x-2 text-[12.5px]">
                 <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full font-mono text-[10px] ${leg && !leg.plan.ok ? "bg-bad text-ink" : "bg-panel-2 text-muted"}`}>{i + 1}</span>
                 <span className="flex-1 truncate">{a?.label ?? id}</span>
                 <span className="font-mono text-[10.5px] text-dim">
-                  {status === "done" ? <span className="text-accent">✓ done</span> : status === "failed" ? <span className="text-bad">✗ can't reach</span> : status === "driving" ? "driving…" : status === "acting" ? "opening…" : leg && !leg.plan.ok ? <span className="text-bad">no path</span> : leg ? `${leg.plan.length.toFixed(1)} m` : ""}
+                  {status === "done" ? <span className="text-accent">✓ done</span> : status === "failed" || (leg && !leg.plan.ok) ? <span className="text-bad">✗ {/out of reach/.test(leg?.plan.reason ?? "") ? "out of reach" : "no path"}</span> : status === "driving" ? "driving…" : status === "acting" ? "opening…" : leg ? `${leg.plan.length.toFixed(1)} m` : ""}
                 </span>
                 {!run && (
                   <button className="text-dim hover:text-fg" onClick={() => useApp.setState((s) => ({ missionQueue: s.missionQueue.filter((_, j) => j !== i) }))}>
                     ✕
                   </button>
                 )}
+                {leg && !leg.plan.ok && leg.plan.reason && <div className="w-full pl-7 font-mono text-[10px] leading-snug text-bad/80">{leg.plan.reason}</div>}
               </li>
             );
           })}
@@ -205,6 +208,37 @@ function Ask({ scene, actions }: { scene: Scene; actions: Action[] }) {
       </div>
       {reply && <div className="mt-2 text-[12.5px] text-muted">🤖 {reply}</div>}
       {!reply && !busy && <div className="mt-1.5 font-mono text-[10px] text-dim">e.g. "open the top-left locker, then turn on the printer"</div>}
+    </div>
+  );
+}
+
+/** Which robot does the job: its base size and how high it can reach decide what it can do. */
+function RobotPicker() {
+  const id = useApp((s) => s.robotProfile);
+  const p = profileById(id);
+  return (
+    <div className="border-t border-line px-4 py-2.5">
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[10px] tracking-[0.16em] text-muted uppercase">Robot</span>
+        <select
+          value={id}
+          onChange={(e) => {
+            sfx.tick();
+            useApp.setState({ robotProfile: e.target.value, mission: null, joints: {} });
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+          className="flex-1 rounded-lg border border-line bg-ink px-2 py-1 text-[12.5px] text-fg outline-none"
+        >
+          {PROFILES.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-1 font-mono text-[10px] text-dim">
+        base {Math.round(p.radius * 200)} cm wide · reaches handles {p.reach[0].toFixed(2)}–{p.reach[1].toFixed(2)} m
+      </div>
     </div>
   );
 }

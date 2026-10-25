@@ -1,5 +1,5 @@
 // Queues a robot job through the panel, runs it, and screenshots it mid-way and at the end.
-// Usage: npx tsx scripts/mission-test.ts [url] [outDir] [item …]  (items: "locker:7", or chip text)
+// Usage: [ROBOT=stretch] npx tsx scripts/mission-test.ts [url] [outDir] [item …]  (items: "locker:7", or chip text)
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
@@ -15,6 +15,7 @@ await page.goto(url);
 await page.waitForTimeout(5000);
 await page.keyboard.press("KeyP");
 await page.waitForTimeout(1500);
+if (process.env.ROBOT) await page.locator("select").first().selectOption(process.env.ROBOT);
 for (const it of items) {
   if (it.startsWith("locker:")) await page.getByTitle(`Open locker ${it.slice(7)}`).first().click();
   else await page.getByRole("button", { name: it }).first().click();

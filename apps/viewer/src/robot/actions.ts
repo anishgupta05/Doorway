@@ -47,7 +47,7 @@ export function actionsFor(scene: Scene): Action[] {
  * Where the robot stands to do an action: in front of the exact door it will open, far
  * enough back that the door can swing open without hitting it.
  */
-export function standPoint(scene: Scene, action: Action): Vec2 | null {
+export function standPoint(scene: Scene, action: Action, radius = ROBOT_RADIUS): Vec2 | null {
   const o = scene.objects.find((x) => x.id === action.target);
   if (!o) return null;
   const [w, , d] = o.size;
@@ -72,7 +72,7 @@ export function standPoint(scene: Scene, action: Action): Vec2 | null {
     clear = w * 0.5 + 0.2;
   }
   // Wall-mounted things (y > 0) are reached from the floor below them.
-  const lz = d / 2 + ROBOT_RADIUS + clear;
+  const lz = d / 2 + radius + clear;
   const c = Math.cos(o.rotationY);
   const s = Math.sin(o.rotationY);
   return [o.position[0] + lx * c + lz * s, o.position[2] - lx * s + lz * c];
@@ -80,3 +80,26 @@ export function standPoint(scene: Scene, action: Action): Vec2 | null {
 
 /** Joint key the action toggles. */
 export const actionJoint = (a: Action) => (a.part !== undefined ? `${a.target}#${a.part}` : a.target);
+
+/** Height of the handle (or switch) the robot has to reach for this action, metres from the floor. */
+export function handleHeight(scene: Scene, action: Action): number | null {
+  const o = scene.objects.find((x) => x.id === action.target);
+  if (!o || action.kind === "goto") return null;
+  const [, h] = o.size;
+  const y = o.position[1];
+  const bottom = h < 1.2 ? 0.08 : 0.03;
+  const top = h < 1.2 ? 0.05 : 0.03;
+  if (action.part !== undefined && o.articulation?.kind === "hinge") {
+    if (isLockers(o)) {
+      const [cols, rows] = gridOf(o);
+      const r = Math.floor(action.part / cols);
+      const ch = (h - bottom - top) / rows;
+      return y + bottom + (rows - 1 - r) * ch + ch * 0.55;
+    }
+    const lh = h - bottom - top;
+    return y + bottom + lh * (h < 1.2 ? 0.8 : 0.5);
+  }
+  if (o.type === "door") return y + 1.0;
+  if (o.articulation?.kind === "slide") return y + h - 0.1;
+  return y + Math.min(h * 0.9, h - 0.03);
+}

@@ -1,0 +1,10 @@
+{
+ "train_steps": 200000,
+ "max_seconds": 15,
+ "reward": {
+  "dist": 2,
+  "disturb": 2
+ },
+ "note": "Starting with default training parameters and reward weights for the initial attempt at the go_to task.",
+ "by": "argon"
+}

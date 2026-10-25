@@ -1,0 +1,39 @@
+{
+ "id": "can-you-get-that-door-out-of-the-way-7cdf",
+ "run": "roomc",
+ "request": "can you get that door out of the way?",
+ "status": "done",
+ "message": "The robot reliably pushes the door open in about two seconds every time. It completes the task smoothly without bumping into anything or disturbing nearby objects.",
+ "attempts": [
+  {
+   "n": 1,
+   "plan": {
+    "train_steps": 300000,
+    "max_seconds": 15,
+    "reward": {
+     "reach": 1,
+     "angle": 4,
+     "disturb": 2
+    },
+    "note": "Starting the first attempt with all default weights and training budgets to establish a baseline for the door pushing task.",
+    "by": "argon"
+   },
+   "judgement": {
+    "pass": true,
+    "success_rate": 1,
+    "text": "The robot reliably pushes the door open in about two seconds every time. It completes the task smoothly without bumping into anything or disturbing nearby objects.",
+    "feedback": "Passed with 100% success, fast completion times, and zero collisions. No changes needed.",
+    "by": "argon"
+   }
+  }
+ ],
+ "updated": "2026-10-25T22:34:27.656Z",
+ "clarification": {
+  "decision": "do",
+  "by": "argon",
+  "type": "push_door",
+  "object": "door_1",
+  "summary": "Push the door open."
+ },
+ "trajectory": "attempt_1/trajectory.json"
+}

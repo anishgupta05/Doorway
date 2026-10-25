@@ -1,0 +1,23 @@
+{
+ "id": "roll-over-to-the-lockers-f559",
+ "type": "go_to",
+ "mjcf": "../room.xml",
+ "max_seconds": 15,
+ "train_steps": 200000,
+ "seed": 0,
+ "target": {
+  "body": "cabinet_3"
+ },
+ "start": [
+  -0.05,
+  0.05,
+  0
+ ],
+ "success": {
+  "radius": 0.4
+ },
+ "reward": {
+  "dist": 2,
+  "disturb": 2
+ }
+}

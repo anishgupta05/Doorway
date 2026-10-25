@@ -198,6 +198,14 @@ Idle in overview for 20 s and it drifts into attract mode with rotating captions
 
 **Scripts:** `npm run mock` (regenerate the mock run), `npm run record-truth` (stand-in footage for the mock), `npm run shot -- <url> <dir> <name=Key@ms>…` (screenshots), `npm run export:mjcf -- scene.json out.xml`.
 
+## Robot tasks in physics
+Press `P` in overview. The right-hand panel, **Train it in physics**, takes a request in plain words ("can you get that door out of the way?") and three agents handle it, writing everything to `runs/<run>/tasks/<task>/`:
+1. **Clarifier** (Argon, then physics checks in code) maps it onto `go_to`, `push_door` or `push_object`, refuses what a base with no arm can't do, or asks which object.
+2. **Trainer** (Argon, within hard limits) sets the PPO budget and reward weights; `packages/sim` trains in the MuJoCo export of the room on the CPU.
+3. **Verifier** runs 10 test rollouts from jittered starts. Pass = 80% success with nothing else knocked over; Argon explains the result and, on a fail, tells the trainer what to change (up to 3 attempts).
+
+A passing task replays its best test run in the room: the robot, the door angle and any pushed object move as they did in MuJoCo. From the CLI: `npm run task -- --id roomc "open the door"`. Without `GEMINI_API_KEY` the agents fall back to offline stand-ins. One-time setup for the simulator (Python 3.13): see `packages/sim/README.md`. `npm run check:mjcf` checks an exported room's physics (nothing starts inside anything, the robot can push each door open).
+
 ## Verification
 - `pnpm --filter guards test`: rejects patches that delete an object, remove the door hinge, or break the schema. `testInteractions` passes on the fixture and fails on a door with `range: 0`.
 - `pnpm --filter orchestrator loop -- --video fixtures/test.mp4 --iters 2 --branches 3`: writes `runs/<id>/iter_*/branch_*`, and the selected score is ≥ the parent's.

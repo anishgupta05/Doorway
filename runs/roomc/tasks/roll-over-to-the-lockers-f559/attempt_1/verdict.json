@@ -1,0 +1,78 @@
+{
+ "id": "roll-over-to-the-lockers-f559",
+ "success_rate": 1.0,
+ "pass": true,
+ "mode": "deterministic",
+ "per_episode": [
+  {
+   "success": true,
+   "final_distance": 0.265,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.238,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.22,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.177,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.133,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.224,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.231,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.209,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.224,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_distance": 0.157,
+   "time_s": 0.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  }
+ ]
+}

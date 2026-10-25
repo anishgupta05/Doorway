@@ -63,12 +63,13 @@ export function TrainedReplay({ scene, traj, spec }: { scene: Scene; traj: Traje
   const goal = useMemo<[number, number] | null>(() => {
     const t = spec?.target;
     if (t && "point" in t) return toScene(t.point[0], t.point[1]);
+    // Drive-to goals are a stretch of floor next to an object: mark where the robot actually stopped.
     if (t && "body" in t) {
-      const o = scene.objects.find((x) => x.id === t.body);
-      return o ? [o.position[0], o.position[2]] : null;
+      const end = traj.frames[traj.frames.length - 1]?.robot;
+      return end ? toScene(end[0], end[1]) : null;
     }
     return null;
-  }, [spec, scene]);
+  }, [spec, traj]);
 
   useEffect(() => {
     clock.current = -LEAD_IN;

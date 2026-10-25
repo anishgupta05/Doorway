@@ -1,0 +1,22 @@
+{
+ "id": "can-you-get-that-door-out-of-the-way-7cdf",
+ "type": "push_door",
+ "mjcf": "../room.xml",
+ "max_seconds": 15,
+ "train_steps": 300000,
+ "seed": 0,
+ "door": "door_1",
+ "start": [
+  2.881,
+  -0.43,
+  3.142
+ ],
+ "success": {
+  "angle_deg": 52
+ },
+ "reward": {
+  "reach": 1,
+  "angle": 4,
+  "disturb": 2
+ }
+}

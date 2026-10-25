@@ -1,0 +1,11 @@
+{
+ "train_steps": 300000,
+ "max_seconds": 15,
+ "reward": {
+  "reach": 1,
+  "angle": 4,
+  "disturb": 2
+ },
+ "note": "Starting the first attempt with all default weights and training budgets to establish a baseline for the door pushing task.",
+ "by": "argon"
+}

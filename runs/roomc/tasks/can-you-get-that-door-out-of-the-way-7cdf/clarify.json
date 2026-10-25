@@ -1,0 +1,7 @@
+{
+ "decision": "do",
+ "by": "argon",
+ "type": "push_door",
+ "object": "door_1",
+ "summary": "Push the door open."
+}

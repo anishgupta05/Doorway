@@ -1,0 +1,78 @@
+{
+ "id": "can-you-get-that-door-out-of-the-way-7cdf",
+ "success_rate": 1.0,
+ "pass": true,
+ "mode": "deterministic",
+ "per_episode": [
+  {
+   "success": true,
+   "final_angle": 53.407,
+   "time_s": 2.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.947,
+   "time_s": 2.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 55.399,
+   "time_s": 1.95,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.302,
+   "time_s": 1.9,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.274,
+   "time_s": 1.9,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.726,
+   "time_s": 2.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 55.131,
+   "time_s": 2.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.937,
+   "time_s": 1.95,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 54.317,
+   "time_s": 2.05,
+   "collisions": 0,
+   "moved_other_objects": []
+  },
+  {
+   "success": true,
+   "final_angle": 52.976,
+   "time_s": 1.95,
+   "collisions": 0,
+   "moved_other_objects": []
+  }
+ ]
+}

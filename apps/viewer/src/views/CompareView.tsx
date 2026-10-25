@@ -9,6 +9,7 @@ import { runUrl } from "../data/runs";
 import { useApp } from "../store";
 import { footage } from "../video";
 import { pathDuration } from "../scene/cameraPath";
+import { CameraMinimap } from "./CameraMinimap";
 
 export function CompareView({
   scene,
@@ -130,6 +131,8 @@ export function CompareView({
         </AnimatePresence>
         {issues.length === 0 && <div className="rounded-lg border border-accent/40 bg-ink/80 px-3 py-2 text-[12px] text-accent">Everything matches your video.</div>}
       </div>
+
+      <CameraMinimap scene={scene} />
 
       {/* timeline */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex items-center gap-4 bg-gradient-to-t from-ink/90 to-transparent px-6 pt-10 pb-5">

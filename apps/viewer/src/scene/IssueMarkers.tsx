@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import * as THREE from "three";
 import type { Issue, Scene, SceneObject } from "@doorway/schema";
 import { ACCENT } from "./materials";
+import { cap } from "../ui/plain";
 
 const RED = "#ef6b6b";
 
@@ -82,13 +83,13 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
           {state === "open" ? (
             <>
               <span className="h-1.5 w-1.5 rounded-full bg-bad" />
-              <span className="font-medium">{o.label ?? o.type}</span>
-              <span className="text-muted">· {short}</span>
+              <span className="font-medium">{cap(o.label ?? o.type)}</span>
+              <span className="text-muted">· {cap(short)}</span>
             </>
           ) : (
             <>
               <span className="text-accent">✓</span>
-              <span className="font-medium">{o.label ?? o.type} fixed</span>
+              <span className="font-medium">{cap(o.label ?? o.type)} fixed</span>
             </>
           )}
         </motion.div>

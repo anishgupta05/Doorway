@@ -9,7 +9,9 @@
     "generate": "tsx --env-file=../../.env src/cli-generate.ts",
     "step": "tsx --env-file=../../.env src/cli-step.ts",
     "loop": "tsx --env-file-if-exists=../../.env src/cli-loop.ts",
-    "detail": "tsx --env-file-if-exists=../../.env src/cli-detail.ts"
+    "detail": "tsx --env-file-if-exists=../../.env src/cli-detail.ts",
+    "texture": "tsx --env-file-if-exists=../../.env src/cli-texture.ts",
+    "affordance": "tsx --env-file-if-exists=../../.env src/cli-affordance.ts"
   },
   "dependencies": {
     "@doorway/schema": "*",

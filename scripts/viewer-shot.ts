@@ -10,6 +10,7 @@ page.on("pageerror", (e) => console.error("[pageerror]", e.message));
 const overview = times === "overview";
 await page.goto(`${base}/?render=1&scene=${encodeURIComponent(scene)}${overview ? "&view=overview" : ""}`);
 await page.waitForFunction("window.doorway && window.doorway.ready", null, { timeout: 90000 });
+if (process.env.OPEN) { await page.evaluate(`(${JSON.stringify(process.env.OPEN.split(","))}).forEach((id) => window.doorway.open(id, 1))`); await page.waitForTimeout(1500); }
 for (const t of overview ? ["overview"] : times.split(",")) {
   if (!overview) { await page.evaluate(`window.doorway.setTime(${Number(t)})`); await page.waitForTimeout(700); }
   await page.screenshot({ path: `${out}_${t}.png` });

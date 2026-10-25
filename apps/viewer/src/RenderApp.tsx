@@ -1,4 +1,4 @@
-// Chrome-less render mode for headless capture (Person 3's renderer, thumbnails,
+// Chrome-less render mode for headless capture (the loop's renderer, thumbnails,
 // and the mock run's stand-in footage). Same renderer judges see, nothing else.
 //
 //   /?render=1&scene=/runs/mock/iter_0/branch_0/scene.json   camera on the video path

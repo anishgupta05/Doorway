@@ -1,0 +1,47 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 hits box_2 when pulled out. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "bed_1",
+    "message": "Placed at z = 0 overlapping with box_1, box_2, and cabinet_1; should be moved about 3.0 m north into the north-east corner near the window (around z = -3.0).",
+    "severity": "high"
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Placed at z = 0 overlapping with box_1, box_2, and bed_1; should be moved about 1.8 m north along the east wall so it sits just south of bed_1 (around z = -1.8).",
+    "severity": "high"
+  },
+  {
+    "objectId": "box_2",
+    "message": "Placed at z = 0 overlapping with box_1, cabinet_1, and bed_1; should be moved about 0.8 m north along the east wall between cabinet_1 and box_1 (around z = -0.8).",
+    "severity": "high"
+  },
+  {
+    "objectId": "box_1",
+    "message": "Placed at z = 0 overlapping with box_2 and cabinet_1; should be moved about 0.4 m south along the east wall so it sits south of box_2 (around z = 0.4).",
+    "severity": "high"
+  },
+  {
+    "objectId": "stanchion_1",
+    "message": "Placed at z = 0 right next to the middle of table_1; should be moved about 1.6 m south to the south end of table_1 (around z = 1.6).",
+    "severity": "high"
+  },
+  {
+    "objectId": "chair_2",
+    "message": "Placed at z = 0 right behind chair_1; should be moved about 1.3 m north to sit in front of monitor_2 near the north end of table_1 (around z = -1.3).",
+    "severity": "high"
+  },
+  {
+    "objectId": "chair_1",
+    "message": "Placed at z = 0 in the middle of table_1; should be moved about 0.6 m south to sit near the south end of table_1 (around z = 0.6).",
+    "severity": "medium"
+  },
+  {
+    "objectId": "table_2",
+    "message": "Positioned at x = -1.47 leaving a 0.34 m gap from table_1; should be moved about 0.34 m east to x = -1.13 so the two desks touch back-to-back.",
+    "severity": "medium"
+  }
+]

@@ -1,7 +1,7 @@
 // Guard hooks the loop runs on every branch before it spends a model call on it.
 import { deletedIds, type Scene } from "@doorway/schema";
 
-/** Guard hooks that need no renderer. Person 3's render-based checks can be added to this list. */
+/** Guard hooks that need no renderer. Render-based checks can be added to this list. */
 export function guards(parent: Scene, child: Scene): string | null {
   const gone = deletedIds(parent, child);
   if (gone.length) return `Hook: deleted ${gone.join(", ")}`;

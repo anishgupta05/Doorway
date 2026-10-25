@@ -1,0 +1,1329 @@
+{
+  "version": 1,
+  "name": "Open-Plan Brick Office Workspace",
+  "room": {
+    "width": 9.100000000000001,
+    "depth": 7.700000000000002,
+    "height": 3.5,
+    "wallColor": "#d7d7d3",
+    "floorColor": "#b2aba1",
+    "floorMaterial": "carpet",
+    "wallLook": "brick",
+    "unseenWalls": [
+      "south",
+      "west"
+    ],
+    "openings": [
+      {
+        "wall": "north",
+        "kind": "window",
+        "offset": 1.8200000000000005,
+        "width": 2.2,
+        "height": 2.1,
+        "sill": 0.8,
+        "view": "outdoors"
+      },
+      {
+        "wall": "north",
+        "kind": "window",
+        "offset": -2.2400000000000007,
+        "width": 2.2,
+        "height": 2.1,
+        "sill": 0.8,
+        "view": "outdoors"
+      }
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "objects": [
+    {
+      "id": "stanchion_1",
+      "type": "other",
+      "label": "metal stanchion post",
+      "position": [
+        0.24999935719143446,
+        0,
+        1.6
+      ],
+      "rotationY": 0,
+      "size": [
+        0.35,
+        0.95,
+        0.35
+      ],
+      "color": "#c0c0c0",
+      "material": "metal",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.02,
+            0
+          ],
+          "size": [
+            0.35,
+            0.04,
+            0.35
+          ],
+          "color": "#d6d6d6",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.48,
+            0
+          ],
+          "size": [
+            0.06,
+            0.9,
+            0.06
+          ],
+          "color": "#b8b8b8",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.91,
+            0
+          ],
+          "size": [
+            0.09,
+            0.08,
+            0.09
+          ],
+          "color": "#d6d6d6",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.05,
+            0.88,
+            0
+          ],
+          "size": [
+            0.15,
+            0.05,
+            0.02
+          ],
+          "color": "#1a1a1a",
+          "material": "fabric"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 8,
+        "friction": 0.6,
+        "collider": "cylinder",
+        "damping": 0.5
+      }
+    },
+    {
+      "id": "box_1",
+      "type": "box",
+      "label": "tall cardboard box WR26",
+      "position": [
+        3.9050000000010465,
+        0,
+        0.45
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.65,
+        1.3,
+        0.3
+      ],
+      "color": "#c9a679",
+      "material": "wood",
+      "look": "paper",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 12,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "box_2",
+      "type": "box",
+      "label": "large black plastic storage trunk",
+      "position": [
+        3.7800000000000007,
+        0,
+        -0.8
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.85,
+        1,
+        0.55
+      ],
+      "color": "#26282a",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.5,
+            0
+          ],
+          "size": [
+            0.85,
+            1,
+            0.55
+          ],
+          "color": "#26282a",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.55,
+            0.01
+          ],
+          "size": [
+            0.87,
+            0.06,
+            0.57
+          ],
+          "color": "#151618",
+          "material": "fabric"
+        }
+      ],
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 18,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "white drawer unit with books and bubble wrap on top",
+      "position": [
+        4.22999999999791,
+        0,
+        -1.8
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.55,
+        0.7,
+        0.45
+      ],
+      "color": "#d7d7d7",
+      "material": "paint",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.35,
+            -0.02
+          ],
+          "size": [
+            0.55,
+            0.7,
+            0.41
+          ],
+          "color": "#d7d7d7",
+          "material": "paint"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.12,
+            0.2
+          ],
+          "size": [
+            0.51,
+            0.2,
+            0.04
+          ],
+          "color": "#d7d7d7",
+          "material": "paint"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.35,
+            0.2
+          ],
+          "size": [
+            0.51,
+            0.2,
+            0.04
+          ],
+          "color": "#d7d7d7",
+          "material": "paint"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.58,
+            0.2
+          ],
+          "size": [
+            0.51,
+            0.2,
+            0.04
+          ],
+          "color": "#d7d7d7",
+          "material": "paint"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.12,
+            0.76,
+            0
+          ],
+          "size": [
+            0.24,
+            0.12,
+            0.32
+          ],
+          "color": "#d7a91e",
+          "material": "wood",
+          "textureHint": "yellow book cover"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0.12,
+            0.73,
+            0
+          ],
+          "size": [
+            0.28,
+            0.06,
+            0.4
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "slide",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range": [
+          0,
+          0.31
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 22,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "bed_1",
+      "type": "bed",
+      "label": "blue fabric dog bed cushion",
+      "position": [
+        3.5000000000000004,
+        0,
+        -3
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        1.05,
+        0.15,
+        0.8
+      ],
+      "color": "#3d6472",
+      "material": "fabric",
+      "look": "plush",
+      "decor": true
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "office swivel chair with black jacket",
+      "position": [
+        0.7000000000000001,
+        0,
+        0
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.65,
+        0.95,
+        0.65
+      ],
+      "color": "#222428",
+      "material": "fabric",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.22,
+            0
+          ],
+          "size": [
+            0.06,
+            0.38,
+            0.06
+          ],
+          "color": "#d7d7d7",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.6,
+            0.06,
+            0.6
+          ],
+          "color": "#d7d7d7",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.45,
+            0
+          ],
+          "size": [
+            0.5,
+            0.07,
+            0.5
+          ],
+          "color": "#4a4846",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.72,
+            -0.22
+          ],
+          "size": [
+            0.48,
+            0.5,
+            0.08
+          ],
+          "color": "#1c1e21",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.65,
+            -0.25
+          ],
+          "size": [
+            0.54,
+            0.6,
+            0.12
+          ],
+          "color": "#181a1d",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.26,
+            0.58,
+            0
+          ],
+          "size": [
+            0.04,
+            0.22,
+            0.38
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0.26,
+            0.58,
+            0
+          ],
+          "size": [
+            0.04,
+            0.22,
+            0.38
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 7,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 0.6
+      }
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "grey mesh office swivel chair",
+      "position": [
+        1.2600000000000002,
+        0,
+        -1.3
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.65,
+        0.95,
+        0.65
+      ],
+      "color": "#7b848c",
+      "material": "fabric",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.22,
+            0
+          ],
+          "size": [
+            0.06,
+            0.38,
+            0.06
+          ],
+          "color": "#d7d7d7",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.6,
+            0.06,
+            0.6
+          ],
+          "color": "#d7d7d7",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.45,
+            0
+          ],
+          "size": [
+            0.48,
+            0.06,
+            0.48
+          ],
+          "color": "#586068",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.72,
+            -0.21
+          ],
+          "size": [
+            0.46,
+            0.48,
+            0.05
+          ],
+          "color": "#7b848c",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.25,
+            0.58,
+            0
+          ],
+          "size": [
+            0.04,
+            0.2,
+            0.35
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0.25,
+            0.58,
+            0
+          ],
+          "size": [
+            0.04,
+            0.2,
+            0.35
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 6.5,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 0.6
+      }
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "long wooden double office desk",
+      "position": [
+        -0.28,
+        0,
+        0
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        3.4,
+        0.75,
+        0.85
+      ],
+      "color": "#d49b57",
+      "material": "wood",
+      "look": "wood",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 45,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "computer monitor on wooden riser",
+      "position": [
+        -0.18000000000000002,
+        0.75,
+        0
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.62,
+        0.52,
+        0.22
+      ],
+      "color": "#33363b",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.55,
+            0.08,
+            0.22
+          ],
+          "color": "#d49b57",
+          "material": "wood"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.09,
+            0
+          ],
+          "size": [
+            0.2,
+            0.015,
+            0.18
+          ],
+          "color": "#cfd2d6",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.2,
+            -0.04
+          ],
+          "size": [
+            0.05,
+            0.22,
+            0.05
+          ],
+          "color": "#cfd2d6",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.34,
+            0.02
+          ],
+          "size": [
+            0.62,
+            0.36,
+            0.03
+          ],
+          "color": "#222426",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      },
+      "physics": {
+        "body": "static",
+        "mass": 5,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "monitor_2",
+      "type": "monitor",
+      "label": "north computer monitor on table_1",
+      "position": [
+        -0.08000000000000002,
+        0.75,
+        -1
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.65,
+        0.52,
+        0.22
+      ],
+      "color": "#33363b",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.55,
+            0.08,
+            0.22
+          ],
+          "color": "#d49b57",
+          "material": "wood"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.09,
+            0
+          ],
+          "size": [
+            0.2,
+            0.015,
+            0.18
+          ],
+          "color": "#cfd2d6",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.2,
+            -0.04
+          ],
+          "size": [
+            0.05,
+            0.22,
+            0.05
+          ],
+          "color": "#cfd2d6",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.34,
+            0.02
+          ],
+          "size": [
+            0.65,
+            0.36,
+            0.03
+          ],
+          "color": "#222426",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": true
+      },
+      "physics": {
+        "body": "static",
+        "mass": 5,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "monitor_3",
+      "type": "monitor",
+      "label": "tablet on white stand",
+      "position": [
+        -0.23,
+        0.75,
+        0.75
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.3,
+        0.35,
+        0.25
+      ],
+      "color": "#1e1e1e",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.02,
+            0
+          ],
+          "size": [
+            0.2,
+            0.04,
+            0.2
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.12,
+            -0.02
+          ],
+          "size": [
+            0.05,
+            0.18,
+            0.05
+          ],
+          "color": "#d7d7d7",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.22,
+            0.03
+          ],
+          "size": [
+            0.28,
+            0.2,
+            0.02
+          ],
+          "color": "#141414",
+          "material": "glass"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      },
+      "physics": {
+        "body": "static",
+        "mass": 1.5,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "table_2",
+      "type": "table",
+      "label": "adjacent long wooden desk on the west side of the island",
+      "position": [
+        -1.4700000000000002,
+        0,
+        0
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        3.4,
+        0.75,
+        0.85
+      ],
+      "color": "#d49b57",
+      "material": "wood",
+      "look": "wood",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 45,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "monitor_4",
+      "type": "monitor",
+      "label": "LG monitor facing west",
+      "position": [
+        -1.12,
+        0.75,
+        -0.04999999999999999
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.62,
+        0.5,
+        0.22
+      ],
+      "color": "#262626",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.01,
+            0
+          ],
+          "size": [
+            0.22,
+            0.02,
+            0.18
+          ],
+          "color": "#262626",
+          "material": "plastic"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.14,
+            -0.04
+          ],
+          "size": [
+            0.05,
+            0.25,
+            0.05
+          ],
+          "color": "#262626",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.31,
+            0.02
+          ],
+          "size": [
+            0.62,
+            0.36,
+            0.03
+          ],
+          "color": "#1f1f1f",
+          "material": "plastic"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      },
+      "physics": {
+        "body": "static",
+        "mass": 4.5,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "chair_3",
+      "type": "chair",
+      "label": "office chair with grey blanket draped over it",
+      "position": [
+        -2.3800000000000003,
+        0,
+        0
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.65,
+        1,
+        0.65
+      ],
+      "color": "#8e8c88",
+      "material": "fabric",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.22,
+            0
+          ],
+          "size": [
+            0.06,
+            0.38,
+            0.06
+          ],
+          "color": "#303030",
+          "material": "metal"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.6,
+            0.06,
+            0.6
+          ],
+          "color": "#303030",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.45,
+            0
+          ],
+          "size": [
+            0.5,
+            0.07,
+            0.5
+          ],
+          "color": "#333333",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.74,
+            -0.22
+          ],
+          "size": [
+            0.48,
+            0.52,
+            0.08
+          ],
+          "color": "#333333",
+          "material": "fabric"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.78,
+            -0.24
+          ],
+          "size": [
+            0.52,
+            0.45,
+            0.12
+          ],
+          "color": "#b8b4ae",
+          "material": "fabric"
+        }
+      ],
+      "decor": false,
+      "articulation": {
+        "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 7,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 0.6
+      }
+    },
+    {
+      "id": "table_3",
+      "type": "table",
+      "label": "desk island in the western half of the room",
+      "position": [
+        -3.5000000000000004,
+        0,
+        0
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        2.6,
+        0.75,
+        1.5
+      ],
+      "color": "#d7d3cc",
+      "material": "wood",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 55,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "open",
+      "target": "cabinet_1"
+    },
+    {
+      "verb": "push",
+      "target": "chair_1"
+    },
+    {
+      "verb": "push",
+      "target": "chair_2"
+    },
+    {
+      "verb": "push",
+      "target": "chair_3"
+    },
+    {
+      "verb": "push",
+      "target": "stanchion_1"
+    },
+    {
+      "verb": "toggle",
+      "target": "monitor_1",
+      "effect": "switch"
+    },
+    {
+      "verb": "toggle",
+      "target": "monitor_2",
+      "effect": "switch"
+    },
+    {
+      "verb": "toggle",
+      "target": "monitor_3",
+      "effect": "switch"
+    },
+    {
+      "verb": "toggle",
+      "target": "monitor_4",
+      "effect": "switch"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        1.5400000000000005,
+        1.45,
+        2.940000000000001
+      ],
+      "lookAt": [
+        0.5600000000000002,
+        0.3,
+        2.1000000000000005
+      ]
+    },
+    {
+      "t": 3,
+      "position": [
+        1.5400000000000005,
+        1.55,
+        2.1000000000000005
+      ],
+      "lookAt": [
+        0.4200000000000001,
+        1.1,
+        -1.6800000000000004
+      ]
+    },
+    {
+      "t": 6,
+      "position": [
+        1.2600000000000005,
+        1.55,
+        1.9600000000000004
+      ],
+      "lookAt": [
+        -1.6800000000000004,
+        1.1,
+        -0.4200000000000001
+      ]
+    },
+    {
+      "t": 10,
+      "position": [
+        1.2600000000000005,
+        1.55,
+        0.8400000000000002
+      ],
+      "lookAt": [
+        0.14000000000000004,
+        0.9,
+        -1.1200000000000003
+      ]
+    },
+    {
+      "t": 12,
+      "position": [
+        1.8200000000000005,
+        1.55,
+        -0.7000000000000002
+      ],
+      "lookAt": [
+        3.780000000000001,
+        1.1,
+        -1.6800000000000004
+      ]
+    },
+    {
+      "t": 15,
+      "position": [
+        2.1000000000000005,
+        1.55,
+        -1.2600000000000005
+      ],
+      "lookAt": [
+        4.200000000000001,
+        2.1,
+        -1.4000000000000004
+      ]
+    },
+    {
+      "t": 19,
+      "position": [
+        2.1000000000000005,
+        1.55,
+        -1.2600000000000005
+      ],
+      "lookAt": [
+        1.6800000000000004,
+        2.1,
+        -3.780000000000001
+      ]
+    },
+    {
+      "t": 22,
+      "position": [
+        2.2400000000000007,
+        1.5,
+        -0.8400000000000002
+      ],
+      "lookAt": [
+        3.640000000000001,
+        0.4,
+        -1.6800000000000004
+      ]
+    },
+    {
+      "t": 25,
+      "position": [
+        2.1000000000000005,
+        1.45,
+        0.8400000000000002
+      ],
+      "lookAt": [
+        3.3600000000000008,
+        0.4,
+        1.2600000000000005
+      ]
+    },
+    {
+      "t": 28,
+      "position": [
+        1.1200000000000003,
+        1.5,
+        1.4000000000000004
+      ],
+      "lookAt": [
+        -0.5600000000000002,
+        0.9,
+        0.2800000000000001
+      ]
+    },
+    {
+      "t": 32,
+      "position": [
+        0.7000000000000002,
+        1.4,
+        0.8400000000000002
+      ],
+      "lookAt": [
+        -0.21000000000000005,
+        0.8,
+        0.6300000000000002
+      ]
+    }
+  ]
+}

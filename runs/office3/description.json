@@ -1,0 +1,447 @@
+{
+  "summary": "This is a bright, open-plan office workspace with exposed brick, large arched windows, and a whiteboard wall. It feels busy and functional, filled with desks, monitors, storage boxes, and office supplies.",
+  "room": {
+    "width_m": 6.5,
+    "depth_m": 5.5,
+    "height_m": 3.5,
+    "wall_color": "#f4f4f0",
+    "floor_material": "carpet",
+    "floor_color": "#b2aba1",
+    "ceiling_color": "#ffffff",
+    "openings": [
+      {
+        "kind": "window",
+        "wall": "north",
+        "width_m": 2.4,
+        "height_m": 2.2,
+        "position_along_wall": "right",
+        "sill_m": 0.8
+      },
+      {
+        "kind": "window",
+        "wall": "north",
+        "width_m": 2.4,
+        "height_m": 2.2,
+        "position_along_wall": "left",
+        "sill_m": 0.8
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "stanchion_1",
+      "type": "other",
+      "label": "metal stanchion post",
+      "material": "metal",
+      "color": "#c0c0c0",
+      "size_m": [
+        0.35,
+        0.95,
+        0.35
+      ],
+      "x_m": 0.4,
+      "z_m": 1.6,
+      "base_y_m": 0,
+      "location": "in the south-east foreground near the entrance area",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        25,
+        26
+      ]
+    },
+    {
+      "id": "box_1",
+      "type": "box",
+      "label": "tall cardboard box WR26",
+      "material": "wood",
+      "color": "#c9a679",
+      "size_m": [
+        0.3,
+        1.3,
+        0.65
+      ],
+      "x_m": 2.8,
+      "z_m": 1.2,
+      "base_y_m": 0,
+      "location": "leaning against the east wall near the south-east corner",
+      "facing": "west",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        24,
+        25
+      ]
+    },
+    {
+      "id": "box_2",
+      "type": "box",
+      "label": "large black plastic storage trunk",
+      "material": "plastic",
+      "color": "#26282a",
+      "size_m": [
+        0.55,
+        1,
+        0.85
+      ],
+      "x_m": 2.7,
+      "z_m": 0.3,
+      "base_y_m": 0,
+      "location": "against the east wall, north of box_1",
+      "facing": "west",
+      "can_do": "pushable",
+      "seen_at_s": [
+        1,
+        2,
+        3,
+        24,
+        25
+      ]
+    },
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "white drawer unit with books and bubble wrap on top",
+      "material": "paint",
+      "color": "#f0f0f0",
+      "size_m": [
+        0.45,
+        0.7,
+        0.55
+      ],
+      "x_m": 2.75,
+      "z_m": -0.9,
+      "base_y_m": 0,
+      "location": "against the east wall, north of box_2",
+      "facing": "west",
+      "can_do": "opens_slide",
+      "seen_at_s": [
+        11,
+        12,
+        21,
+        22,
+        23
+      ]
+    },
+    {
+      "id": "bed_1",
+      "type": "bed",
+      "label": "blue fabric dog bed cushion",
+      "material": "fabric",
+      "color": "#3d6472",
+      "size_m": [
+        0.8,
+        0.15,
+        1.05
+      ],
+      "x_m": 2.5,
+      "z_m": -2.1,
+      "base_y_m": 0,
+      "location": "on the floor in the north-east corner",
+      "facing": "west",
+      "can_do": "none",
+      "seen_at_s": [
+        2,
+        3,
+        11,
+        12,
+        20,
+        21,
+        22
+      ]
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "office swivel chair with black jacket",
+      "material": "fabric",
+      "color": "#222428",
+      "size_m": [
+        0.65,
+        0.95,
+        0.65
+      ],
+      "x_m": 0.5,
+      "z_m": 0.6,
+      "base_y_m": 0,
+      "location": "east of table_1, near the south end",
+      "facing": "west",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        26,
+        27
+      ]
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "grey mesh office swivel chair",
+      "material": "fabric",
+      "color": "#7b848c",
+      "size_m": [
+        0.65,
+        0.95,
+        0.65
+      ],
+      "x_m": 0.9,
+      "z_m": -1.3,
+      "base_y_m": 0,
+      "location": "east of table_1, near the north end by the window",
+      "facing": "west",
+      "can_do": "pushable",
+      "seen_at_s": [
+        1,
+        2,
+        3,
+        4,
+        10,
+        11,
+        20,
+        21
+      ]
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "long wooden double office desk",
+      "material": "wood",
+      "color": "#d49b57",
+      "size_m": [
+        0.85,
+        0.75,
+        3.4
+      ],
+      "x_m": -0.2,
+      "z_m": -0.3,
+      "base_y_m": 0,
+      "location": "running north-south in the middle of the room",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        27,
+        28,
+        29,
+        30,
+        31
+      ]
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "computer monitor on wooden riser",
+      "material": "plastic",
+      "color": "#33363b",
+      "size_m": [
+        0.22,
+        0.52,
+        0.62
+      ],
+      "x_m": -0.1,
+      "z_m": -0.3,
+      "base_y_m": 0.75,
+      "location": "on the middle of table_1 facing east",
+      "facing": "east",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        29,
+        30,
+        31
+      ]
+    },
+    {
+      "id": "monitor_2",
+      "type": "monitor",
+      "label": "north computer monitor on table_1",
+      "material": "plastic",
+      "color": "#33363b",
+      "size_m": [
+        0.22,
+        0.52,
+        0.65
+      ],
+      "x_m": 0,
+      "z_m": -1.3,
+      "base_y_m": 0.75,
+      "location": "on the north end of table_1 facing east",
+      "facing": "east",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        2,
+        3,
+        4,
+        5,
+        10,
+        11
+      ]
+    },
+    {
+      "id": "monitor_3",
+      "type": "monitor",
+      "label": "tablet on white stand",
+      "material": "plastic",
+      "color": "#1e1e1e",
+      "size_m": [
+        0.25,
+        0.35,
+        0.3
+      ],
+      "x_m": -0.15,
+      "z_m": 0.45,
+      "base_y_m": 0.75,
+      "location": "on table_1 south of monitor_1",
+      "facing": "east",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        27,
+        28,
+        32
+      ]
+    },
+    {
+      "id": "table_2",
+      "type": "table",
+      "label": "adjacent long wooden desk on the west side of the island",
+      "material": "wood",
+      "color": "#d49b57",
+      "size_m": [
+        0.85,
+        0.75,
+        3.4
+      ],
+      "x_m": -1.05,
+      "z_m": -0.3,
+      "base_y_m": 0,
+      "location": "immediately west of table_1, forming a central desk island",
+      "facing": "west",
+      "can_do": "none",
+      "seen_at_s": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        28,
+        29
+      ]
+    },
+    {
+      "id": "monitor_4",
+      "type": "monitor",
+      "label": "LG monitor facing west",
+      "material": "plastic",
+      "color": "#262626",
+      "size_m": [
+        0.22,
+        0.5,
+        0.62
+      ],
+      "x_m": -0.7,
+      "z_m": -0.35,
+      "base_y_m": 0.75,
+      "location": "on table_2 behind monitor_1, facing west",
+      "facing": "west",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        29
+      ]
+    },
+    {
+      "id": "chair_3",
+      "type": "chair",
+      "label": "office chair with grey blanket draped over it",
+      "material": "fabric",
+      "color": "#8e8c88",
+      "size_m": [
+        0.65,
+        1,
+        0.65
+      ],
+      "x_m": -1.7,
+      "z_m": -0.6,
+      "base_y_m": 0,
+      "location": "west of table_2",
+      "facing": "east",
+      "can_do": "pushable",
+      "seen_at_s": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "table_3",
+      "type": "table",
+      "label": "desk island in the western half of the room",
+      "material": "wood",
+      "color": "#e6e2da",
+      "size_m": [
+        1.5,
+        0.75,
+        2.6
+      ],
+      "x_m": -2.5,
+      "z_m": -0.5,
+      "base_y_m": 0,
+      "location": "in the western part of the room, west of chair_3",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        5,
+        6,
+        7,
+        8
+      ]
+    }
+  ],
+  "uncertain": [
+    "Full extent of the open-plan office to the west and south beyond the camera's view and glass partition",
+    "Exact height of the ceiling",
+    "Details of furniture further west behind table_3"
+  ]
+}

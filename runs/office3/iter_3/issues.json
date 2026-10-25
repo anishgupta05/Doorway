@@ -1,0 +1,27 @@
+[
+  {
+    "objectId": "monitor_3",
+    "message": "The tablet screen part is defined with 'glass' material, causing it to render nearly invisible/transparent in the scene; change its material to 'plastic' with a dark color (#141414) so it is opaque like in the footage.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "bed_1",
+    "message": "The dog bed is about 0.8 m too far west from the east wall; in the footage it is tucked right into the north-east corner against the east wall (around x = 4.0 m).",
+    "severity": "medium"
+  },
+  {
+    "objectId": "box_2",
+    "message": "The black storage trunk is about 0.8 m too close to the north wall / cabinet_1; in the footage there are intermediate boxes between cabinet_1 and box_2, so box_2 should be further south around z = 0.2 m.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "box_1",
+    "message": "The tall cardboard box WR26 should be further south along the east wall (around z = 1.1 m) so that it stays immediately south of box_2 and closer to the entrance corner.",
+    "severity": "low"
+  },
+  {
+    "objectId": "chair_3",
+    "message": "The grey blanket part on the backrest overlaps almost identically with the black backrest box, causing severe z-fighting artifacts; offset or thicken the blanket box slightly so it cleanly covers the backrest.",
+    "severity": "low"
+  }
+]

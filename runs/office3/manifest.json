@@ -1,0 +1,169 @@
+{
+  "id": "office3",
+  "title": "Open-Plan Brick Office Workspace",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.45,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 3,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: stanchion_1: 1 part(s) stick far outside its 0.35x0.95x0.35 box",
+          "hypothesis": "Move all east-wall objects (bed_1, cabinet_1, box_2, box_1) to their proper z positions along the east wall so they no longer overlap and cabinet_1 can slide open without hitting box_2.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: stanchion_1: 1 part(s) stick far outside its 0.35x0.95x0.35 box",
+          "hypothesis": "Fix all reported z-axis and x-axis placement issues across the east wall, chairs, stanchion, and adjacent desk simultaneously.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: stanchion_1: 1 part(s) stick far outside its 0.35x0.95x0.35 box",
+          "hypothesis": "Space out all objects with slightly wider margins along the east wall and adjust cabinet_1 slide range and desk alignment for clean clearance.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.45,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_1/branch_3/scene.json",
+          "thumb": "iter_1/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 1,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: box_1 and box_2 overlap by 0.30 m; stanchion_1: 1 part(s) stick far outside its 0.35x0.95x0.35 box",
+          "hypothesis": "Remove the protruding belt part on stanchion_1 so its geometry fits inside its bounding box, and move all misplaced objects to their reviewed coordinates.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.45,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 0,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shrink the protruding stanchion belt part to fit inside its bounding box and move all misplaced objects to their target positions.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.6799999999999999,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix only the high-severity east wall overlaps, stanchion part overhang, and north chair placement first.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix stanchion belt bounds, adjust cabinet slide range, and space out all desks, chairs, and east-wall items with extra clearance.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 4,
+      "selected": 3,
+      "issues": "iter_4/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix all five reported issues: make the tablet screen opaque plastic, tuck the dog bed into the northeast corner, shift box_2 and box_1 south along the east wall without overlapping, and thicken the blanket on chair_3 to eliminate z-fighting.",
+          "scene": "iter_4/branch_0/scene.json",
+          "thumb": "iter_4/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.6799999999999999,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Focus on fixing the east-wall object positions (bed_1, box_2, box_1) with generous spacing and add the intermediate stacked boxes between cabinet_1 and box_2 seen in the video.",
+          "scene": "iter_4/branch_1/scene.json",
+          "thumb": "iter_4/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.6799999999999999,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix only the rendering/material and geometry overlap defects on monitor_3 and chair_3 while making a conservative adjustment to the medium-severity east-wall positions.",
+          "scene": "iter_4/branch_2/scene.json",
+          "thumb": "iter_4/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_4/branch_3/scene.json",
+          "thumb": "iter_4/branch_3/thumb.png"
+        }
+      ]
+    }
+  ]
+}

@@ -20,3 +20,8 @@ runs/*/progress.json
 /*.mp4
 /*.mov
 .vercel
+
+# raw phone videos at the repo root (the ones the demo uses live in runs/<id>/video.mp4)
+/*.mov
+/*.MOV
+/*.mp4

@@ -62,7 +62,7 @@ export function UploadPanel() {
           className={`mt-5 grid cursor-pointer place-items-center overflow-hidden rounded-xl border border-dashed transition ${over ? "border-accent bg-accent/10" : "border-line bg-panel-2"} ${url ? "" : "h-44"}`}
         >
           {url ? (
-            <video src={url} className="max-h-64 w-full bg-black object-contain" controls muted onClick={(e) => e.stopPropagation()} />
+            <video src={url} className="mx-auto max-h-72 max-w-full bg-black object-contain" controls muted onClick={(e) => e.stopPropagation()} />
           ) : (
             <div className="text-center">
               <div className="text-[15px] font-medium">Drop a video here</div>

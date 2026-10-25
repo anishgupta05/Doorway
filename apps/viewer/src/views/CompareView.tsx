@@ -32,6 +32,20 @@ export function CompareView({
   const [dragging, setDragging] = useState(false);
   const [time, setTime] = useState(0);
   const video = useRef<HTMLVideoElement>(null);
+  const aspect = useApp((s) => s.footageAspect);
+  const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
+  useEffect(() => {
+    const on = () => setVp({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("resize", on);
+      useApp.setState({ footageAspect: null });
+    };
+  }, []);
+  // Vertical footage keeps its own frame (no cropping); the render is clipped to the same frame in App.
+  const frameW = aspect ? Math.min(vp.w, vp.h * aspect) : vp.w;
+  const frameL = (vp.w - frameW) / 2;
+  const wx = frameL + wipe * frameW;
   const duration = pathDuration(scene.camera_path);
   const src = manifest?.video && runId ? runUrl(runId, manifest.video) : null;
 
@@ -72,7 +86,7 @@ export function CompareView({
 
   const onDrag = (e: React.PointerEvent) => {
     if (!dragging) return;
-    setWipe(Math.min(0.97, Math.max(0.03, e.clientX / window.innerWidth)));
+    setWipe(Math.min(0.97, Math.max(0.03, (e.clientX - frameL) / frameW)));
   };
 
   const total = manifest?.iterations.length ?? 1;
@@ -80,9 +94,22 @@ export function CompareView({
 
   return (
     <>
-      <div className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 -z-10 bg-ink">
       {src ? (
-        <video ref={video} src={src} className="absolute inset-0 h-full w-full object-cover" muted playsInline loop preload="auto" />
+        <video
+          ref={video}
+          src={src}
+          className="absolute inset-y-0 h-full object-cover"
+          style={aspect ? { left: frameL, width: frameW } : { left: 0, width: "100%" }}
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            useApp.setState({ footageAspect: v.videoWidth && v.videoHeight && v.videoWidth < v.videoHeight ? v.videoWidth / v.videoHeight : null });
+          }}
+          muted
+          playsInline
+          loop
+          preload="auto"
+        />
       ) : (
         <div className="absolute inset-0 grid place-items-center bg-[repeating-linear-gradient(45deg,#111317_0,#111317_12px,#0d0f12_12px,#0d0f12_24px)]">
           <div className="font-mono text-xs text-dim">no footage in this run</div>
@@ -92,16 +119,16 @@ export function CompareView({
       <div className={`absolute inset-0 z-10 ${dragging ? "" : "pointer-events-none"}`} onPointerMove={onDrag} onPointerUp={() => setDragging(false)} />
 
       {/* divider */}
-      <div className="absolute inset-y-0 z-20 w-10 -translate-x-1/2 cursor-ew-resize" style={{ left: `${wipe * 100}%` }} onPointerDown={() => setDragging(true)}>
+      <div className="absolute inset-y-0 z-20 w-10 -translate-x-1/2 cursor-ew-resize" style={{ left: wx }} onPointerDown={() => setDragging(true)}>
         <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/80 shadow-[0_0_12px_rgba(0,0,0,0.6)]" />
         <div className="absolute top-1/2 left-1/2 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/70 bg-ink/70 text-xs text-fg backdrop-blur">
           ⇆
         </div>
       </div>
-      <Tag side="left" style={{ right: `${(1 - wipe) * 100}%` }}>
+      <Tag side="left" style={{ right: `calc(100% - ${wx}px)` }}>
         Real footage
       </Tag>
-      <Tag side="right" style={{ left: `${wipe * 100}%` }}>
+      <Tag side="right" style={{ left: wx }}>
         Doorway · {k === null ? "" : roundName(k)}
         {score !== undefined && <span className="ml-2 text-accent tabular">{Math.round(score * 100)}%</span>}
       </Tag>

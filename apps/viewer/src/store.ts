@@ -60,6 +60,8 @@ type State = {
   apiOk: boolean;
   /** Bumped by the "reset view" button to re-frame the overview camera. */
   viewNonce: number;
+  /** Width / height of vertical footage in Compare (null for landscape): the render is framed the same way. */
+  footageAspect: number | null;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -128,6 +130,7 @@ export const useApp = create<State>((set) => ({
   legendOpen: false,
   apiOk: false,
   viewNonce: 0,
+  footageAspect: null,
   renderMode: false,
   shake: false,
   wipe: 0.5,

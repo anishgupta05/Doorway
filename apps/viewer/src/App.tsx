@@ -46,6 +46,7 @@ export function App() {
   const missionStart = useMemo(() => (scene ? startPoint(scene) : null), [scene]);
   const mode = useApp((s) => s.mode);
   const wipe = useApp((s) => s.wipe);
+  const footageAspect = useApp((s) => s.footageAspect);
   const playing = useApp((s) => s.comparePlaying);
   const building = useApp((s) => s.buildCount !== null);
   const exportOpen = useApp((s) => s.exportOpen);
@@ -72,7 +73,14 @@ export function App() {
   return (
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
-      <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
+      <div
+        className="absolute inset-0"
+        style={
+          mode === "compare"
+            ? { clipPath: `inset(0 0 0 ${wipe * 100}%)`, ...(footageAspect ? { left: "50%", right: "auto", transform: "translateX(-50%)", aspectRatio: String(footageAspect) } : {}) }
+            : undefined
+        }
+      >
         <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen && robotTab === "compare" ? robot : null}
           mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
         />

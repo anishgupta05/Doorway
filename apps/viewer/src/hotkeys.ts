@@ -9,6 +9,8 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "2", label: "How it improved" },
   { key: "3", label: "Saved room" },
   { key: "4", label: "Explore" },
+  { key: "5", label: "Progress" },
+  ...(ROBOT ? [{ key: "P", label: "Robot job" }] : []),
   { key: "F", label: "Before / after" },
   { key: "B", label: "How it's built" },
   { key: "T", label: "Try everything" },
@@ -17,6 +19,9 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "L", label: "Your rooms" },
   { key: "R", label: "Reset" },
 ];
+
+/** The few keys that run the demo; always on screen. */
+export const ESSENTIAL = new Set(["1", "2", "4", "5", "P", "F", "T"]);
 
 /** Global demo hotkeys. One key per demo beat, so the presenter never hunts with the mouse. */
 export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: () => void }) {
@@ -50,6 +55,10 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
         case "Digit4":
           useApp.setState({ tests: false, exportOpen: false });
           go("walk");
+          break;
+        case "Digit5":
+          useApp.setState({ tests: false, exportOpen: false, robotOpen: false });
+          go("progress");
           break;
         case "Digit0":
         case "Escape":

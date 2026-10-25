@@ -19,6 +19,7 @@ const MODES: { mode: Mode; label: string; key: string }[] = [
   { mode: "compare", label: "Compare", key: "1" },
   { mode: "convergence", label: "How it improved", key: "2" },
   { mode: "walk", label: "Explore", key: "4" },
+  { mode: "progress", label: "Progress", key: "5" },
 ];
 export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene> }) {
   const mode = useApp((s) => s.mode);

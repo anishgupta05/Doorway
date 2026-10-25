@@ -7,6 +7,7 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "2", label: "Convergence" },
   { key: "3", label: "Backup" },
   { key: "4", label: "Walk" },
+  { key: "F", label: "Before / after" },
   { key: "B", label: "Build from code" },
   { key: "T", label: "Interaction tests" },
   { key: "N", label: "Night" },
@@ -72,6 +73,11 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           if (s.mode !== "overview") go("overview");
           useApp.setState({ tests: false });
           s.replayBuild();
+          break;
+        case "KeyF":
+          if (s.mode !== "overview") go("overview");
+          useApp.setState({ split: !s.split, tests: false });
+          sfx.whoosh();
           break;
         case "KeyX":
           useApp.setState({ exportOpen: !s.exportOpen });

@@ -32,6 +32,8 @@ type State = {
   buildCount: number | null;
   muted: boolean;
   exportOpen: boolean;
+  /** Overview: v0 and the final room side by side. */
+  split: boolean;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -81,6 +83,7 @@ export const useApp = create<State>((set) => ({
   buildCount: null,
   muted: false,
   exportOpen: false,
+  split: false,
   renderMode: false,
   shake: false,
   wipe: 0.5,
@@ -89,7 +92,7 @@ export const useApp = create<State>((set) => ({
   idle: false,
   lampIds: [],
 
-  setMode: (mode) => set({ mode, hovered: null }),
+  setMode: (mode) => set({ mode, hovered: null, split: false }),
   setVersion: (version) => set({ version, iter: null, preview: null }),
   setIndex: (index) => set({ index }),
   setManifest: (id, m) => set((s) => ({ manifests: { ...s.manifests, [id]: m } })),

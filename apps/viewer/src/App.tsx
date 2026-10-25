@@ -1,7 +1,8 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Stage } from "./Stage";
-import { useCurrentScene, useRunData } from "./data/runs";
+import { Stage, type SplitPair } from "./Stage";
+import { loadScene, useCurrentScene, useRunData } from "./data/runs";
+import { FixToast } from "./ui/FixToast";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
 import { TopBar } from "./ui/TopBar";
@@ -15,7 +16,8 @@ import { WalkOverlay } from "./views/WalkOverlay";
 export function App() {
   useRunData();
   const current = useCurrentScene();
-  const { scene, prevScene, manifest, runId, k, issues } = current;
+  const { scene, prevScene, manifest, runId, k, issues, fixed, branch, prevScore } = current;
+  const split = useSplitPair(runId, manifest);
   const mode = useApp((s) => s.mode);
   const wipe = useApp((s) => s.wipe);
   const playing = useApp((s) => s.comparePlaying);
@@ -41,9 +43,10 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} />
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} />
       </div>
       <TopBar current={current} />
+      {(mode === "compare" || mode === "overview") && <FixToast k={k} fixed={fixed} score={branch?.score} prevScore={prevScore} />}
       {scene && <Caption scene={scene} manifest={manifest} />}
       <Legend />
       <AnimatePresence>
@@ -59,4 +62,22 @@ export function App() {
       )}
     </div>
   );
+}
+
+/** v0 and the final iteration of the current run, for the before/after view. */
+function useSplitPair(runId: string | null, manifest: ReturnType<typeof useCurrentScene>["manifest"]): SplitPair | null {
+  const [pair, setPair] = useState<SplitPair | null>(null);
+  useEffect(() => {
+    const its = manifest?.iterations;
+    if (!runId || !its || its.length < 2) return setPair(null);
+    const first = its[0].branches[its[0].selected];
+    const last = its[its.length - 1].branches[its[its.length - 1].selected];
+    let live = true;
+    Promise.all([loadScene(runId, first.scene), loadScene(runId, last.scene)]).then(
+      ([before, after]) => live && setPair({ before, after, beforeScore: first.score, afterScore: last.score, iterations: its.length - 1 }),
+      () => live && setPair(null),
+    );
+    return () => void (live = false);
+  }, [runId, manifest]);
+  return pair;
 }

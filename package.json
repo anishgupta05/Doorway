@@ -9,7 +9,8 @@
   "scripts": {
     "typecheck": "tsc -p packages/schema --noEmit",
     "validate": "tsx scripts/validate.ts",
-    "mock": "tsx scripts/make-mock-run.ts"
+    "mock": "tsx scripts/make-mock-run.ts",
+    "test:patch": "tsx scripts/test-patch.ts"
   },
   "devDependencies": {
     "tsx": "^4.23.15",

@@ -7,3 +7,6 @@ dist/
 !.env.example
 # local scratch renders
 /tmp/
+
+# model-call cache (regenerable)
+runs/.cache/

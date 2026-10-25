@@ -75,6 +75,22 @@ export const LightSpec = z.object({
   distance: z.number().default(6),
 });
 
+/**
+ * Rigid-body properties shared by the runtime physics and sim export.
+ * static = fixed in the world, dynamic = pushed by forces and gravity,
+ * kinematic = driven by its articulation (e.g. a door on its hinge).
+ */
+export const Physics = z.object({
+  body: z.enum(["static", "dynamic", "kinematic"]),
+  /** kg */
+  mass: z.number().positive(),
+  friction: z.number().min(0).max(2).default(0.5),
+  collider: z.enum(["box", "cylinder", "sphere", "none"]).default("box"),
+  /** Resistance while an articulation moves; runtime picks a default if omitted. */
+  damping: z.number().min(0).optional(),
+});
+export type Physics = z.infer<typeof Physics>;
+
 export const SceneObject = z.object({
   id: z.string().regex(/^[a-z][a-z0-9_]*$/),
   type: ObjectType,
@@ -87,6 +103,7 @@ export const SceneObject = z.object({
   parts: z.array(Part).optional(),
   articulation: Articulation.optional(),
   light: LightSpec.optional(),
+  physics: Physics.optional(),
 });
 export type SceneObject = z.infer<typeof SceneObject>;
 
@@ -114,6 +131,8 @@ export const Room = z.object({
   floorColor: z.string().default("#cfc8bd"),
   floorMaterial: z.enum(["wood", "concrete", "carpet", "tile"]).default("wood"),
   openings: z.array(Opening).default([]),
+  /** m/s^2, default [0, -9.81, 0]. */
+  gravity: Vec3.optional(),
 });
 export type Room = z.infer<typeof Room>;
 
@@ -189,3 +208,5 @@ export type RunManifest = z.infer<typeof RunManifest>;
 export function parseScene(input: unknown): Scene {
   return Scene.parse(input);
 }
+
+export * from "./patch.js";

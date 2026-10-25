@@ -3,7 +3,7 @@
 import { GoogleGenAI, createPartFromUri, type Part } from "@google/genai";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
 
@@ -36,10 +36,24 @@ function cached(key: string, fn: () => Promise<string>): Promise<string> {
 export function compressVideo(input: string, outDir: string, shortSide = 720, fps = 6): string {
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, "video.mp4");
+  // No ffmpeg on this machine: a modest mp4 can go up as is.
+  if (!hasFfmpeg() && /\.mp4$/i.test(input) && statSync(input).size < 60e6) {
+    copyFileSync(input, out);
+    return out;
+  }
   // ffmpeg applies the phone's rotation flag automatically; scale keeps aspect, short side = shortSide.
   const scale = `scale='if(gt(iw,ih),-2,${shortSide})':'if(gt(iw,ih),${shortSide},-2)'`;
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-vf", `${scale},fps=${fps}`, "-an", "-c:v", "libx264", "-crf", "28", out]);
   return out;
+}
+
+function hasFfmpeg() {
+  try {
+    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export interface UploadedVideo { uri: string; mimeType: string; hash: string }

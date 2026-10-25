@@ -184,6 +184,7 @@ To show a real run, point `backup` at it and run `npm run thumbs -- <runId>` to 
 | `3` | Switch to the pre-converged backup run |
 | `N` | Night (lamps on) |
 | `X` | Export to MuJoCo (MJCF download) |
+| `P` | Robot task: A* on the replica's occupancy grid. `Enter` steps through: plan in v0 → run that plan in the verified room (does it crash?) → replan in the verified room |
 | `4` | Walk: click, WASD, `E` to open the door. A robot rolls in |
 | `R` / `Esc` / `M` | Reset joints / back to overview / mute |
 

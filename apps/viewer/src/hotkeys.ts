@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useApp, type Mode } from "./store";
 import { setMuted, sfx } from "./sfx";
+import { goToStep } from "./robot/useRobotTask";
 
 export const KEYS: { key: string; label: string }[] = [
   { key: "1", label: "Compare" },
@@ -11,6 +12,7 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "B", label: "How it's built" },
   { key: "T", label: "Try everything" },
   { key: "N", label: "Night" },
+  { key: "P", label: "Robot task" },
   { key: "X", label: "Export for robots" },
   { key: "U", label: "New video" },
   { key: "L", label: "Your rooms" },
@@ -94,6 +96,19 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           if (!s.apiOk) break;
           useApp.setState({ uploadOpen: !s.uploadOpen });
           sfx.tick();
+          break;
+        case "KeyP":
+          useApp.setState({ robotOpen: !s.robotOpen, robotDone: {} });
+          if (!s.robotOpen) goToStep(0);
+          sfx.whoosh();
+          break;
+        case "Enter":
+          // Don't let Enter also "click" whichever panel button has focus.
+          if (s.robotOpen) e.preventDefault();
+          if (s.robotOpen && s.robotStep < 3) {
+            goToStep((s.robotStep + 1) as 1 | 2 | 3);
+            sfx.whoosh();
+          }
           break;
         case "KeyX":
           useApp.setState({ exportOpen: !s.exportOpen });

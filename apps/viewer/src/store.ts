@@ -32,6 +32,11 @@ type State = {
   buildCount: number | null;
   muted: boolean;
   exportOpen: boolean;
+  /** Robot task panel: which task, which step (0 = chosen, 1 plan on v0, 2 run v0's plan in the verified room, 3 replan), and finished drives. */
+  robotOpen: boolean;
+  robotTask: string | null;
+  robotStep: 0 | 1 | 2 | 3;
+  robotDone: Record<string, boolean>;
   /** Overview: v0 and the final room side by side. */
   split: boolean;
   uploadOpen: boolean;
@@ -94,6 +99,10 @@ export const useApp = create<State>((set) => ({
   buildCount: null,
   muted: false,
   exportOpen: false,
+  robotOpen: false,
+  robotTask: null,
+  robotStep: 0,
+  robotDone: {},
   split: false,
   uploadOpen: false,
   roomsOpen: false,

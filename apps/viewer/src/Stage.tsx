@@ -17,6 +17,9 @@ import { IssueMarkers } from "./scene/IssueMarkers";
 import { Html } from "@react-three/drei";
 import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
+import { RobotSim } from "./robot/RobotSim";
+import type { useRobotTask } from "./robot/useRobotTask";
+import { sfx } from "./sfx";
 
 export type SplitPair = { before: Scene; after: Scene; beforeScore?: number; afterScore?: number; iterations: number };
 
@@ -27,6 +30,7 @@ export function Stage({
   fixed = [],
   k = null,
   split = null,
+  robot = null,
 }: {
   scene: Scene | null;
   prevScene: Scene | null;
@@ -34,6 +38,7 @@ export function Stage({
   fixed?: Issue[];
   k?: number | null;
   split?: SplitPair | null;
+  robot?: ReturnType<typeof useRobotTask> | null;
 }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
@@ -48,6 +53,7 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
+  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}
@@ -69,14 +75,28 @@ export function Stage({
             {splitOn ? <SplitRooms pair={split!} /> : <SceneView scene={scene} cutaway={outside} />}
             <Effects quality={quality} />
           </Selection>
-          {mode === "overview" && !tests && !renderMode && !splitOn && !building && <CameraTrail keys={scene.camera_path} autoplay />}
+          {mode === "overview" && !tests && !renderMode && !splitOn && !building && !robotOn && <CameraTrail keys={scene.camera_path} autoplay />}
           {/* Always mounted (see IssueMarkers); emptied when the current view shouldn't show it. */}
           {!renderMode && (() => {
-            const show = (mode === "compare" || (mode === "overview" && !tests && !building)) && !splitOn;
+            const show = (mode === "compare" || (mode === "overview" && !tests && !building && !robotOn)) && !splitOn;
             return <IssueMarkers scene={scene} issues={show ? issues : []} fixed={show ? fixed : []} k={k} />;
           })()}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
           {tests && <TestViz scene={scene} />}
+          {robotOn && (
+            <RobotSim
+              grid={robot!.sim!.grid}
+              start={robot!.task!.start}
+              goal={robot!.task!.goal}
+              run={robot!.sim!.run}
+              collision={robot!.sim!.collision}
+              onDone={(key) => {
+                useApp.setState((s) => ({ robotDone: { ...s.robotDone, [key]: true } }));
+                if (robot!.step === 2 && robot!.plans?.hit) sfx.reject();
+                else sfx.pass();
+              }}
+            />
+          )}
           {mode === "walk" && <Robot scene={scene} />}
           {outside && <OverviewRig room={scene.room} wide={splitOn} />}
           {mode === "compare" && <CompareRig scene={scene} />}

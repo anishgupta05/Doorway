@@ -21,9 +21,6 @@ import { MissionSim } from "./robot/MissionSim";
 import type { Mission } from "./robot/mission";
 import type { Vec2 } from "./robot/planner";
 import { ROBOT } from "./features";
-import { MissionSim } from "./robot/MissionSim";
-import type { Mission } from "./robot/mission";
-import type { Vec2 } from "./robot/planner";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { sfx } from "./sfx";
 

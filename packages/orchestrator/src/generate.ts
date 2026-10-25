@@ -56,12 +56,30 @@ export function checkLayout(description: Description, scene: Scene, tolerance = 
 }
 
 /** Argon sometimes writes hex colours without the leading '#'; fix it here instead of spending a loop iteration on it. */
+/** Colour names models sometimes write instead of hex. */
+const NAMED: Record<string, string> = {
+  white: "#f2f1ee", "off white": "#ece8e1", offwhite: "#ece8e1", cream: "#efe6d2", beige: "#d9c8a9", tan: "#c8a982",
+  black: "#1d1f22", grey: "#8c8f93", gray: "#8c8f93", "light grey": "#c4c6c8", "light gray": "#c4c6c8",
+  "dark grey": "#4a4d52", "dark gray": "#4a4d52", silver: "#b9bcbf", charcoal: "#36393d",
+  brown: "#7a5a3c", "dark brown": "#4a3526", wood: "#b08a5f", oak: "#c49a6c", walnut: "#5b4636",
+  red: "#b5463c", brick: "#9c4a35", orange: "#d9803b", yellow: "#e3c24f", green: "#5c8a52", blue: "#4d6f8f", navy: "#2f3a5a", purple: "#6b5b8c", pink: "#e0a3a8",
+};
+
+/** Turns any colour-ish value into #rrggbb: bare hex gets a "#", known names map to hex. */
+export function toHexColor(v: string): string {
+  const s = v.trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(s)) return s;
+  if (/^#?[0-9a-f]{6}$/.test(s)) return `#${s.replace("#", "")}`;
+  if (/^#?[0-9a-f]{3}$/.test(s)) return `#${[...s.replace("#", "")].map((c) => c + c).join("")}`;
+  return NAMED[s] ?? NAMED[s.replace(/[-_]/g, " ")] ?? "#c8c6c2";
+}
+
 export function normalizeColors(node: unknown): void {
   if (Array.isArray(node)) return node.forEach(normalizeColors);
   if (!node || typeof node !== "object") return;
   const o = node as Record<string, unknown>;
   for (const [k, v] of Object.entries(o)) {
-    if (/color$/i.test(k) && typeof v === "string" && /^[0-9a-f]{3,8}$/i.test(v)) o[k] = `#${v}`;
+    if (/color$/i.test(k) && typeof v === "string") o[k] = toHexColor(v);
     else normalizeColors(v);
   }
 }

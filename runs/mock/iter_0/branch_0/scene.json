@@ -61,6 +61,13 @@
           0,
           -1.6
         ]
+      },
+      "physics": {
+        "body": "kinematic",
+        "mass": 15,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 2
       }
     },
     {
@@ -79,7 +86,13 @@
         0.7
       ],
       "color": "#c49a6c",
-      "material": "wood"
+      "material": "wood",
+      "physics": {
+        "body": "static",
+        "mass": 30,
+        "friction": 0.6,
+        "collider": "box"
+      }
     },
     {
       "id": "monitor_1",
@@ -118,6 +131,12 @@
       "material": "fabric",
       "articulation": {
         "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 6,
+        "friction": 0.7,
+        "collider": "box"
       }
     },
     {
@@ -139,6 +158,12 @@
       "material": "fabric",
       "articulation": {
         "kind": "free"
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 5,
+        "friction": 0.7,
+        "collider": "box"
       }
     },
     {

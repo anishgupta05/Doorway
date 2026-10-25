@@ -17,4 +17,4 @@ The loop calls these per branch. Please keep the signatures, or tell Person 2 wh
 Does the managed-agent sandbox have headless Chrome? If not, rendering stays local (the default plan).
 
 ## Orchestrator (Person 2)
-`packages/orchestrator`: `npm run describe -w @doorway/orchestrator -- --video <file>` turns a video into `runs/<id>/description.json` (a Flash-written structured description). Generate, compare and the branch loop come next and consume that description plus your `render` / `guards` / `testInteractions`. All Gemini calls are cached in `runs/.cache` (git-ignored).
+`packages/orchestrator`: `npm run describe -w @doorway/orchestrator -- --video <file>` turns a video into `runs/<id>/description.json` (an Argon-written structured description). Generate, compare and the branch loop come next and consume that description plus your `render` / `guards` / `testInteractions`. All Gemini calls are cached in `runs/.cache` (git-ignored).

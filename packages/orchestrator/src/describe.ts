@@ -55,5 +55,5 @@ Rules:
 - Do not invent objects that are not visible.`;
 
 export function describeFootage(video: UploadedVideo): Promise<Description> {
-  return callJson({ model: models.flash(), prompt: PROMPT, schema: Description, video });
+  return callJson({ model: models.argon(), prompt: PROMPT, schema: Description, video });
 }

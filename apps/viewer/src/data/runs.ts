@@ -55,7 +55,7 @@ export function useRunData() {
       for (const id of ids) {
         try {
           const m = RunManifest.parse(await getJson(runUrl(id, "manifest.json")));
-          useApp.setState({ loadError: false });
+          if (id === index.live) useApp.setState({ loadError: false });
           getJson(runUrl(id, "meta.json"))
             .then((meta) => meta?.name && useApp.setState((s) => ({ names: { ...s.names, [id]: String(meta.name) } })))
             .catch(() => {});

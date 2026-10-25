@@ -76,10 +76,11 @@ function geoms(o: SceneObject) {
   const friction = o.physics?.friction ?? 0.5;
   // Collision groups: static geoms are 1/1. Hinged and sliding parts are 2/2 so they don't
   // fight the frame or cabinet they're mounted in; dynamic bodies and the robot are 3/3 and hit everything.
-  // Rugs are skipped: a 1 cm solid slab only snags the robot and chairs.
+  // Rugs are skipped: a 1 cm solid slab only snags the robot and chairs. So is decor,
+  // which the schema lets rest on or overlap other objects.
   const kind = o.articulation?.kind;
   const group =
-    o.physics?.collider === "none" || o.type === "rug"
+    o.physics?.collider === "none" || o.type === "rug" || o.decor
       ? `contype="0" conaffinity="0"`
       : kind === "hinge" || kind === "slide"
         ? `contype="2" conaffinity="2"`

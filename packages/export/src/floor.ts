@@ -17,9 +17,9 @@ export type FloorGrid = {
   free: boolean[][];
 };
 
-/** Things the robot bumps into: anything with a collider that reaches below the mast top. Doors move, so they're handled apart. */
+/** Things the robot bumps into: anything that collides in the export and reaches below the mast top. Doors move, so they're handled apart. */
 export const blocks = (o: SceneObject) =>
-  o.type !== "door" && o.type !== "rug" && o.physics?.collider !== "none" && o.position[1] < ROBOT_HEIGHT;
+  o.type !== "door" && o.type !== "rug" && !o.decor && o.physics?.collider !== "none" && o.position[1] < ROBOT_HEIGHT;
 
 /** True if scene point (x, z) is within `pad` of the object's rotated footprint. */
 export function inFootprint(o: SceneObject, x: number, z: number, pad = 0) {

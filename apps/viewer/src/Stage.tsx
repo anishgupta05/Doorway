@@ -50,7 +50,8 @@ export function Stage({
   const building = useApp((s) => s.buildCount !== null);
   const preview = useApp((s) => s.preview !== null);
   const renderMode = useApp((s) => s.renderMode);
-  const outside = mode === "overview" || mode === "convergence";
+  // The room keeps slowly orbiting behind the Progress tab.
+  const outside = mode === "overview" || mode === "convergence" || mode === "progress";
   // Start high; PerformanceMonitor drops to "low" (1x pixels, cheaper AO) if the frame rate sags.
   const [quality, setQuality] = useState<"high" | "low">("high");
   // Debug knobs: ?perf shows an FPS meter, ?dpr=1 forces pixel ratio, ?off=fx,shadows turns features off (see Effects for pass names).

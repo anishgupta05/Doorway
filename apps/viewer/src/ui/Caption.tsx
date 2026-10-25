@@ -15,6 +15,7 @@ const ATTRACT = [
 export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManifest | undefined }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
+  const robotOpen = useApp((s) => s.robotOpen);
   const building = useApp((s) => s.buildCount !== null);
   const idle = useApp((s) => s.idle);
   const night = useApp((s) => s.night);
@@ -29,7 +30,8 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
 
   let title: string;
   let sub: string;
-  if (building) [title, sub] = ["Written in one go", "Doorway watched your video and wrote the whole room: shapes, doors, lights."];
+  if (robotOpen && mode === "overview") [title, sub] = ["A robot plans in the replica", "Same task twice: on the first pass, and on the room after it was checked."];
+  else if (building) [title, sub] = ["Written in one go", "Doorway watched your video and wrote the whole room: shapes, doors, lights."];
   else if (tests) [title, sub] = ["It works, not just looks right", "Every door, drawer and light is tried out and checked."];
   else if (split && mode === "overview") [title, sub] = ["First attempt vs. checked", "Same video. Left: Doorway's first attempt. Right: after it tried fixes and threw out the ones that broke something."];
   else if (mode === "compare") [title, sub] = ["Your video vs. the 3D room", "Same camera path as the phone. Drag the divider."];
@@ -45,7 +47,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
           <div className="mt-2 text-[15px] text-muted [text-shadow:0_1px_12px_rgba(0,0,0,0.8)]">{sub}</div>
         </motion.div>
       </AnimatePresence>
-      {mode === "overview" && !building && !tests && !split && <Stats scene={scene} manifest={manifest} />}
+      {mode === "overview" && !building && !tests && !split && !robotOpen && <Stats scene={scene} manifest={manifest} />}
     </div>
   );
 }

@@ -24,7 +24,8 @@ export function OverviewRig({ room, wide = false }: { room: Scene["room"]; wide?
     if (!c) return;
     (camera as THREE.PerspectiveCamera).fov = 42;
     camera.updateProjectionMatrix();
-    const r = Math.max(room.width, room.depth);
+    // Frame small rooms (phone booths) as if they were at least 3.6 m across.
+    const r = Math.max(room.width, room.depth, 3.6);
     // Look from the north-east so the door wall stays standing in the background.
     if (wide) c.setLookAt(r * 0.25, r * 1.55, -r * 2.15, 0, -0.3, 0.3, true);
     else if (mode === "convergence") c.setLookAt(r * 1.05, r * 1.45, -r * 1.15, 0, -1.1, -0.2, true);

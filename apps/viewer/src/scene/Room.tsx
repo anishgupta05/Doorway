@@ -8,7 +8,7 @@ import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import type { Opening, Room as RoomSpec, Wall } from "@doorway/schema";
 import { useApp } from "../store";
-import { floorTexture, material } from "./materials";
+import { floorTexture, material, wallMaterial } from "./materials";
 
 export const WALL_T = 0.12;
 export const SHADOW_ONLY_LAYER = 1;
@@ -55,7 +55,6 @@ const tmp = new THREE.Vector3();
 
 export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   const frames = useMemo(() => wallFrames(room), [room]);
-  const wallMat = material("paint", room.wallColor);
   const trim = material("paint", "#f4f2ed");
   const groups = useRef<(THREE.Group | null)[]>([]);
   const outside = useRef<THREE.Group>(null!);
@@ -106,6 +105,7 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
 
       <group ref={walls}>
       {frames.map((f, i) => {
+        if (room.unseenWalls?.includes(f.wall)) return <group key={f.wall} ref={(g) => void (groups.current[i] = g)} />; // never filmed: leave it open
         const openings = room.openings.filter((o) => o.wall === f.wall);
         const pieces = wallPieces(f.length, room.height, openings);
         return (
@@ -115,7 +115,7 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
               const h = p.y1 - p.y0;
               return (
                 <group key={j}>
-                  <mesh position={onWall(f, (p.u0 + p.u1) / 2, (p.y0 + p.y1) / 2, -WALL_T / 2)} material={wallMat} castShadow receiveShadow>
+                  <mesh position={onWall(f, (p.u0 + p.u1) / 2, (p.y0 + p.y1) / 2, -WALL_T / 2)} material={wallMaterial(room.wallLook, room.wallColor, along, h)} castShadow receiveShadow>
                     <boxGeometry args={sizeOnWall(f, along, h, WALL_T)} />
                   </mesh>
                   {p.y0 === 0 && (

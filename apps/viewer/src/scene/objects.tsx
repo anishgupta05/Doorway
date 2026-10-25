@@ -44,7 +44,7 @@ const DEFAULTS: Partial<Record<SceneObject["type"], { kind: MaterialKind; color:
 
 const mainMat = (o: SceneObject) => {
   const d = DEFAULTS[o.type] ?? { kind: "paint" as const, color: "#cfcac2" };
-  return material(o.material ?? d.kind, o.color ?? d.color);
+  return material(o.material ?? d.kind, o.color ?? d.color, o.look);
 };
 const steel = () => material("metal", "#2a2b2d");
 const brushed = () => material("metal", "#b9b7b2");

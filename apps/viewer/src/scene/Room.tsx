@@ -60,20 +60,20 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   const groups = useRef<(THREE.Group | null)[]>([]);
   const outside = useRef<THREE.Group>(null!);
   const walls = useRef<THREE.Group>(null!);
+  const root = useRef<THREE.Group>(null!);
+  const local = useMemo(() => new THREE.Vector3(), []);
   const floor = useMemo(() => {
     const tex = floorTexture(room.floorColor, room.floorMaterial, room.width + 2 * WALL_T, room.depth + 2 * WALL_T);
     return new THREE.MeshStandardMaterial({ map: tex, roughness: room.floorMaterial === "tile" ? 0.35 : 0.68 });
   }, [room.floorColor, room.floorMaterial, room.width, room.depth]);
 
   useFrame(({ camera }) => {
-    const inside =
-      Math.abs(camera.position.x) < room.width / 2 + 0.05 &&
-      Math.abs(camera.position.z) < room.depth / 2 + 0.05 &&
-      camera.position.y < room.height;
+    const cam = root.current.worldToLocal(local.copy(camera.position));
+    const inside = Math.abs(cam.x) < room.width / 2 + 0.05 && Math.abs(cam.z) < room.depth / 2 + 0.05 && cam.y < room.height;
     frames.forEach((f, i) => {
       const g = groups.current[i];
       if (!g) return;
-      const facing = tmp.copy(camera.position).sub(f.center).setY(0).dot(f.normal) > 0;
+      const facing = tmp.copy(cam).sub(f.center).setY(0).dot(f.normal) > 0;
       const hide = cutaway && !inside && facing;
       g.traverse((o) => {
         if (hide) o.layers.set(SHADOW_ONLY_LAYER);
@@ -87,7 +87,7 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   });
 
   return (
-    <group>
+    <group ref={root}>
       {/* plinth: the room sits on a dark slab like an architectural model */}
       <RoundedBox
         args={[room.width + 2 * WALL_T + 0.5, 0.12, room.depth + 2 * WALL_T + 0.5]}

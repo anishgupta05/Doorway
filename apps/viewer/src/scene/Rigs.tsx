@@ -13,7 +13,7 @@ import { cameraAt } from "./cameraPath";
 export const COMPARE_FOV = 55;
 const IDLE_SECONDS = 20;
 
-export function OverviewRig({ room }: { room: Scene["room"] }) {
+export function OverviewRig({ room, wide = false }: { room: Scene["room"]; wide?: boolean }) {
   const ref = useRef<CameraControls>(null!);
   const mode = useApp((s) => s.mode);
   const lastInput = useRef(performance.now());
@@ -26,9 +26,10 @@ export function OverviewRig({ room }: { room: Scene["room"] }) {
     camera.updateProjectionMatrix();
     const r = Math.max(room.width, room.depth);
     // Look from the north-east so the door wall stays standing in the background.
-    if (mode === "convergence") c.setLookAt(r * 1.05, r * 1.45, -r * 1.15, 0, -1.1, -0.2, true);
+    if (wide) c.setLookAt(r * 0.25, r * 1.55, -r * 2.15, 0, -0.3, 0.3, true);
+    else if (mode === "convergence") c.setLookAt(r * 1.05, r * 1.45, -r * 1.15, 0, -1.1, -0.2, true);
     else c.setLookAt(r * 1.1, r * 0.9, -r * 1.2, 0, 0.3, 0.2, true);
-  }, [mode, room.width, room.depth, camera]);
+  }, [mode, wide, room.width, room.depth, camera]);
 
   useEffect(() => {
     const bump = () => void (lastInput.current = performance.now());
@@ -53,7 +54,7 @@ export function OverviewRig({ room }: { room: Scene["room"] }) {
       ref={ref}
       makeDefault
       minDistance={3}
-      maxDistance={16}
+      maxDistance={24}
       maxPolarAngle={Math.PI * 0.45}
       smoothTime={0.6}
       draggingSmoothTime={0.18}

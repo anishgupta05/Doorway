@@ -19,6 +19,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   const building = useApp((s) => s.buildCount !== null);
   const idle = useApp((s) => s.idle);
   const night = useApp((s) => s.night);
+  const split = useApp((s) => s.split);
   const [attract, setAttract] = useState(0);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   let sub: string;
   if (building) [title, sub] = ["Generated as code, in one pass", `Argon watched ${secs} s of video and wrote the whole room: geometry, joints, lights.`];
   else if (tests) [title, sub] = ["Behaves right, not just looks right", "Every declared interaction is exercised and checked."];
+  else if (split && mode === "overview") [title, sub] = ["One pass vs. verified", "Same video. Left: Argon's first pass. Right: after the loop's parallel fixes and guards."];
   else if (mode === "compare") [title, sub] = ["Reality vs. reconstruction", "Same camera path as the phone. Drag the divider."];
   else if (idle && mode === "overview") [title, sub] = ATTRACT[attract];
   else [title, sub] = [`A sim-ready room from ${secs} s of video`, `${scene.objects.length} objects · ${joints} working joints${night ? " · night" : ""}`];
@@ -46,7 +48,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
           <div className="mt-2 text-[15px] text-muted [text-shadow:0_1px_12px_rgba(0,0,0,0.8)]">{sub}</div>
         </motion.div>
       </AnimatePresence>
-      {mode === "overview" && !building && !tests && <Stats scene={scene} manifest={manifest} />}
+      {mode === "overview" && !building && !tests && !split && <Stats scene={scene} manifest={manifest} />}
     </div>
   );
 }

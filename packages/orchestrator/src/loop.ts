@@ -15,6 +15,7 @@ import { proposeFixes, type Proposal } from "./fixes.js";
 import { guards } from "./branch.js";
 import type { Description } from "./describe.js";
 import { fakeCompare, fakePropose } from "./fake.js";
+import { normalizeColors } from "./generate.js";
 import { interactionTests, type TestResult } from "./interaction-tests.js";
 import { uploadVideo, type UploadedVideo } from "./model.js";
 import { Renderer, sampleTimes } from "./render.js";
@@ -37,6 +38,7 @@ export async function runLoop(o: LoopOptions) {
   const log = o.log ?? console.log;
   const dir = join(RUNS, o.id);
   const v0 = Scene.parse(JSON.parse(readFileSync(join(dir, "scene.v0.json"), "utf8")));
+  normalizeColors(v0); // scenes generated before colour normalisation would otherwise fail every branch's colour check
   const truth = o.fake ? Scene.parse(JSON.parse(readFileSync(join(dir, "truth.json"), "utf8"))) : null;
   const videoFile = ["video.mp4", "video.webm"].find((f) => existsSync(join(dir, f))) ?? null;
   if (!o.fake && videoFile !== "video.mp4") throw new Error(`runs/${o.id}/video.mp4 is required (run describe first)`);

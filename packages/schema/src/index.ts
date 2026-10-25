@@ -118,6 +118,11 @@ export const Opening = z.object({
   width: z.number(),
   height: z.number(),
   sill: z.number().default(0),
+  /**
+   * What's on the other side of a window. "indoors" = it looks into another room
+   * (glass partition, interior window). Objects seen through it are NOT part of this scene.
+   */
+  view: z.enum(["outdoors", "indoors"]).default("outdoors"),
 });
 export type Opening = z.infer<typeof Opening>;
 

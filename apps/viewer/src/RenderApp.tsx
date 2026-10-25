@@ -3,6 +3,7 @@
 //
 //   /?render=1&scene=/runs/mock/iter_0/branch_0/scene.json   camera on the video path
 //     &view=overview        dollhouse view instead
+//     &t=12                 start at this many seconds into the camera path
 //     &play=1               advance time in real time (for recording)
 //     &phone=1              handheld shake + grain, to stand in for real footage
 //     &record=1             record the canvas along the whole path (MediaRecorder → webm);
@@ -45,6 +46,7 @@ export function RenderApp() {
   useEffect(() => {
     if (!scene) return;
     const duration = pathDuration(scene.camera_path);
+    useApp.getState().setVideoTime(Number(params.get("t") ?? 0));
     window.doorway = {
       ready: false,
       duration,

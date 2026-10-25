@@ -17,6 +17,11 @@ type State = {
   joints: Record<string, number>;
   /** Accumulated pushes for free objects, world-space [dx, dz]. */
   pushes: Record<string, [number, number]>;
+  /** Height change [m] for objects you picked up and put down somewhere else (a table top, a shelf). */
+  lifts: Record<string, number>;
+  /** The loose object being carried in Explore, if any. */
+  held: string | null;
+  carry: (id: string, dx: number, dy: number, dz: number, held: string | null) => void;
   hovered: string | null;
   /** Which front part (cabinet leaf / locker door index) of the hovered object, if any. */
   hoveredPart: number | null;
@@ -103,6 +108,8 @@ export const useApp = create<State>((set) => ({
   iter: null,
   joints: {},
   pushes: {},
+  lifts: {},
+  held: null,
   hovered: null,
   hoveredPart: null,
   resetNonce: 0,
@@ -151,14 +158,15 @@ export const useApp = create<State>((set) => ({
       const [x, z] = s.pushes[id] ?? [0, 0];
       return { pushes: { ...s.pushes, [id]: [x + dx, z + dz] } };
     }),
+  carry: (id, dx, dy, dz, held) => set((s) => ({ pushes: { ...s.pushes, [id]: [dx, dz] }, lifts: { ...s.lifts, [id]: dy }, held })),
   setHovered: (hovered, hoveredPart = null) => set({ hovered, hoveredPart }),
   setVideoTime: (videoTime) => set({ videoTime }),
-  reset: () => set((s) => ({ joints: {}, pushes: {}, resetNonce: s.resetNonce + 1 })),
+  reset: () => set((s) => ({ joints: {}, pushes: {}, lifts: {}, held: null, resetNonce: s.resetNonce + 1 })),
   // Going dark also switches lamps on, so night mode lands with a moment.
   toggleNight: () => set((s) => ({ night: !s.night, joints: !s.night ? { ...s.joints, ...Object.fromEntries(s.lampIds.map((id) => [id, 1])) } : s.joints })),
   toggleTests: () => set((s) => ({ tests: !s.tests })),
   setPreview: (preview) => set({ preview }),
-  replayBuild: () => set({ buildStart: performance.now(), buildCount: 0, joints: {}, pushes: {} }),
+  replayBuild: () => set({ buildStart: performance.now(), buildCount: 0, joints: {}, pushes: {}, lifts: {}, held: null }),
   setBuildCount: (buildCount) => set(buildCount === null ? { buildCount, buildStart: null } : { buildCount }),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
 }));
@@ -177,3 +185,6 @@ export function iterFor(version: Version, manifest: RunManifest | undefined, ove
 export const partKey = (id: string, part: number) => `${id}#${part}`;
 /** A part follows its own state if it has one, else the whole object's. */
 export const partTarget = (joints: Record<string, number>, id: string, part: number) => joints[partKey(id, part)] ?? joints[id] ?? 0;
+
+// Lets scripts (scripts/walk-test.ts) drive the same state the UI does.
+if (typeof window !== "undefined") (window as unknown as { __app: typeof useApp }).__app = useApp;

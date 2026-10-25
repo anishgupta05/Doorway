@@ -73,11 +73,13 @@ export function Placed({ obj, children, wall }: { obj: SceneObject; children: Re
 
     const [px, pz] = s.pushes[obj.id] ?? [0, 0];
     const tx = obj.position[0] + px;
-    const ty = obj.position[1];
+    const ty = obj.position[1] + (s.lifts[obj.id] ?? 0);
     const tz = obj.position[2] + pz;
-    g.position.x = THREE.MathUtils.damp(g.position.x, tx, 6, dt);
-    g.position.y = THREE.MathUtils.damp(g.position.y, ty, 6, dt);
-    g.position.z = THREE.MathUtils.damp(g.position.z, tz, 6, dt);
+    // Something in your hands keeps up with you; everything else settles gently.
+    const rate = s.held === obj.id ? 18 : 6;
+    g.position.x = THREE.MathUtils.damp(g.position.x, tx, rate, dt);
+    g.position.y = THREE.MathUtils.damp(g.position.y, ty, rate, dt);
+    g.position.z = THREE.MathUtils.damp(g.position.z, tz, rate, dt);
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, obj.rotationY, 6, dt);
 
     const sc = scale.current;

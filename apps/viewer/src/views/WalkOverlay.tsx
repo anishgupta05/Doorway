@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Scene } from "@doorway/schema";
 import { partTarget, useApp } from "../store";
 import { defaultJoint } from "../scene/Placed";
+import { carryable } from "../controls/Walk";
 
 function verb(scene: Scene, id: string, joints: Record<string, number>, part: number | null) {
   const o = scene.objects.find((x) => x.id === id);
@@ -15,6 +16,7 @@ function verb(scene: Scene, id: string, joints: Record<string, number>, part: nu
     return `${partTarget(joints, id, part) > 0 ? "Close" : "Open"} ${what}`;
   }
   const open = (joints[id] ?? defaultJoint(o)) > 0;
+  if (carryable(o)) return `Pick up ${name}`;
   switch (o.articulation?.kind) {
     case "hinge":
     case "slide":
@@ -39,7 +41,9 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
   }, []);
 
   const hoveredPart = useApp((s) => s.hoveredPart);
-  const hint = hovered ? verb(scene, hovered, joints, hoveredPart) : null;
+  const held = useApp((s) => s.held);
+  const heldName = held ? (scene.objects.find((o) => o.id === held)?.label ?? held).toLowerCase() : null;
+  const hint = heldName ? `Put down ${heldName}` : hovered ? verb(scene, hovered, joints, hoveredPart) : null;
 
   return (
     <>

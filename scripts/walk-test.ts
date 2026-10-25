@@ -1,36 +1,31 @@
-// End-to-end check of the judge's moment: enter walk mode, take control, walk to
-// the door, press E, and confirm the door opens and the robot starts moving.
-// Usage: npx tsx scripts/walk-test.ts [url] [outDir]
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+// Explore-mode interactions: pick up, carry and put down a loose object. Usage: npx tsx scripts/walk-test.ts [url] [run] [object id]
 import { chromium } from "playwright-core";
 import { chromePath } from "./chrome";
 
-const [url = "http://localhost:5173", outDir = "shots"] = process.argv.slice(2);
-mkdirSync(outDir, { recursive: true });
+const base = process.argv[2] ?? "http://localhost:5181";
+const run = process.argv[3] ?? "booth1";
+const id = process.argv[4] ?? "laptop_1";
 const browser = await chromium.launch({ headless: true, executablePath: chromePath(), args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
-const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-page.on("pageerror", (e) => console.error("[pageerror]", e.message));
-await page.goto(url);
-await page.waitForTimeout(4000);
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const errors: string[] = [];
+page.on("pageerror", (e) => errors.push(e.message));
+await page.goto(`${base}/?run=${run}`);
+await page.waitForTimeout(5000);
 await page.keyboard.press("Digit4");
-await page.waitForTimeout(2000);
-await page.mouse.click(800, 450);
-await page.waitForTimeout(500);
-const locked = await page.evaluate(() => document.pointerLockElement !== null);
-console.log("pointer locked:", locked);
-await page.keyboard.down("KeyW");
-await page.waitForTimeout(900);
-await page.keyboard.up("KeyW");
-await page.waitForTimeout(600);
-await page.screenshot({ path: join(outDir, "walk-at-door.png") });
+await page.waitForTimeout(3500);
+const st = () => page.evaluate(`(() => { const s = window.__app.getState(); return { held: s.held, push: s.pushes["${id}"], lift: s.lifts["${id}"] }; })()`) as Promise<{ held: string | null; push?: number[]; lift?: number }>;
+await page.evaluate(`window.__app.setState({ hovered: "${id}", hoveredPart: null })`);
 await page.keyboard.press("KeyE");
-await page.waitForTimeout(2500);
-await page.screenshot({ path: join(outDir, "walk-door-open.png") });
-// Step back to watch the robot come through.
-await page.keyboard.down("KeyS");
+await page.waitForTimeout(1500);
+await page.screenshot({ path: process.env.SHOT ?? "/tmp/walk-held.png" });
+console.log("after pickup", JSON.stringify(await st()));
+await page.keyboard.down("KeyW");
 await page.waitForTimeout(700);
-await page.keyboard.up("KeyS");
-await page.waitForTimeout(4000);
-await page.screenshot({ path: join(outDir, "walk-robot.png") });
+await page.keyboard.up("KeyW");
+await page.waitForTimeout(800);
+console.log("after walking", JSON.stringify(await st()));
+await page.keyboard.press("KeyE");
+await page.waitForTimeout(1500);
+console.log("after drop", JSON.stringify(await st()));
+console.log(errors.length ? "ERRORS: " + errors.join(" | ") : "no page errors");
 await browser.close();

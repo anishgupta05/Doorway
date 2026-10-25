@@ -28,3 +28,6 @@ After the layout is accepted, rebuilds how objects look (`parts`, `look`, `mater
 
 ## Textures and affordances (pipeline order after `generate`)
 `npm run affordance -- --id X` (drawers and cabinet doors become separate openable objects) -> `npm run detail -- --id X` (looks, texture hints) -> `npm run texture -- --id X` (image model paints flat surface images from the footage frame where the object is seen; files in `runs/X/tex/`, referenced by `part.texture`, served at `/runs/<path>`). `?models=1` still shows the old Poly Haven library. generate also: `snapFacing`, `fitRoom`, riders (objects resting on furniture move with it).
+
+## Explore: pick up and carry
+E (or click) on a small loose object (any non-articulated object up to 0.6 m that isn't a door/drawer/cabinet/shelf/bed/sofa/partition/rug) picks it up; it floats 0.7 m ahead of you, collisions ignore it, and E again sets it down on the first surface below it (table top, shelf, floor). State: `store.held`, `store.lifts` (y change), `store.pushes` (xz). `scripts/walk-test.ts` drives it headlessly.

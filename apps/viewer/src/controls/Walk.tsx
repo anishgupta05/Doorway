@@ -16,7 +16,40 @@ const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf"
 
 /** Free articulations and dynamic physics bodies get pushed; everything else articulated gets toggled. */
 const pushable = (o: SceneObject) => o.articulation?.kind === "free" || (!o.articulation && o.physics?.body === "dynamic");
-export const interactive = (o: SceneObject | undefined) => !!o && (!!o.articulation || pushable(o));
+/** Small loose things (laptop, can, sandals, jacket, a stool) can be picked up and carried. */
+const FIXED = new Set<SceneObject["type"]>(["door", "drawer", "partition", "rug", "cabinet", "shelf", "bed", "sofa"]);
+export const carryable = (o: SceneObject | undefined) =>
+  !!o && !o.articulation && !FIXED.has(o.type) && Math.max(...o.size) <= 0.6 && o.size[1] <= 0.6;
+export const interactive = (o: SceneObject | undefined) => !!o && (!!o.articulation || pushable(o) || carryable(o));
+
+const HOLD = 0.7; // how far in front of you a carried thing floats
+const dropRay = new THREE.Raycaster();
+
+/** Where a carried object would rest: the first surface below it (table top, shelf, floor). */
+function surfaceBelow(three: THREE.Object3D[], id: string, x: number, from: number, z: number): number {
+  dropRay.set(new THREE.Vector3(x, from, z), new THREE.Vector3(0, -1, 0));
+  dropRay.far = from + 0.1;
+  for (const h of dropRay.intersectObjects(three, true)) {
+    if (h.object.type !== "Mesh" || !h.object.visible) continue;
+    const hid = objectIdOf(h.object);
+    if (hid === id) continue;
+    return Math.max(0, h.point.y);
+  }
+  return 0;
+}
+
+/** Put the carried object down where it is, on whatever is under it. */
+export function drop(scene: Scene, three: THREE.Object3D[]) {
+  const s = useApp.getState();
+  const o = scene.objects.find((x) => x.id === s.held);
+  if (!o) return;
+  const [dx, dz] = s.pushes[o.id] ?? [0, 0];
+  const x = o.position[0] + dx;
+  const z = o.position[2] + dz;
+  const y = surfaceBelow(three, o.id, x, (s.lifts[o.id] ?? 0) + o.position[1] + 0.3, z);
+  s.carry(o.id, dx, y - o.position[1], dz, null);
+  sfx.click();
+}
 
 /** Finds the scene object id for a hit by walking up to the Placed group. */
 /** Index of the front part (leaf / locker door) hit, found on the way up to the object's group. */
@@ -37,10 +70,17 @@ export function objectIdOf(o: THREE.Object3D | null): string | null {
 }
 
 /** E / click on the hovered object: toggle hinges, slides and switches; push free objects away from the viewer. */
-export function interact(scene: Scene, id: string, camera: THREE.Camera, part: number | null = null) {
+export function interact(scene: Scene, id: string, camera: THREE.Camera, part: number | null = null, three: THREE.Object3D[] = []) {
   const obj = scene.objects.find((o) => o.id === id);
   const s = useApp.getState();
+  if (s.held) return drop(scene, three);
   if (!obj || !interactive(obj)) return;
+  if (carryable(obj)) {
+    const [dx, dz] = s.pushes[id] ?? [0, 0];
+    s.carry(id, dx, s.lifts[id] ?? 0, dz, id);
+    sfx.click();
+    return;
+  }
   if (part !== null) {
     // One cabinet door / locker, not the whole thing.
     const key = partKey(id, part);
@@ -119,13 +159,16 @@ export function Walk({ scene }: { scene: Scene }) {
       if (e.code === "Equal" || e.code === "NumpadAdd") zoom.current.target = Math.max(0, zoom.current.target - 0.2);
       if (e.code === "KeyE") {
         const st = useApp.getState();
-        if (st.hovered) interact(scene, st.hovered, camera, st.hoveredPart);
+        if (st.held) drop(scene, three.children);
+        else if (st.hovered) interact(scene, st.hovered, camera, st.hoveredPart, three.children);
       }
     };
     const up = (e: KeyboardEvent) => void (keys.current[e.code] = false);
     const click = () => {
       const st = useApp.getState();
-      if (st.hovered && document.pointerLockElement) interact(scene, st.hovered, camera, st.hoveredPart);
+      if (!document.pointerLockElement) return;
+      if (st.held) drop(scene, three.children);
+      else if (st.hovered) interact(scene, st.hovered, camera, st.hoveredPart, three.children);
     };
     const wheel = (e: WheelEvent) => void (zoom.current.target = THREE.MathUtils.clamp(zoom.current.target + e.deltaY * 0.0015, 0, 1));
     window.addEventListener("keydown", down);
@@ -137,6 +180,7 @@ export function Walk({ scene }: { scene: Scene }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("mousedown", click);
+      if (useApp.getState().held) drop(scene, three.children);
       useApp.getState().setHovered(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -196,6 +240,17 @@ export function Walk({ scene }: { scene: Scene }) {
       marker.current.position.set(p.x, 0.02, p.z);
     }
 
+    // What you carry floats in front of you, just below eye level, never into the floor.
+    const held = useApp.getState().held;
+    const heldObj = held ? scene.objects.find((o) => o.id === held) : undefined;
+    if (heldObj) {
+      const flat = Math.hypot(dir.x, dir.z) || 1;
+      const hx = p.x + (dir.x / flat) * HOLD;
+      const hz = p.z + (dir.z / flat) * HOLD;
+      const hy = Math.max(0.05, p.y - 0.35 + dir.y * HOLD);
+      useApp.getState().carry(heldObj.id, hx - heldObj.position[0], hy - heldObj.position[1], hz - heldObj.position[2], heldObj.id);
+    }
+
     // Crosshair hover. 20 Hz is plenty and keeps the scene-wide raycast off most frames.
     if (++frame.current % 3 !== 0) return;
     ray.set(p, dir);
@@ -205,6 +260,7 @@ export function Walk({ scene }: { scene: Scene }) {
     let part: number | null = null;
     for (const h of hits) {
       const id = objectIdOf(h.object);
+      if (id && id === held) continue; // not the thing in your hands
       if (!id) {
         if (h.object.type === "Mesh") break; // a wall is in the way
         continue;
@@ -240,12 +296,13 @@ export function Walk({ scene }: { scene: Scene }) {
 
 /** Keeps the viewer inside the room and outside solid furniture footprints. */
 function collide(p: THREE.Vector3, scene: Scene) {
+  const held = useApp.getState().held;
   const { width, depth } = scene.room;
   p.x = THREE.MathUtils.clamp(p.x, -width / 2 + RADIUS, width / 2 - RADIUS);
   p.z = THREE.MathUtils.clamp(p.z, -depth / 2 + RADIUS, depth / 2 - RADIUS);
   const pushes = useApp.getState().pushes;
   for (const o of scene.objects) {
-    if (!SOLID.has(o.type) || o.position[1] > 1.2) continue;
+    if (!SOLID.has(o.type) || o.position[1] > 1.2 || o.id === held) continue;
     const [dx, dz] = pushes[o.id] ?? [0, 0];
     const cx = o.position[0] + dx;
     const cz = o.position[2] + dz;

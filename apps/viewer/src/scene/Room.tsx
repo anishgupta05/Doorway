@@ -112,16 +112,22 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
         if (room.unseenWalls?.includes(f.wall)) return <group key={f.wall} ref={(g) => void (groups.current[i] = g)} />; // never filmed: leave it open
         const openings = room.openings.filter((o) => o.wall === f.wall);
         const pieces = wallPieces(f.length, room.height, openings);
+        const look = room.wallLooks?.[f.wall] ?? room.wallLook;
+        // A wall with a rounded opening is cut from an outline; plain walls stay as boxes around rectangles.
+        const curved = openings.some((o) => o.shape === "arch");
         return (
           <group key={f.wall} ref={(g) => void (groups.current[i] = g)}>
+            {curved && <CutWall f={f} room={room} openings={openings} look={look} />}
             {pieces.map((p, j) => {
               const along = p.u1 - p.u0;
               const h = p.y1 - p.y0;
               return (
                 <group key={j}>
-                  <mesh position={onWall(f, (p.u0 + p.u1) / 2, (p.y0 + p.y1) / 2, -WALL_T / 2)} material={wallMaterial(room.wallLook, room.wallColor, along, h)} castShadow receiveShadow>
-                    <boxGeometry args={sizeOnWall(f, along, h, WALL_T)} />
-                  </mesh>
+                  {!curved && (
+                    <mesh position={onWall(f, (p.u0 + p.u1) / 2, (p.y0 + p.y1) / 2, -WALL_T / 2)} material={wallMaterial(look, room.wallColor, along, h)} castShadow receiveShadow>
+                      <boxGeometry args={sizeOnWall(f, along, h, WALL_T)} />
+                    </mesh>
+                  )}
                   {p.y0 === 0 && (
                     <mesh position={onWall(f, (p.u0 + p.u1) / 2, 0.04, 0.006)} material={trim} castShadow receiveShadow>
                       <boxGeometry args={sizeOnWall(f, along, 0.08, 0.012)} />
@@ -131,7 +137,13 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
               );
             })}
             {openings.map((o, j) =>
-              o.kind === "door" ? <DoorCasing key={j} f={f} o={o} trim={trim} /> : <WindowFrame key={j} f={f} o={o} trim={trim} />,
+              o.shape === "arch" ? (
+                <ArchFrame key={j} f={f} o={o} trim={trim} room={room} />
+              ) : o.kind === "door" ? (
+                <DoorCasing key={j} f={f} o={o} trim={trim} />
+              ) : (
+                <WindowFrame key={j} f={f} o={o} trim={trim} />
+              ),
             )}
           </group>
         );
@@ -141,6 +153,127 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
       <group ref={outside}>
         <Outside room={room} />
       </group>
+    </group>
+  );
+}
+
+/** Outline of an opening in wall coordinates (u along the wall, y up). Arches get a semicircular top. */
+function openingPath(o: Opening): THREE.Path {
+  const a = o.offset - o.width / 2;
+  const b = o.offset + o.width / 2;
+  const top = o.sill + o.height;
+  const path = new THREE.Path();
+  path.moveTo(a, o.sill);
+  path.lineTo(b, o.sill);
+  if (o.shape === "arch") {
+    // Radius is half the width, unless the opening is too short for that (then a flatter half-round).
+    const r = Math.min(o.width / 2, o.height);
+    const spring = top - r;
+    path.lineTo(b, spring);
+    path.absellipse(o.offset, spring, o.width / 2, r, 0, Math.PI, false, 0);
+    path.lineTo(a, o.sill);
+  } else {
+    path.lineTo(b, top);
+    path.lineTo(a, top);
+    path.lineTo(a, o.sill);
+  }
+  return path;
+}
+
+/** Puts wall-local (u along the wall, y up, z = thickness from the inside face outward) into the room. */
+function wallTransform(f: WallFrame, room: RoomSpec): { position: THREE.Vector3Tuple; rotation: THREE.Vector3Tuple } {
+  const { width: w, depth: d } = room;
+  switch (f.wall) {
+    // Local z runs from the inside face (z = 0) outward (z = WALL_T) after these transforms.
+    case "north": return { position: [0, 0, -d / 2], rotation: [0, Math.PI, 0] };
+    case "south": return { position: [0, 0, d / 2], rotation: [0, 0, 0] };
+    case "east": return { position: [w / 2, 0, 0], rotation: [0, Math.PI / 2, 0] };
+    case "west": return { position: [-w / 2, 0, 0], rotation: [0, -Math.PI / 2, 0] };
+  }
+}
+
+/** A whole wall cut from an outline with real holes, so rounded windows look round. */
+function CutWall({ f, room, openings, look }: { f: WallFrame; room: RoomSpec; openings: Opening[]; look: RoomSpec["wallLook"] }) {
+  const geom = useMemo(() => {
+    const shape = new THREE.Shape();
+    const L = f.length / 2;
+    shape.moveTo(-L, 0);
+    shape.lineTo(L, 0);
+    shape.lineTo(L, room.height);
+    shape.lineTo(-L, room.height);
+    shape.lineTo(-L, 0);
+    // The wall's local u runs left→right as seen from inside; mirror north/east so offsets match the room's axes.
+    const flip = f.wall === "north" || f.wall === "east";
+    for (const o of openings) shape.holes.push(openingPath(flip ? { ...o, offset: -o.offset } : o));
+    return new THREE.ExtrudeGeometry(shape, { depth: WALL_T, bevelEnabled: false, curveSegments: 40 });
+  }, [f, room.height, openings]);
+  // Extruded UVs are in metres, so the look tiles at its real size (along = h = 1).
+  const mat = wallMaterial(look, room.wallColor, 1, 1);
+  const t = wallTransform(f, room);
+  return (
+    <group position={t.position} rotation={t.rotation}>
+      <mesh geometry={geom} material={mat} castShadow receiveShadow />
+    </group>
+  );
+}
+
+/** Frame, glass and fan-shaped glazing bars for a rounded window (or a casing for a rounded doorway). */
+function ArchFrame({ f, o, trim, room }: { f: WallFrame; o: Opening; trim: THREE.Material; room: RoomSpec }) {
+  const flip = f.wall === "north" || f.wall === "east";
+  const u = flip ? -o.offset : o.offset;
+  const top = o.sill + o.height;
+  const r = Math.min(o.width / 2, o.height);
+  const spring = top - r;
+  const glass = useMemo(
+    () => new THREE.MeshPhysicalMaterial({ color: "#dfefff", roughness: 0.04, metalness: 0, transparent: true, opacity: 0.12, envMapIntensity: 2.5, side: THREE.DoubleSide }),
+    [],
+  );
+  const { frame, pane } = useMemo(() => {
+    const pts: THREE.Vector3[] = [new THREE.Vector3(u - o.width / 2, o.sill, 0), new THREE.Vector3(u - o.width / 2, spring, 0)];
+    for (let i = 0; i <= 40; i++) {
+      const a = Math.PI - (Math.PI * i) / 40;
+      pts.push(new THREE.Vector3(u + (o.width / 2) * Math.cos(a), spring + r * Math.sin(a), 0));
+    }
+    pts.push(new THREE.Vector3(u + o.width / 2, o.sill, 0));
+    const frame = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.01), 160, 0.03, 8, false);
+    const pane = new THREE.ShapeGeometry(new THREE.Shape(openingPath({ ...o, offset: u }).getPoints(48)));
+    return { frame, pane };
+  }, [o, u, r, spring]);
+  const t = wallTransform(f, room);
+  const isWindow = o.kind === "window";
+  return (
+    <group position={t.position} rotation={t.rotation}>
+      <group position={[0, 0, WALL_T / 2]}>
+        <mesh geometry={frame} material={trim} castShadow />
+        {isWindow && (
+          <>
+            <mesh geometry={pane} material={glass} />
+            {/* bottom rail, centre mullion and two fan bars, like a lunette window */}
+            <mesh position={[u, o.sill + 0.02, 0]} material={trim} castShadow>
+              <boxGeometry args={[o.width, 0.04, 0.06]} />
+            </mesh>
+            {[Math.PI / 2, Math.PI / 4, (3 * Math.PI) / 4].map((a) => {
+              const len = Math.hypot(Math.cos(a) * (o.width / 2), Math.sin(a) * r);
+              const ang = Math.atan2(Math.sin(a) * r, Math.cos(a) * (o.width / 2));
+              return (
+                <mesh key={a} position={[u + (Math.cos(a) * (o.width / 2)) / 2, spring + (Math.sin(a) * r) / 2, 0]} rotation={[0, 0, ang - Math.PI / 2]} material={trim} castShadow>
+                  <boxGeometry args={[0.03, len, 0.05]} />
+                </mesh>
+              );
+            })}
+            {spring > o.sill + 0.05 && (
+              <mesh position={[u, (o.sill + spring) / 2, 0]} material={trim} castShadow>
+                <boxGeometry args={[0.03, spring - o.sill, 0.05]} />
+              </mesh>
+            )}
+          </>
+        )}
+      </group>
+      {isWindow && (
+        <mesh position={[u, o.sill - 0.015, -0.03]} material={trim} castShadow receiveShadow>
+          <boxGeometry args={[o.width + 0.12, 0.03, 0.1]} />
+        </mesh>
+      )}
     </group>
   );
 }

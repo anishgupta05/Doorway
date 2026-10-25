@@ -14,6 +14,10 @@ import { SHADOW_ONLY_LAYER } from "./Room";
 const JointValue = createContext<{ current: number }>({ current: 0 });
 export const useJointValue = () => useContext(JointValue);
 
+/** Whether the articulation moves the whole object (doors, drawers) rather than its front parts. */
+export const wholeBodyJoint = (obj: SceneObject) =>
+  (obj.articulation?.kind === "hinge" && obj.type === "door") || (obj.articulation?.kind === "slide" && obj.type === "drawer");
+
 export const defaultJoint = (obj: SceneObject) =>
   obj.articulation?.kind === "switch" && obj.articulation.initial ? 1 : 0;
 
@@ -50,7 +54,10 @@ export function Placed({ obj, children, wall }: { obj: SceneObject; children: Re
 
   const hovered = useApp((s) => s.hovered === obj.id);
   const art = obj.articulation;
-  const pv = art?.kind === "hinge" ? art.pivot : ([0, 0, 0] as const);
+  // Doors swing as a whole and drawers slide as a whole. Anything else that is hinged or
+  // slides (cabinets, wardrobes, lockers) stays put and moves its front parts (see Fronts).
+  const whole = wholeBodyJoint(obj);
+  const pv = whole && art?.kind === "hinge" ? art.pivot : ([0, 0, 0] as const);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 1 / 30);
@@ -90,6 +97,7 @@ export function Placed({ obj, children, wall }: { obj: SceneObject; children: Re
     velocity.current += a * dt;
     value.current += velocity.current * dt;
 
+    if (!whole) return;
     const p = pivot.current;
     const [lo, hi] = art.range;
     const amount = lo + (hi - lo) * value.current;

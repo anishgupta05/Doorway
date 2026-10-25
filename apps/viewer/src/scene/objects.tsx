@@ -8,6 +8,7 @@ import * as THREE from "three";
 import type { MaterialKind, Part, SceneObject, Vec3 } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue } from "./Placed";
+import { Fronts, Shell, hasFrontDoors } from "./Fronts";
 import { ModelBody, modelFor } from "./models";
 import { TexturedPart } from "./TexturedPart";
 
@@ -52,11 +53,19 @@ const brushed = () => material("metal", "#b9b7b2");
 
 export function ObjectBody({ obj }: { obj: SceneObject }) {
   const model = obj.parts?.length ? null : modelFor(obj);
-  return model ? <ModelBody name={model} obj={obj} fallback={<ProceduralBody obj={obj} />} /> : <ProceduralBody obj={obj} />;
+  return (
+    <>
+      {model ? <ModelBody name={model} obj={obj} fallback={<ProceduralBody obj={obj} />} /> : <ProceduralBody obj={obj} />}
+      {/* Doors and drawers move as a whole; everything else moves its front (cabinet doors, drawer fronts, status lights). */}
+      <Fronts obj={obj} />
+    </>
+  );
 }
 
 function ProceduralBody({ obj }: { obj: SceneObject }) {
   if (obj.parts?.length) return <Parts parts={obj.parts} fallback={mainMat(obj)} base={obj} />;
+  // Anything with doors on its front is a hollow carcass, so opening it shows an inside.
+  if (hasFrontDoors(obj)) return <Shell o={obj} />;
   switch (obj.type) {
     case "door": return <Door o={obj} />;
     case "drawer": return <Drawer o={obj} />;

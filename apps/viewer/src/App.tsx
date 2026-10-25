@@ -4,6 +4,10 @@ import { Stage, type SplitPair } from "./Stage";
 import { useRobotTask } from "./robot/useRobotTask";
 import { RobotPanel } from "./robot/RobotPanel";
 import { ROBOT } from "./features";
+import { MissionPanel } from "./robot/MissionPanel";
+import { actionsFor } from "./robot/actions";
+import { planMission } from "./robot/mission";
+import { startPoint } from "./robot/tasks";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
@@ -27,6 +31,19 @@ export function App() {
   const split = useSplitPair(runId, manifest);
   const robotOpen = useApp((s) => s.robotOpen);
   const robot = useRobotTask(split?.before ?? null, split?.after ?? null);
+  const robotTab = useApp((s) => s.robotTab);
+  const queue = useApp((s) => s.missionQueue);
+  const missionRun = useApp((s) => s.mission);
+  // Missions run in the room on stage: every door, locker and switch in it is something to do.
+  const actions = useMemo(() => (scene ? actionsFor(scene) : []), [scene]);
+  const mission = useMemo(() => {
+    if (!scene) return null;
+    const byId = new Map(actions.map((a) => [a.id, a]));
+    const steps = queue.map((id) => byId.get(id)).filter((a): a is NonNullable<typeof a> => !!a);
+    return planMission(scene, steps, startPoint(scene));
+  }, [scene, actions, queue]);
+  // Stable, so re-renders (e.g. status updates) don't restart a running job.
+  const missionStart = useMemo(() => (scene ? startPoint(scene) : null), [scene]);
   const mode = useApp((s) => s.mode);
   const wipe = useApp((s) => s.wipe);
   const playing = useApp((s) => s.comparePlaying);
@@ -56,7 +73,9 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen ? robot : null} />
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen && robotTab === "compare" ? robot : null}
+          mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
+        />
       </div>
       <TopBar current={current} />
       {scene && <Caption scene={scene} manifest={manifest} />}
@@ -66,7 +85,8 @@ export function App() {
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
-        {ROBOT && robotOpen && mode === "overview" && <RobotPanel key="robot" t={robot} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "compare" && <RobotPanel key="robot" t={robot} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "mission" && scene && <MissionPanel key="mission" scene={scene} actions={actions} mission={mission} />}
         {uploadOpen && <UploadPanel key="upload" />}
         {roomsOpen && <RoomsPanel key="rooms" />}
         {building2 && <BuildProgress key="progress" building={building2} />}

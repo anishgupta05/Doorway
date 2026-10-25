@@ -37,8 +37,8 @@ export function interactionTests(scene: Scene): TestResult[] {
     if (!a) continue;
     // Anything this object could hit: solid things on the floor, except itself and what it's mounted in.
     const obstacles = scene.objects
-      // Floor-standing only: things resting on a counter can't be hit by a door swinging below them.
-      .filter((x) => x.id !== o.id && SOLID.has(x.type) && x.position[1] < 0.3)
+      // Only things at the same height as the moving part: a wall cabinet's doors pass over the counter below.
+      .filter((x) => x.id !== o.id && SOLID.has(x.type) && x.position[1] < o.position[1] + o.size[1] && x.position[1] + x.size[1] > o.position[1] + 0.05)
       .filter((x) => !(o.type === "drawer" && x.type === "cabinet" && inside(footprint(x), o.position[0], o.position[2])))
       .map(footprint);
 

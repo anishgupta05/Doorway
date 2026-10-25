@@ -24,6 +24,7 @@ function describe(o: SceneObject): Result {
   const a = o.articulation!;
   switch (a.kind) {
     case "hinge": {
+      if (o.type !== "door") return { id: o.id, ok: true, text: "front door opens" };
       const sweep = Math.abs(a.range[1] - a.range[0]);
       const ok = sweep > (60 * Math.PI) / 180;
       return { id: o.id, ok, text: ok ? `swings open ${Math.round((sweep * 180) / Math.PI)}°` : `only opens ${Math.round((sweep * 180) / Math.PI)}°` };
@@ -97,7 +98,16 @@ function TestGlyph({ o, lift, active, result }: { o: SceneObject; lift: number; 
   const color = result ? (result.ok ? ACCENT : "#ef6b6b") : active ? ACCENT : "#6b717b";
   const opacity = active || result ? 0.9 : 0.35;
   let glyph: React.ReactNode = null;
-  if (a.kind === "hinge") {
+  if (a.kind === "hinge" && o.type !== "door") {
+    // Cabinets etc. swing a front door leaf out from their front-left edge.
+    const leaf = w / Math.max(1, Math.ceil(w / 0.6));
+    glyph = (
+      <mesh position={[-w / 2, 0.01, d / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.03, leaf, 32, 1, -Math.PI / 2, Math.PI / 2]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity * 0.28} side={THREE.DoubleSide} toneMapped={false} depthWrite={false} />
+      </mesh>
+    );
+  } else if (a.kind === "hinge") {
     const lo = Math.min(...a.range);
     const len = Math.abs(a.range[1] - a.range[0]);
     const startsAtPi = a.pivot[0] > 0;

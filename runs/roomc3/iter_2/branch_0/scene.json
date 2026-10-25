@@ -1,0 +1,448 @@
+{
+  "version": 1,
+  "name": "Office Copy and Mail Room",
+  "room": {
+    "width": 3.2,
+    "depth": 3.4,
+    "height": 3.2,
+    "wallColor": "#d7d6d2",
+    "floorColor": "#7b7a78",
+    "floorMaterial": "carpet",
+    "wallLook": "plaster",
+    "wallLooks": {
+      "north": "brick"
+    },
+    "unseenWalls": [],
+    "openings": [
+      {
+        "wall": "north",
+        "kind": "window",
+        "offset": 0,
+        "width": 2.4,
+        "height": 1.6,
+        "sill": 0.75,
+        "view": "outdoors",
+        "shape": "arch"
+      },
+      {
+        "wall": "south",
+        "kind": "door",
+        "offset": 0,
+        "width": 1.1,
+        "height": 2.3,
+        "sill": 0,
+        "view": "indoors",
+        "shape": "rect"
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "lower counter cabinets",
+      "position": [
+        1.3,
+        0,
+        0.3
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        2.8,
+        0.9,
+        0.6
+      ],
+      "color": "#d7d7d5",
+      "material": "wood",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -1.4,
+          0,
+          0.3
+        ],
+        "range": [
+          0,
+          1.1
+        ]
+      }
+    },
+    {
+      "id": "cabinet_2",
+      "type": "cabinet",
+      "label": "upper wall cabinets",
+      "position": [
+        1.41,
+        1.45,
+        0.3
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        2.8,
+        0.85,
+        0.38
+      ],
+      "color": "#d7d7d5",
+      "material": "wood",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -1.4,
+          0,
+          0.19
+        ],
+        "range": [
+          0,
+          1.5
+        ]
+      }
+    },
+    {
+      "id": "other_1",
+      "type": "other",
+      "label": "battery charging station",
+      "position": [
+        1.25,
+        0.9,
+        0.5
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.3,
+        0.45,
+        0.25
+      ],
+      "color": "#262928",
+      "material": "plastic",
+      "decor": true
+    },
+    {
+      "id": "other_2",
+      "type": "other",
+      "label": "paper trimmer",
+      "position": [
+        1.25,
+        0.9,
+        -0.9
+      ],
+      "rotationY": -1.5708,
+      "size": [
+        0.55,
+        0.1,
+        0.45
+      ],
+      "color": "#cfa15a",
+      "material": "wood",
+      "decor": true
+    },
+    {
+      "id": "other_3",
+      "type": "other",
+      "label": "grey paper shredder",
+      "position": [
+        0.35,
+        0,
+        -1.5
+      ],
+      "rotationY": 0,
+      "size": [
+        0.45,
+        0.65,
+        0.35
+      ],
+      "color": "#7b8084",
+      "material": "plastic",
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      }
+    },
+    {
+      "id": "other_4",
+      "type": "other",
+      "label": "black paper shredder",
+      "position": [
+        -0.1,
+        0,
+        -1.5
+      ],
+      "rotationY": 0,
+      "size": [
+        0.4,
+        0.6,
+        0.3
+      ],
+      "color": "#3d3f42",
+      "material": "plastic",
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      }
+    },
+    {
+      "id": "other_5",
+      "type": "other",
+      "label": "Canon multifunction printer",
+      "position": [
+        -0.65,
+        0,
+        -1.3
+      ],
+      "rotationY": 0,
+      "size": [
+        0.62,
+        1.15,
+        0.7
+      ],
+      "color": "#d7d6d2",
+      "material": "plastic",
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": true
+      }
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "round chrome side table",
+      "position": [
+        -1.3,
+        0,
+        -1.4
+      ],
+      "rotationY": 0,
+      "size": [
+        0.45,
+        0.55,
+        0.45
+      ],
+      "color": "#b8b7b4",
+      "material": "metal",
+      "decor": true
+    },
+    {
+      "id": "cabinet_3",
+      "type": "cabinet",
+      "label": "bank of dark grey lockers",
+      "position": [
+        -1.35,
+        0,
+        -0.15
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        1.6,
+        1.8,
+        0.45
+      ],
+      "color": "#455054",
+      "material": "metal",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -0.8,
+          0,
+          0.225
+        ],
+        "range": [
+          0,
+          1.6
+        ]
+      },
+      "cells": [
+        4,
+        4
+      ],
+      "physics": {
+        "body": "static",
+        "mass": 120,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "partition_1",
+      "type": "partition",
+      "label": "alcove dividing wall by lockers",
+      "position": [
+        -1.3,
+        0,
+        0.75
+      ],
+      "rotationY": 3.1416,
+      "size": [
+        0.55,
+        3.2,
+        0.15
+      ],
+      "color": "#d7d6d2",
+      "material": "paint",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 200,
+        "friction": 0.8,
+        "collider": "box"
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "open",
+      "target": "cabinet_1",
+      "effect": "open lower counter cabinets"
+    },
+    {
+      "verb": "open",
+      "target": "cabinet_2",
+      "effect": "open upper wall cabinets"
+    },
+    {
+      "verb": "open",
+      "target": "cabinet_3",
+      "effect": "open locker doors"
+    },
+    {
+      "verb": "toggle",
+      "target": "other_3",
+      "effect": "power"
+    },
+    {
+      "verb": "toggle",
+      "target": "other_4",
+      "effect": "power"
+    },
+    {
+      "verb": "toggle",
+      "target": "other_5",
+      "effect": "power"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        0,
+        1.6,
+        1.5
+      ],
+      "lookAt": [
+        0.5,
+        1.2,
+        -1.5
+      ]
+    },
+    {
+      "t": 14,
+      "position": [
+        -0.2,
+        1.6,
+        0.4
+      ],
+      "lookAt": [
+        1.3,
+        1.1,
+        0
+      ]
+    },
+    {
+      "t": 17,
+      "position": [
+        0.2,
+        1.6,
+        0.2
+      ],
+      "lookAt": [
+        0.2,
+        1.6,
+        -1.6
+      ]
+    },
+    {
+      "t": 24,
+      "position": [
+        0.4,
+        1.6,
+        0
+      ],
+      "lookAt": [
+        -0.8,
+        1,
+        -1.2
+      ]
+    },
+    {
+      "t": 28,
+      "position": [
+        0.5,
+        1.6,
+        0.2
+      ],
+      "lookAt": [
+        -1.35,
+        1.1,
+        -0.5
+      ]
+    },
+    {
+      "t": 38,
+      "position": [
+        -0.2,
+        1.6,
+        0.3
+      ],
+      "lookAt": [
+        1.3,
+        0.9,
+        0.2
+      ]
+    },
+    {
+      "t": 45,
+      "position": [
+        0.2,
+        1.6,
+        0.4
+      ],
+      "lookAt": [
+        -1.2,
+        1,
+        -0.6
+      ]
+    },
+    {
+      "t": 52,
+      "position": [
+        0,
+        1.6,
+        0.2
+      ],
+      "lookAt": [
+        1.3,
+        1,
+        -0.5
+      ]
+    }
+  ]
+}

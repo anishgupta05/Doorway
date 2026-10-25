@@ -1,0 +1,22 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "message": "Shifted about 0.5 m too far south (z is 0.3 instead of -0.2); its north end should be nearly flush with the north brick wall under the window arch.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Shifted about 0.5 m too far south (z is 0.3 instead of -0.2); its north end should align with cabinet_1 near the north brick wall.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_2",
+    "message": "Positioned about 0.4 m too far south (z is -0.85 instead of -1.25) so it stays on the north end of cabinet_1 once cabinet_1 is moved north.",
+    "severity": "low"
+  },
+  {
+    "objectId": "other_3",
+    "message": "Positioned about 0.2 m too far west (x is 0.4 instead of 0.6), leaving too wide a gap next to cabinet_1.",
+    "severity": "low"
+  }
+]

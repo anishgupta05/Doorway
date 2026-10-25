@@ -70,7 +70,8 @@ export function Lighting({ room, wide = false }: { room: Room; wide?: boolean })
         shadow-camera-near={1}
         shadow-camera-far={25}
       />
-      <Environment resolution={256} environmentIntensity={0.75}>
+      {/* frames={1}: the light formers never change, so bake the cube map once instead of every frame */}
+      <Environment frames={1} resolution={256} environmentIntensity={0.75}>
         <Lightformer form="rect" intensity={2.2} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[8, 8, 1]} color="#fff6ea" />
         <Lightformer form="rect" intensity={1.6} position={[0, 2, -6]} scale={[10, 3, 1]} color="#eaf2ff" />
         <Lightformer form="rect" intensity={0.8} position={[6, 2, 0]} rotation-y={-Math.PI / 2} scale={[8, 2, 1]} color="#ffe2c4" />
@@ -80,15 +81,19 @@ export function Lighting({ room, wide = false }: { room: Room; wide?: boolean })
   );
 }
 
+/** `?off=fx` drops the whole stack; `?off=ao,outline,bloom,smaa` drops single passes (for finding what costs frames). */
+const OFF = new Set((new URLSearchParams(location.search).get("off") ?? "").split(","));
+
 export function Effects({ quality = "high" }: { quality?: "high" | "low" }) {
+  if (OFF.has("fx")) return null;
   return (
     <EffectComposer multisampling={0} enableNormalPass={false} autoClear={false}>
-      <N8AO aoRadius={0.45} intensity={quality === "high" ? 2.4 : 1.6} distanceFalloff={0.6} halfRes={quality !== "high"} quality={quality === "high" ? "high" : "low"} />
-      <Outline visibleEdgeColor={0xc6f36b} hiddenEdgeColor={0x5d7a2a} edgeStrength={4} blur width={1200} />
-      <Bloom mipmapBlur luminanceThreshold={1.0} luminanceSmoothing={0.2} intensity={0.75} radius={0.7} />
+      {!OFF.has("ao") && <N8AO aoRadius={0.45} intensity={quality === "high" ? 2.4 : 1.6} distanceFalloff={0.6} halfRes={quality !== "high"} quality={quality === "high" ? "high" : "low"} />}
+      {!OFF.has("outline") && <Outline visibleEdgeColor={0xc6f36b} hiddenEdgeColor={0x5d7a2a} edgeStrength={4} blur width={1200} />}
+      {!OFF.has("bloom") && <Bloom mipmapBlur luminanceThreshold={1.0} luminanceSmoothing={0.2} intensity={0.75} radius={0.7} />}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.3} darkness={0.45} />
-      <SMAA />
+      {!OFF.has("smaa") && <SMAA />}
     </EffectComposer>
   );
 }

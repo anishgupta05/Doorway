@@ -55,6 +55,11 @@ export function Walk({ scene }: { scene: Scene }) {
   const vel = useRef(new THREE.Vector3());
   const ray = useMemo(() => new THREE.Raycaster(), []);
   const intro = useRef(0);
+  const frame = useRef(0);
+  const fwd = useMemo(() => new THREE.Vector3(), []);
+  const right = useMemo(() => new THREE.Vector3(), []);
+  const want = useMemo(() => new THREE.Vector3(), []);
+  const centre = useMemo(() => new THREE.Vector2(0, 0), []);
   const from = useRef({ pos: new THREE.Vector3(), quat: new THREE.Quaternion() });
   // Start a few steps from the door, facing it: the judge's first move is to open it.
   const to = useMemo(() => {
@@ -120,12 +125,11 @@ export function Walk({ scene }: { scene: Scene }) {
     }
 
     const k = keys.current;
-    const fwd = new THREE.Vector3();
     camera.getWorldDirection(fwd);
     fwd.y = 0;
     fwd.normalize();
-    const right = new THREE.Vector3().crossVectors(fwd, camera.up).normalize();
-    const want = new THREE.Vector3();
+    right.crossVectors(fwd, camera.up).normalize();
+    want.set(0, 0, 0);
     if (k.KeyW || k.ArrowUp) want.add(fwd);
     if (k.KeyS || k.ArrowDown) want.sub(fwd);
     if (k.KeyD || k.ArrowRight) want.add(right);
@@ -143,8 +147,9 @@ export function Walk({ scene }: { scene: Scene }) {
     const moving = Math.hypot(vel.current.x, vel.current.z);
     p.y = THREE.MathUtils.damp(p.y, EYE + Math.sin(performance.now() / 160) * 0.012 * Math.min(moving / 1.5, 1), 12, dt);
 
-    // Crosshair hover.
-    ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+    // Crosshair hover. 20 Hz is plenty and keeps the scene-wide raycast off most frames.
+    if (++frame.current % 3 !== 0) return;
+    ray.setFromCamera(centre, camera);
     ray.far = REACH;
     const hits = ray.intersectObjects(three.children, true);
     let hovered: string | null = null;

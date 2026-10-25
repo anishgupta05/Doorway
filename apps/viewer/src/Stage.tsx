@@ -1,5 +1,6 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { PerformanceMonitor, Stats as FpsStats } from "@react-three/drei";
 import { Selection } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { Scene } from "@doorway/schema";
@@ -39,17 +40,25 @@ export function Stage({
   const preview = useApp((s) => s.preview !== null);
   const renderMode = useApp((s) => s.renderMode);
   const outside = mode === "overview" || mode === "convergence";
+  // Start high; PerformanceMonitor drops to "low" (1x pixels, cheaper AO) if the frame rate sags.
+  const [quality, setQuality] = useState<"high" | "low">("high");
+  // Debug knobs: ?perf shows an FPS meter, ?dpr=1 forces pixel ratio, ?off=fx,shadows turns features off (see Effects for pass names).
+  const qs = new URLSearchParams(location.search);
+  const showFps = qs.has("perf");
+  const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
   return (
     <Canvas
-      shadows="percentage"
-      dpr={[1, 2]}
+      shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}
+      dpr={forcedDpr ?? (quality === "high" ? [1, 1.5] : 1)}
       gl={{ antialias: false, powerPreference: "high-performance", preserveDrawingBuffer: true }}
       camera={{ fov: 42, near: 0.05, far: 80, position: [9, 8, 10] }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.NoToneMapping; // ACES is applied in the post stack
       }}
     >
+      <PerformanceMonitor flipflops={2} onDecline={() => setQuality("low")} onFallback={() => setQuality("low")} />
+      {showFps && <FpsStats />}
       <color attach="background" args={["#0b0c0e"]} />
       <fog attach="fog" args={["#0b0c0e", 18, 40]} />
       {scene && (
@@ -57,7 +66,7 @@ export function Stage({
           <Lighting room={scene.room} wide={splitOn} />
           <Selection>
             {splitOn ? <SplitRooms pair={split!} /> : <SceneView scene={scene} cutaway={outside} />}
-            <Effects />
+            <Effects quality={quality} />
           </Selection>
           {mode === "overview" && !tests && !renderMode && !splitOn && !building && <CameraTrail keys={scene.camera_path} autoplay />}
           {/* Always mounted (see IssueMarkers); emptied when the current view shouldn't show it. */}

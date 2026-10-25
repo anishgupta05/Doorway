@@ -17,6 +17,7 @@
     "thumbs": "tsx scripts/thumbs.ts",
     "record-truth": "tsx scripts/record-truth.ts",
     "export:mjcf": "tsx scripts/export-mjcf.ts",
+    "check:mjcf": "tsx scripts/mjcf-check.ts",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
     "loop": "npm run loop -w @doorway/orchestrator --"
   },

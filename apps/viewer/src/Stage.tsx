@@ -17,6 +17,9 @@ import { Html } from "@react-three/drei";
 import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
 import { RobotSim } from "./robot/RobotSim";
+import { MissionSim } from "./robot/MissionSim";
+import type { Mission } from "./robot/mission";
+import type { Vec2 } from "./robot/planner";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { sfx } from "./sfx";
 
@@ -30,6 +33,7 @@ export function Stage({
   k = null,
   split = null,
   robot = null,
+  mission = null,
 }: {
   scene: Scene | null;
   prevScene: Scene | null;
@@ -38,6 +42,7 @@ export function Stage({
   k?: number | null;
   split?: SplitPair | null;
   robot?: ReturnType<typeof useRobotTask> | null;
+  mission?: { mission: Mission; start: Vec2; runKey: string | null } | null;
 }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
@@ -52,7 +57,9 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
-  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
+  const compareOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
+  // Either robot view hides the camera trail and issue markers, so the robot's work is clear.
+  const robotOn = compareOn || (!!mission && mode === "overview");
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}
@@ -82,7 +89,8 @@ export function Stage({
           })()}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
           {tests && <TestViz scene={scene} />}
-          {robotOn && (
+          {mission && mode === "overview" && !splitOn && <MissionSim mission={mission.mission} start={mission.start} runKey={mission.runKey} />}
+          {compareOn && (
             <RobotSim
               grid={robot!.sim!.grid}
               start={robot!.task!.start}

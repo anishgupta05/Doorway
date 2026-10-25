@@ -4,6 +4,7 @@ import { useApp } from "../store";
 import { sfx } from "../sfx";
 import { CELL, ROBOT_RADIUS } from "./planner";
 import { goToStep, type useRobotTask } from "./useRobotTask";
+import { RobotTabs } from "./MissionPanel";
 
 const cm = (m: number) => `${Math.round(m * 100)} cm`;
 
@@ -125,7 +126,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     >
       <div className="flex items-center justify-between px-4 pt-3">
         <div className="text-sm font-medium">Robot task</div>
-        <div className="font-mono text-[10px] text-muted">planning in the replica</div>
+        <RobotTabs />
       </div>
       {children}
     </motion.div>

@@ -1,0 +1,27 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 front door hits other_3 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Cabinet extends all the way to the north brick wall (x=1.4, z=-0.35, width=2.5 reaches z=-1.6), whereas in the footage it stops about 0.35 m short of the north wall, flush with the eastern edge of the window arch.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Upper cabinet stops about 0.35 m short of the north wall in the footage, but in the scene its 2.5 m width centered at z=-0.35 extends all the way to the north wall (z=-1.6).",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_3",
+    "message": "Locker handles are oriented horizontally at the top center of each door, whereas in the footage they are vertical keypad locks located near the top-left of each locker door.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Cabinet door handles are oriented vertically in the render, whereas in the footage they are horizontal black bar handles near the top edge of the doors.",
+    "severity": "low"
+  }
+]

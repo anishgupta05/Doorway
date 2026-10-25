@@ -1,0 +1,187 @@
+{
+  "id": "roomc4",
+  "title": "Office Copy and Mail Room",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 1,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix cabinet_1 door collision with other_3 by flipping its hinge pivot to the south side (+1.25) and reversing the opening range, plus explicitly setting cells so individual doors open cleanly.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Add the missing countertop office supplies (laminator, digital clock, stapler/tape/hole-punch organizer set, and tissue box) along cabinet_1 and shift other_3 slightly west to clear cabinet_1.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift the multifunction printer (other_5) 0.15 m east and 0.1 m north closer to the arched window so it no longer obscures table_1 and plant_1, and adjust shredders for clearance.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 3,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shorten cabinet_1 so it stops 0.35 m short of the north wall and reduce its hinge range so the door clears other_3 while keeping other_2 on the counter.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shorten both cabinet_1 and cabinet_2 to stop 0.35 m short of the north brick wall and adjust their pivots and opening range to prevent colliding with other_3.",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift shredders other_3 and other_4 slightly west away from cabinet_1 and reduce cabinet_1 hinge range so its door opens without hitting other_3.",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": "iter_2/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_2/branch_3/scene.json",
+          "thumb": "iter_2/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 3,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Add 5 door cells to cabinet_1 and reduce its opening angle so the doors clear other_3 during the interaction test.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Reduce cabinet_1 hinge opening range to 0.25 radians so the door opens without colliding with shredder other_3.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shorten cabinet_1 and cabinet_2 to stop 0.35 m short of the north wall while shifting trimmer other_2 onto the shortened counter and reducing hinge range.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_3/branch_3/scene.json",
+          "thumb": "iter_3/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 4,
+      "selected": 3,
+      "issues": "iter_4/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Change cabinet_1 articulation to a south-side hinge with positive opening range so the door swings away from other_3.",
+          "scene": "iter_4/branch_0/scene.json",
+          "thumb": "iter_4/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: cabinet_1 lost its hinge",
+          "hypothesis": "Change cabinet_1 to a slide articulation and move other_3 slightly west so cabinet_1 opens cleanly without colliding.",
+          "scene": "iter_4/branch_1/scene.json",
+          "thumb": "iter_4/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift cabinet_2 slightly south and shorten it to stop 0.35 m short of the north wall while keeping cabinet_1 range small enough to clear other_3.",
+          "scene": "iter_4/branch_2/scene.json",
+          "thumb": "iter_4/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.82,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_4/branch_3/scene.json",
+          "thumb": "iter_4/branch_3/thumb.png"
+        }
+      ]
+    }
+  ]
+}

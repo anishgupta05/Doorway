@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { RunManifest, Scene } from "@doorway/schema";
 import { useApp } from "../store";
-import { KEYS } from "../hotkeys";
+import { ESSENTIAL, KEYS } from "../hotkeys";
 
 const ATTRACT = [
   ["A phone video in.", "A working simulation out."],
@@ -37,7 +37,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   else if (idle && mode === "overview") [title, sub] = ATTRACT[attract];
   else [title, sub] = [`A working 3D room, built from your video`, `${scene.room.width} × ${scene.room.depth} m with a ${scene.room.floorMaterial} floor${night ? ", at night" : ""}.`];
 
-  if (mode === "walk" || mode === "convergence") return null;
+  if (mode === "walk" || mode === "convergence" || mode === "progress") return null;
   return (
     <div className={`pointer-events-none absolute z-10 max-w-3xl ${building ? "bottom-16 left-[440px]" : "bottom-16 left-6"}`}>
       {/* soft shade so the text stays readable over any room */}
@@ -78,21 +78,34 @@ function Stats({ scene }: { scene: Scene; manifest: RunManifest | undefined }) {
   );
 }
 
+/** The essential demo keys are always on screen; "?" shows every shortcut. */
 export function Legend() {
   const mode = useApp((s) => s.mode);
   const open = useApp((s) => s.legendOpen);
-  if (mode === "walk" || mode === "compare") return null;
-  return (
-    <div className="absolute right-5 bottom-5 z-10 flex items-center gap-3 text-[11px] text-dim">
-      {open &&
-        KEYS.map((k) => (
-          <span key={k.key} className="pointer-events-none">
-            <kbd className="mr-1 rounded border border-line bg-panel/70 px-1 font-mono text-muted">{k.key}</kbd>
-            {k.label}
+  const keys = open ? KEYS : KEYS.filter((k) => ESSENTIAL.has(k.key));
+  // Walk mode has its own controls overlay; in Compare, sit above the timeline.
+  if (mode === "walk") {
+    return (
+      <div className="pointer-events-none absolute right-5 bottom-5 z-10 flex items-center gap-3 rounded-full bg-ink/60 px-3 py-1.5 text-[11px] text-muted backdrop-blur">
+        {[["E", "Open / switch"], ["WASD", "Move"], ["Esc", "Release mouse"], ["0", "Back"]].map(([k, l]) => (
+          <span key={k}>
+            <kbd className="mr-1 rounded border border-line bg-panel/80 px-1 font-mono text-fg">{k}</kbd>
+            {l}
           </span>
         ))}
-      <button onClick={() => useApp.setState({ legendOpen: !open })} className="rounded-full border border-line bg-panel/70 px-2.5 py-1 text-muted hover:text-fg" title="Keyboard shortcuts (?)">
-        {open ? "Hide keys" : "Keys ?"}
+      </div>
+    );
+  }
+  return (
+    <div className={`absolute right-5 z-10 flex max-w-[70vw] flex-wrap items-center justify-end gap-x-3 gap-y-1.5 rounded-2xl bg-ink/60 px-3 py-1.5 text-[11px] text-muted backdrop-blur ${mode === "compare" ? "bottom-20" : "bottom-5"}`}>
+      {keys.map((k) => (
+        <span key={k.key} className="pointer-events-none whitespace-nowrap">
+          <kbd className="mr-1 rounded border border-line bg-panel/80 px-1 font-mono text-fg">{k.key}</kbd>
+          {k.label}
+        </span>
+      ))}
+      <button onClick={() => useApp.setState({ legendOpen: !open })} className="rounded-full border border-line bg-panel/70 px-2 py-0.5 text-muted hover:text-fg" title="All keyboard shortcuts (?)">
+        {open ? "Fewer" : "All keys ?"}
       </button>
     </div>
   );

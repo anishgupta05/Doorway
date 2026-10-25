@@ -4,6 +4,7 @@ import { Stage, type SplitPair } from "./Stage";
 import { useRobotTask } from "./robot/useRobotTask";
 import { RobotPanel } from "./robot/RobotPanel";
 import { MissionPanel } from "./robot/MissionPanel";
+import { ProgressView } from "./views/ProgressView";
 import { actionsFor } from "./robot/actions";
 import { planMission } from "./robot/mission";
 import { startPoint } from "./robot/tasks";
@@ -85,6 +86,7 @@ export function App() {
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
+        {mode === "progress" && <ProgressView key="progress" />}
         {ROBOT && robotOpen && mode === "overview" && robotTab === "compare" && <RobotPanel key="robot" t={robot} />}
         {ROBOT && robotOpen && mode === "overview" && robotTab === "mission" && scene && <MissionPanel key="mission" scene={scene} actions={actions} mission={mission} />}
         {uploadOpen && <UploadPanel key="upload" />}

@@ -120,6 +120,8 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
       const list = existsSync(runs)
         ? readdirSync(runs)
             .filter((d) => ID.test(d) && existsSync(join(runs, d, "manifest.json")) || existsSync(jobPath(d)))
+            // Runs kept for history or tests (meta.json "hidden": true) don't show in the rooms list.
+            .filter((d) => !readJson(join(runs, d, "meta.json"))?.hidden)
             .map((d) => {
               const m = readJson(join(runs, d, "manifest.json"));
               const meta = readJson(join(runs, d, "meta.json"));

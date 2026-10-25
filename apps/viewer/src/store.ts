@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { RunManifest } from "@doorway/schema";
 
-export type Mode = "overview" | "compare" | "convergence" | "walk";
+export type Mode = "overview" | "compare" | "convergence" | "walk" | "progress";
 /** Which scene the stage shows: the one-pass v0, the latest iteration of the live run, or the frozen demo backup. */
 export type Version = "v0" | "latest" | "backup";
 export type RunIndex = { live: string; backup: string };

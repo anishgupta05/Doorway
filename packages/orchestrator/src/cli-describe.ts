@@ -11,7 +11,8 @@ const id = arg("id") ?? new Date().toISOString().slice(0, 16).replace(/[:T]/g, "
 const dir = resolve(import.meta.dirname, "../../../runs", id);
 
 const t0 = Date.now();
-const small = compressVideo(resolve(input), dir);
+// npm runs workspace scripts from the package folder; INIT_CWD is where the user typed the command.
+const small = compressVideo(resolve(process.env.INIT_CWD ?? process.cwd(), input), dir);
 console.log(`compressed -> ${(fileSize(small) / 1e6).toFixed(1)} MB`);
 const video = await uploadVideo(small);
 console.log(`uploaded (${((Date.now() - t0) / 1000).toFixed(0)}s)`);

@@ -7,6 +7,7 @@ import type { Branch, RunManifest } from "@doorway/schema";
 import { runUrl } from "../data/runs";
 import { useApp } from "../store";
 import { sfx } from "../sfx";
+import { hypothesis, pct, reason, roundName } from "../ui/plain";
 
 const STEP_MS = 2600;
 
@@ -59,10 +60,10 @@ export function ConvergencePanel({ manifest, runId, k }: { manifest: RunManifest
     >
       <div className="flex items-center justify-between border-b border-line px-5 py-3">
         <div className="flex items-baseline gap-3">
-          <div className="text-sm font-medium">Verification loop</div>
-          <div className="font-mono text-[11px] text-muted">
-            {iterations.length - 1} iterations · {iterations.reduce((n, it) => n + (it.k === 0 ? 0 : it.branches.length), 0)} parallel branches ·{" "}
-            <span className="text-bad">{iterations.reduce((n, it) => n + it.branches.filter((b) => b.verdict === "fail").length, 0)} rejected by guards</span>
+          <div className="text-sm font-medium">How Doorway checked its work</div>
+          <div className="text-[12px] text-muted">
+            It tried {iterations.reduce((n, it) => n + (it.k === 0 ? 0 : it.branches.length), 0)} ideas.{" "}
+            <span className="text-bad">{iterations.reduce((n, it) => n + it.branches.filter((b) => b.verdict === "fail").length, 0)} would have broken something, so they were thrown out.</span>
           </div>
         </div>
         <Sparkline scores={scores} total={iterations.length} />
@@ -79,9 +80,9 @@ export function ConvergencePanel({ manifest, runId, k }: { manifest: RunManifest
                 transition={{ type: "spring", stiffness: 220, damping: 26 }}
                 className="w-[250px] shrink-0"
               >
-                <div className="mb-2 flex items-center justify-between font-mono text-[10.5px] tracking-wider text-muted uppercase">
-                  <span className={k === it.k && !preview ? "text-fg" : ""}>{it.k === 0 ? "v0 · one pass" : `iteration ${it.k}`}</span>
-                  {revealed && <span className="text-accent tabular">{it.branches[it.selected]?.score.toFixed(2)}</span>}
+                <div className="mb-2 flex items-center justify-between text-[12px] font-medium text-muted">
+                  <span className={k === it.k && !preview ? "text-fg" : ""}>{roundName(it.k)}</span>
+                  {revealed && <span className="text-accent tabular">{pct(it.branches[it.selected]?.score ?? 0)}</span>}
                 </div>
                 <div className="flex flex-col gap-2">
                   {it.branches.map((b, row) => (
@@ -108,7 +109,7 @@ export function ConvergencePanel({ manifest, runId, k }: { manifest: RunManifest
       </div>
       {preview && (
         <div className="border-t border-line px-5 py-2 font-mono text-[11px] text-warn">
-          Previewing a rejected branch. Press 4 and try it yourself, or Esc to go back.
+          Previewing an idea that was thrown out. Press 4 to explore it yourself, or Esc to go back.
         </div>
       )}
     </motion.div>
@@ -146,32 +147,17 @@ function BranchCard({
       <div className="flex gap-2.5 p-2">
         <Thumb src={b.thumb ? runUrl(runId, b.thumb) : null} failed={failed} />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between font-mono text-[10px] text-muted">
-            <span>branch {b.i}</span>
-            <span className={`tabular ${failed ? "text-bad" : selected ? "text-accent" : ""}`}>{judged ? (failed ? "—" : b.score.toFixed(2)) : "…"}</span>
+          <div className="flex items-center justify-between text-[11px] text-muted">
+            <span className={`rounded-full px-2 py-px text-[10.5px] font-semibold ${selected ? "bg-accent text-ink" : failed ? "bg-bad/15 text-bad" : ""}`}>
+              {selected ? "✓ Kept" : failed ? "✗ Thrown out" : judged ? "Not chosen" : "Trying…"}
+            </span>
+            <span className={`tabular ${failed ? "text-bad" : selected ? "text-accent" : ""}`}>{judged ? (failed ? "—" : pct(b.score)) : "…"}</span>
           </div>
           {/* hypothesis comes from the model: plain text only */}
-          <div className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/90">{b.hypothesis ?? "—"}</div>
-          {failed && b.reason && <div className="mt-1 line-clamp-2 font-mono text-[10px] leading-snug text-bad">{b.reason}</div>}
+          <div className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/90">{hypothesis(b.hypothesis) || "—"}</div>
+          {failed && b.reason && <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-bad">{reason(b.reason)}</div>}
         </div>
       </div>
-      <AnimatePresence>
-        {failed && (
-          <motion.div
-            initial={{ scale: 2.2, opacity: 0, rotate: -14 }}
-            animate={{ scale: 1, opacity: 1, rotate: -10 }}
-            transition={{ delay: delay + 0.1, type: "spring", stiffness: 500, damping: 18 }}
-            className="pointer-events-none absolute top-2 right-2 rounded border-2 border-bad px-1.5 font-mono text-[10px] font-bold tracking-widest text-bad"
-          >
-            REJECTED
-          </motion.div>
-        )}
-        {selected && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pointer-events-none absolute top-2 right-2 rounded-full bg-accent px-1.5 font-mono text-[10px] font-bold text-ink">
-            ✓ SURVIVES
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.button>
   );
 }
@@ -202,8 +188,8 @@ function Sparkline({ scores, total }: { scores: number[]; total: number }) {
         ))}
       </svg>
       <div className="text-right">
-        <div className="font-mono text-lg leading-none text-accent tabular">{last !== undefined ? last.toFixed(2) : "—"}</div>
-        <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted uppercase">match score</div>
+        <div className="font-mono text-lg leading-none text-accent tabular">{last !== undefined ? pct(last) : "—"}</div>
+        <div className="mt-0.5 text-[10px] text-muted">match with your video</div>
       </div>
     </div>
   );

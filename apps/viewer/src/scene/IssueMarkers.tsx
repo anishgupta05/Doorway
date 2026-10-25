@@ -75,20 +75,20 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
           initial={{ opacity: 0, y: 8, scale: 0.9 }}
           animate={state === "open" ? { opacity: 1, y: 0, scale: 1 } : { opacity: [0, 1, 1, 0], y: [8, 0, 0, -10], scale: [0.9, 1.08, 1, 1] }}
           transition={state === "open" ? { duration: 0.35 } : { duration: 3.4, times: [0, 0.12, 0.7, 1] }}
-          className={`pointer-events-none flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] whitespace-nowrap shadow-lg backdrop-blur ${
+          className={`pointer-events-none flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] whitespace-nowrap shadow-lg backdrop-blur ${
             state === "open" ? "border-bad/60 bg-ink/85 text-fg" : "border-accent/70 bg-ink/85 text-fg"
           }`}
         >
           {state === "open" ? (
             <>
               <span className="h-1.5 w-1.5 rounded-full bg-bad" />
-              <span>{o.id}</span>
+              <span className="font-medium">{o.label ?? o.type}</span>
               <span className="text-muted">· {short}</span>
             </>
           ) : (
             <>
-              <span className="text-accent">✓ fixed</span>
-              <span>{o.id}</span>
+              <span className="text-accent">✓</span>
+              <span className="font-medium">{o.label ?? o.type} fixed</span>
             </>
           )}
         </motion.div>

@@ -1,4 +1,5 @@
 import { Suspense, useState } from "react";
+import { roundName } from "./ui/plain";
 import { Canvas } from "@react-three/fiber";
 import { PerformanceMonitor, Stats as FpsStats } from "@react-three/drei";
 import { Selection } from "@react-three/postprocessing";
@@ -93,7 +94,7 @@ function SplitRooms({ pair }: { pair: SplitPair }) {
     <div className="pointer-events-none rounded-xl border border-line bg-ink/85 px-4 py-2 text-center whitespace-nowrap shadow-xl backdrop-blur">
       <div className="text-[15px] font-semibold tracking-tight">{title}</div>
       {score !== undefined && (
-        <div className={`font-mono text-[12px] tabular ${good ? "text-accent" : "text-bad"}`}>match {score.toFixed(2)}</div>
+        <div className={`text-[12px] tabular ${good ? "text-accent" : "text-bad"}`}>{Math.round(score * 100)}% match</div>
       )}
     </div>
   );
@@ -103,13 +104,13 @@ function SplitRooms({ pair }: { pair: SplitPair }) {
       <group position={[off, 0, 0]}>
         <SceneView scene={pair.before} cutaway />
         <Html position={[0, pair.before.room.height + 0.9, 0]} center zIndexRange={[20, 0]}>
-          {label("v0 · one pass", pair.beforeScore, false)}
+          {label(roundName(0), pair.beforeScore, false)}
         </Html>
       </group>
       <group position={[-off, 0, 0]}>
         <SceneView scene={pair.after} cutaway />
         <Html position={[0, pair.after.room.height + 0.9, 0]} center zIndexRange={[20, 0]}>
-          {label(`after ${pair.iterations} iterations`, pair.afterScore, true)}
+          {label(roundName(pair.iterations), pair.afterScore, true)}
         </Html>
       </group>
     </>

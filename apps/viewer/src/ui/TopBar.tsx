@@ -1,5 +1,5 @@
 import type { useCurrentScene } from "../data/runs";
-import { useApp, type Mode, type Version } from "../store";
+import { useApp, type Mode } from "../store";
 import { sfx } from "../sfx";
 
 export function DoorMark({ className = "" }: { className?: string }) {
@@ -15,18 +15,11 @@ export function DoorMark({ className = "" }: { className?: string }) {
 const MODES: { mode: Mode; label: string; key: string }[] = [
   { mode: "overview", label: "Overview", key: "0" },
   { mode: "compare", label: "Compare", key: "1" },
-  { mode: "convergence", label: "Convergence", key: "2" },
-  { mode: "walk", label: "Walk", key: "4" },
+  { mode: "convergence", label: "How it improved", key: "2" },
+  { mode: "walk", label: "Explore", key: "4" },
 ];
-const VERSIONS: { v: Version; label: string }[] = [
-  { v: "v0", label: "v0" },
-  { v: "latest", label: "latest" },
-  { v: "backup", label: "backup" },
-];
-
 export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene> }) {
   const mode = useApp((s) => s.mode);
-  const version = useApp((s) => s.version);
   const { manifest, branch, preview } = current;
   if (mode === "walk") {
     return (
@@ -62,23 +55,18 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
       </div>
 
       <div className="pointer-events-auto flex items-center gap-3">
-        <div className="flex items-center gap-0.5 rounded-full border border-line bg-panel/80 p-1 font-mono text-[11px] backdrop-blur">
-          {VERSIONS.map((v) => (
-            <button
-              key={v.v}
-              onClick={() => {
-                sfx.tick();
-                useApp.getState().setVersion(v.v);
-              }}
-              className={`rounded-full px-2.5 py-1 transition ${version === v.v && !preview ? "bg-panel-2 text-fg" : "text-muted hover:text-fg"}`}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-        <div className="rounded-full border border-line bg-panel/80 px-3 py-1.5 font-mono text-[11px] backdrop-blur">
-          <span className="text-muted">match </span>
-          <span className={`tabular ${preview ? "text-bad" : "text-accent"}`}>{branch ? (branch.verdict === "fail" ? "rejected" : branch.score.toFixed(2)) : "—"}</span>
+        <button
+          onClick={() => {
+            sfx.tick();
+            useApp.setState({ uploadOpen: true });
+          }}
+          className="rounded-full bg-accent px-4 py-1.5 text-[13px] font-semibold text-ink transition hover:brightness-110"
+        >
+          + New video
+        </button>
+        <div className="rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[12px] backdrop-blur">
+          <span className="text-muted">Match </span>
+          <span className={`tabular ${preview ? "text-bad" : "text-accent"}`}>{branch ? (branch.verdict === "fail" ? "thrown out" : `${Math.round(branch.score * 100)}%`) : "—"}</span>
         </div>
       </div>
     </div>

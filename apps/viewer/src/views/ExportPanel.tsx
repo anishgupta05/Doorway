@@ -32,8 +32,8 @@ export function ExportPanel({ scene }: { scene: Scene }) {
       <div className="border-b border-line px-5 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm font-medium">Export to MuJoCo</div>
-            <div className="mt-0.5 font-mono text-[11px] text-muted">MJCF · z-up · meters, kg, radians</div>
+            <div className="text-sm font-medium">Send to a robot simulator</div>
+            <div className="mt-0.5 text-[12px] text-muted">A ready-to-load model file for MuJoCo</div>
           </div>
           <div className="flex gap-2">
             <button
@@ -47,20 +47,20 @@ export function ExportPanel({ scene }: { scene: Scene }) {
               {copied ? "Copied" : "Copy"}
             </button>
             <button onClick={download} className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-ink">
-              Download .xml
+              Download file
             </button>
           </div>
         </div>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {[
-            [scene.objects.length, "bodies"],
-            [joints, "joints"],
-            [free, "free bodies"],
+            [scene.objects.length, "objects"],
+            [joints, "moving parts"],
+            [free, "pushable"],
             [lights, "lights"],
           ].map(([n, label]) => (
             <div key={label as string} className="rounded-lg border border-line bg-panel px-3 py-2">
               <div className="font-mono text-lg leading-none text-fg tabular">{n}</div>
-              <div className="mt-1 font-mono text-[9.5px] tracking-wider text-muted uppercase">{label}</div>
+              <div className="mt-1 text-[11px] text-muted">{label}</div>
             </div>
           ))}
         </div>
@@ -72,7 +72,7 @@ export function ExportPanel({ scene }: { scene: Scene }) {
           </div>
         ))}
       </pre>
-      <div className="border-t border-line px-5 py-2 font-mono text-[10.5px] text-dim">Press X to close · Isaac (USD) export next</div>
+      <div className="border-t border-line px-5 py-2 text-[11px] text-dim">Press X to close · Isaac Sim export coming next</div>
     </motion.div>
   );
 }

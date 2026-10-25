@@ -5,13 +5,16 @@ import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
 import { TopBar } from "./ui/TopBar";
-import { Caption, Legend } from "./ui/Caption";
+import { Caption, Legend, Tip } from "./ui/Caption";
 import { CompareView } from "./views/CompareView";
 import { ConvergencePanel } from "./views/ConvergencePanel";
 import { BuildPanel } from "./views/BuildPanel";
 import { ExportPanel } from "./views/ExportPanel";
 import { WalkOverlay } from "./views/WalkOverlay";
 import { UploadPanel } from "./views/UploadPanel";
+import { RoomsPanel } from "./views/RoomsPanel";
+import { BuildProgress } from "./views/BuildProgress";
+import { EmptyState } from "./ui/EmptyState";
 
 export function App() {
   useRunData();
@@ -24,6 +27,9 @@ export function App() {
   const building = useApp((s) => s.buildCount !== null);
   const exportOpen = useApp((s) => s.exportOpen);
   const uploadOpen = useApp((s) => s.uploadOpen);
+  const roomsOpen = useApp((s) => s.roomsOpen);
+  const building2 = useApp((s) => s.building);
+  const loadError = useApp((s) => s.loadError);
 
   const stepIter = useCallback(
     (d: number) => {
@@ -54,13 +60,16 @@ export function App() {
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
         {uploadOpen && <UploadPanel key="upload" />}
+        {roomsOpen && <RoomsPanel key="rooms" />}
+        {building2 && <BuildProgress key="progress" building={building2} />}
       </AnimatePresence>
       {mode === "walk" && scene && <WalkOverlay scene={scene} />}
-      {!scene && (
+      {!scene && (loadError ? <EmptyState /> : (
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-sm text-muted">Opening your room…</div>
         </div>
-      )}
+      ))}
+      {scene && <Tip />}
     </div>
   );
 }

@@ -1,31 +1,36 @@
-// Start a new room: pick or drop a video. Capture is the front door of the product; processing is wired up by the loop.
+// Start a new room: name it, pick or drop a video, and hand it to the builder (see BuildProgress).
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useApp } from "../store";
 
 const close = () => useApp.setState({ uploadOpen: false });
+const guess = (f: File) => f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").replace(/^IMG \d+$/i, "").trim();
 
 export function UploadPanel() {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
+  const [name, setName] = useState("");
   const [over, setOver] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
 
   const pick = (f: File | undefined) => {
-    if (!f || !f.type.startsWith("video/")) return;
+    if (!f) return;
+    if (!f.type.startsWith("video/") && !/\.(mp4|mov|m4v|webm)$/i.test(f.name)) return setNote("Please choose a video file (MP4, MOV or WebM).");
+    setNote(null);
     if (url) URL.revokeObjectURL(url);
     setFile(f);
     setUrl(URL.createObjectURL(f));
+    if (!name) setName(guess(f));
+  };
+
+  const build = () => {
+    if (!file || !url) return;
+    useApp.setState({ building: { id: null, name: name.trim() || "New room", src: url, file }, uploadOpen: false });
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="absolute inset-0 z-40 grid place-items-center bg-ink/70 backdrop-blur-sm"
-      onClick={close}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 grid place-items-center bg-ink/70 backdrop-blur-sm" onClick={close}>
       <motion.div
         initial={{ y: 24, scale: 0.98 }}
         animate={{ y: 0, scale: 1 }}
@@ -67,19 +72,25 @@ export function UploadPanel() {
             </div>
           )}
         </div>
-        <input ref={input} type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+        <input ref={input} type="file" accept="video/*,.mov,.mp4,.m4v,.webm" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+        {note && <div className="mt-2 text-[12px] text-bad">{note}</div>}
+
+        <label className="mt-5 block text-[12px] text-muted">
+          Room name
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Home office, Kitchen, Judging room…"
+            className="mt-1 w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-[14px] text-fg outline-none transition focus:border-accent/60"
+          />
+        </label>
 
         <div className="mt-5 flex items-center justify-between">
-          <div className="min-w-0 truncate text-[12px] text-muted">{file ? `${file.name} · ${(file.size / 1e6).toFixed(1)} MB` : "MP4 or MOV, about 60 seconds"}</div>
-          <button
-            disabled={!file}
-            onClick={close}
-            className="rounded-full bg-accent px-5 py-2 text-[13px] font-semibold text-ink transition enabled:hover:brightness-110 disabled:opacity-40"
-          >
+          <div className="min-w-0 truncate text-[12px] text-muted">{file ? `${file.name} · ${(file.size / 1e6).toFixed(1)} MB` : "MP4, MOV or WebM"}</div>
+          <button disabled={!file} onClick={build} className="rounded-full bg-accent px-5 py-2 text-[13px] font-semibold text-ink transition enabled:hover:brightness-110 disabled:opacity-40">
             Build my room
           </button>
         </div>
-        <div className="mt-3 text-[11px] text-dim">Preview only: uploads aren't connected to the builder yet.</div>
       </motion.div>
     </motion.div>
   );

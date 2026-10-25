@@ -13,6 +13,7 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "N", label: "Night" },
   { key: "X", label: "Export for robots" },
   { key: "U", label: "New video" },
+  { key: "L", label: "Your rooms" },
   { key: "R", label: "Reset" },
 ];
 
@@ -51,7 +52,8 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           break;
         case "Digit0":
         case "Escape":
-          if (s.exportOpen) useApp.setState({ exportOpen: false });
+          if (s.uploadOpen || s.roomsOpen) useApp.setState({ uploadOpen: false, roomsOpen: false });
+          else if (s.exportOpen) useApp.setState({ exportOpen: false });
           else if (!walking) {
             s.setPreview(null);
             useApp.setState({ tests: false });
@@ -79,6 +81,13 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           if (s.mode !== "overview") go("overview");
           useApp.setState({ split: !s.split, tests: false });
           sfx.whoosh();
+          break;
+        case "KeyL":
+          useApp.setState({ roomsOpen: !s.roomsOpen });
+          sfx.tick();
+          break;
+        case "Slash":
+          if (e.shiftKey) useApp.setState({ legendOpen: !s.legendOpen });
           break;
         case "KeyU":
           useApp.setState({ uploadOpen: !s.uploadOpen });

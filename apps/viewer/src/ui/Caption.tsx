@@ -77,15 +77,51 @@ function Stats({ scene }: { scene: Scene; manifest: RunManifest | undefined }) {
 
 export function Legend() {
   const mode = useApp((s) => s.mode);
+  const open = useApp((s) => s.legendOpen);
   if (mode === "walk" || mode === "compare") return null;
   return (
-    <div className="pointer-events-none absolute right-5 bottom-5 z-10 flex gap-3 font-mono text-[10px] text-dim">
-      {KEYS.map((k) => (
-        <span key={k.key}>
-          <kbd className="mr-1 rounded border border-line bg-panel/70 px-1 text-muted">{k.key}</kbd>
-          {k.label}
-        </span>
-      ))}
+    <div className="absolute right-5 bottom-5 z-10 flex items-center gap-3 text-[11px] text-dim">
+      {open &&
+        KEYS.map((k) => (
+          <span key={k.key} className="pointer-events-none">
+            <kbd className="mr-1 rounded border border-line bg-panel/70 px-1 font-mono text-muted">{k.key}</kbd>
+            {k.label}
+          </span>
+        ))}
+      <button onClick={() => useApp.setState({ legendOpen: !open })} className="rounded-full border border-line bg-panel/70 px-2.5 py-1 text-muted hover:text-fg" title="Keyboard shortcuts (?)">
+        {open ? "Hide keys" : "Keys ?"}
+      </button>
+    </div>
+  );
+}
+
+/** One-time hint for first-time visitors. */
+export function Tip() {
+  const [show, setShow] = useState(() => {
+    try {
+      return !localStorage.getItem("doorway-tip");
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!show) return;
+    const t = setTimeout(() => dismiss(), 12000);
+    return () => clearTimeout(t);
+  });
+  const dismiss = () => {
+    setShow(false);
+    try {
+      localStorage.setItem("doorway-tip", "1");
+    } catch {}
+  };
+  if (!show) return null;
+  return (
+    <div className="absolute top-24 left-1/2 z-20 -translate-x-1/2 rounded-full border border-line bg-panel/90 px-5 py-2 text-[13px] text-fg/90 shadow-xl backdrop-blur">
+      Press <kbd className="mx-1 rounded border border-line bg-ink px-1.5 font-mono text-[11px]">4</kbd> to walk inside, then <kbd className="mx-1 rounded border border-line bg-ink px-1.5 font-mono text-[11px]">E</kbd> to open doors and switch lights.
+      <button onClick={dismiss} className="ml-3 text-muted hover:text-fg" aria-label="Dismiss">
+        ✕
+      </button>
     </div>
   );
 }

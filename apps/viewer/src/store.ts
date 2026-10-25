@@ -35,6 +35,14 @@ type State = {
   /** Overview: v0 and the final room side by side. */
   split: boolean;
   uploadOpen: boolean;
+  roomsOpen: boolean;
+  /** A room being built from an uploaded video (progress screen). */
+  building: { id: string | null; name: string; src: string | null; file?: File } | null;
+  /** Display names (runs/<id>/meta.json), overriding the manifest title. */
+  names: Record<string, string>;
+  /** The run files couldn't be loaded: show the welcome screen instead of a spinner. */
+  loadError: boolean;
+  legendOpen: boolean;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -86,6 +94,11 @@ export const useApp = create<State>((set) => ({
   exportOpen: false,
   split: false,
   uploadOpen: false,
+  roomsOpen: false,
+  building: null,
+  names: {},
+  loadError: false,
+  legendOpen: false,
   renderMode: false,
   shake: false,
   wipe: 0.5,

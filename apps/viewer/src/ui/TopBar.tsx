@@ -1,5 +1,7 @@
 import type { useCurrentScene } from "../data/runs";
 import { useApp, type Mode } from "../store";
+import { useState } from "react";
+import { renameRoom } from "../data/api";
 import { sfx } from "../sfx";
 
 export function DoorMark({ className = "" }: { className?: string }) {
@@ -20,7 +22,11 @@ const MODES: { mode: Mode; label: string; key: string }[] = [
 ];
 export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene> }) {
   const mode = useApp((s) => s.mode);
-  const { manifest, branch, preview } = current;
+  const { manifest, branch, preview, runId } = current;
+  const names = useApp((s) => s.names);
+  const [editing, setEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const title = (runId && names[runId]) || manifest?.title || "—";
   if (mode === "walk") {
     return (
       <div className="pointer-events-none absolute top-5 left-5 z-30 flex items-center gap-2.5 opacity-70">
@@ -35,7 +41,23 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
         <DoorMark className="h-7 w-7 text-fg" />
         <div className="leading-tight">
           <div className="text-[15px] font-semibold tracking-tight">Doorway</div>
-          <div className="text-xs text-muted">{manifest?.title ?? "—"}</div>
+          {editing && runId ? (
+            <input
+              autoFocus
+              defaultValue={title}
+              onBlur={(e) => {
+                const n = e.target.value.trim();
+                setEditing(false);
+                if (n && n !== title) void renameRoom(runId, n).catch(() => {});
+              }}
+              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+              className="w-40 rounded border border-accent/60 bg-panel px-1.5 text-xs text-fg outline-none"
+            />
+          ) : (
+            <button onClick={() => runId && setEditing(true)} title="Click to rename" className="text-left text-xs text-muted hover:text-fg">
+              {title}
+            </button>
+          )}
         </div>
       </div>
 
@@ -55,6 +77,20 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
       </div>
 
       <div className="pointer-events-auto flex items-center gap-3">
+        <button onClick={() => useApp.setState({ roomsOpen: true })} className="rounded-full border border-line bg-panel/80 px-3.5 py-1.5 text-[13px] text-muted backdrop-blur transition hover:text-fg">
+          Rooms
+        </button>
+        <button
+          onClick={() => {
+            if (!runId) return;
+            void navigator.clipboard?.writeText(`${location.origin}/?run=${runId}`);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1400);
+          }}
+          className="rounded-full border border-line bg-panel/80 px-3.5 py-1.5 text-[13px] text-muted backdrop-blur transition hover:text-fg"
+        >
+          {copied ? "Link copied" : "Share"}
+        </button>
         <button
           onClick={() => {
             sfx.tick();

@@ -30,7 +30,8 @@ function cached(key: string, fn: () => Promise<string>): Promise<string> {
   if (process.env.DOORWAY_NOCACHE) return fn();
   mkdirSync(CACHE_DIR, { recursive: true });
   const file = join(CACHE_DIR, `${key}.txt`);
-  if (existsSync(file)) return Promise.resolve(readFileSync(file, "utf8"));
+  // DOORWAY_FRESH=1 makes every call go to the model again (still writes the cache).
+  if (existsSync(file) && !process.env.DOORWAY_FRESH) return Promise.resolve(readFileSync(file, "utf8"));
   return fn().then((text) => (writeFileSync(file, text), text));
 }
 

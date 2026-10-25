@@ -27,12 +27,10 @@ await page.screenshot({ path: join(outDir, "walk-at-door.png") });
 await page.keyboard.press("KeyE");
 await page.waitForTimeout(2500);
 await page.screenshot({ path: join(outDir, "walk-door-open.png") });
-// Step back and to the side to watch the robot come through.
+// Step back to watch the robot come through.
 await page.keyboard.down("KeyS");
-await page.keyboard.down("KeyA");
-await page.waitForTimeout(900);
+await page.waitForTimeout(700);
 await page.keyboard.up("KeyS");
-await page.keyboard.up("KeyA");
-await page.waitForTimeout(2500);
+await page.waitForTimeout(4000);
 await page.screenshot({ path: join(outDir, "walk-robot.png") });
 await browser.close();

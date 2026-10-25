@@ -15,7 +15,7 @@ import { proposeFixes, type Proposal } from "./fixes.js";
 import { guards } from "./branch.js";
 import type { Description } from "./describe.js";
 import { fakeCompare, fakePropose } from "./fake.js";
-import { normalizeColors, toHexColor } from "./generate.js";
+import { normalizeColors, toHex } from "./generate.js";
 import { interactionTests, type TestResult } from "./interaction-tests.js";
 import { uploadVideo, type UploadedVideo } from "./model.js";
 import { Renderer, sampleTimes } from "./render.js";
@@ -224,7 +224,7 @@ export function repairScene(scene: Scene): Scene {
 function repairPatch(patch: Patch): Patch {
   return patch.map((op) => {
     if (op.value === undefined) return op;
-    if (/color$/i.test(op.path) && typeof op.value === "string") return { ...op, value: toHexColor(op.value) };
+    if (/colou?r$/i.test(op.path) && typeof op.value === "string") return { ...op, value: toHex(op.value) ?? "#c8c6c2" };
     const value = structuredClone(op.value);
     normalizeColors(value);
     return { ...op, value };

@@ -1,5 +1,5 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
-import { Scene, checkScene } from "@doorway/schema";
+import { Scene, checkScene, doorZone, separation } from "@doorway/schema";
 import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
@@ -35,6 +35,12 @@ ${CONVENTIONS}`;
   // Doorways always get a working door, even if the model left it out.
   const { scene, added } = ensureDoors(generated);
   normalizeColors(scene);
+  // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
+  for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }
+  const nudged = resolveLayout(scene);
+  if (nudged.length) console.log(`moved to clear overlaps/doors: ${nudged.join(", ")}`);
+  const flipped = fixDoorSwing(scene);
+  if (flipped.length) console.log(`door swing flipped (furniture in the way): ${flipped.join(", ")}`);
   const problems = checkScene(scene);
   if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
@@ -55,31 +61,136 @@ export function checkLayout(description: Description, scene: Scene, tolerance = 
   return out;
 }
 
-/** Argon sometimes writes hex colours without the leading '#'; fix it here instead of spending a loop iteration on it. */
-/** Colour names models sometimes write instead of hex. */
 const NAMED: Record<string, string> = {
-  white: "#f2f1ee", "off white": "#ece8e1", offwhite: "#ece8e1", cream: "#efe6d2", beige: "#d9c8a9", tan: "#c8a982",
-  black: "#1d1f22", grey: "#8c8f93", gray: "#8c8f93", "light grey": "#c4c6c8", "light gray": "#c4c6c8",
-  "dark grey": "#4a4d52", "dark gray": "#4a4d52", silver: "#b9bcbf", charcoal: "#36393d",
-  brown: "#7a5a3c", "dark brown": "#4a3526", wood: "#b08a5f", oak: "#c49a6c", walnut: "#5b4636",
-  red: "#b5463c", brick: "#9c4a35", orange: "#d9803b", yellow: "#e3c24f", green: "#5c8a52", blue: "#4d6f8f", navy: "#2f3a5a", purple: "#6b5b8c", pink: "#e0a3a8",
+  white: "#ebebeb", black: "#1a1a1a", charcoal: "#36393d", gray: "#8a8d91", grey: "#8a8d91", lightgray: "#c9cbce", lightgrey: "#c9cbce", darkgray: "#4a4d51", darkgrey: "#4a4d51",
+  silver: "#b8bbbf", beige: "#d8cdb6", cream: "#efe6d0", ivory: "#eee8d8", tan: "#c9a46e", brown: "#6b4a2f", darkbrown: "#3e2a1c", walnut: "#5a3d28", oak: "#b88a52",
+  navy: "#1d2a44", blue: "#3b6fb5", teal: "#3c7f86", green: "#4f8a4e", olive: "#6b6b3a", red: "#b5392f", orange: "#d9822b", yellow: "#e2c14a", gold: "#c9a227", pink: "#d9a0b0", purple: "#6e4d8c",
+  chrome: "#c4c7cb", steel: "#9aa0a6", aluminum: "#bcc0c4", aluminium: "#bcc0c4",
 };
 
-/** Turns any colour-ish value into #rrggbb: bare hex gets a "#", known names map to hex. */
-export function toHexColor(v: string): string {
-  const s = v.trim().toLowerCase();
-  if (/^#[0-9a-f]{6}$/.test(s)) return s;
-  if (/^#?[0-9a-f]{6}$/.test(s)) return `#${s.replace("#", "")}`;
-  if (/^#?[0-9a-f]{3}$/.test(s)) return `#${[...s.replace("#", "")].map((c) => c + c).join("")}`;
-  return NAMED[s] ?? NAMED[s.replace(/[-_]/g, " ")] ?? "#c8c6c2";
+/** Colour as a safe "#rrggbb": fixes missing '#', maps colour words, caps near-white (pure white blows out under bloom). Unknown values return null. */
+export function toHex(v: string): string | null {
+  const t = v.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  let hex: string | null = /^[0-9a-f]{3,8}$/i.test(t) ? `#${t}` : /^#[0-9a-f]{3,8}$/i.test(t) ? t : (NAMED[t] ?? null);
+  if (!hex) return null;
+  if (hex.length === 4) hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
+  const k = Math.min(1, 215 / Math.max(r, g, b, 1));
+  return k < 1 ? `#${[r, g, b].map((c) => Math.round(c * k).toString(16).padStart(2, "0")).join("")}` : hex;
 }
 
+/** Argon writes colours as words ("charcoal"), without '#', or pure white; fix it here instead of spending a loop iteration on it. */
 export function normalizeColors(node: unknown): void {
   if (Array.isArray(node)) return node.forEach(normalizeColors);
   if (!node || typeof node !== "object") return;
   const o = node as Record<string, unknown>;
   for (const [k, v] of Object.entries(o)) {
-    if (/color$/i.test(k) && typeof v === "string") o[k] = toHexColor(v);
-    else normalizeColors(v);
+    if (/colou?r$/i.test(k) && typeof v === "string") {
+      const hex = toHex(v) ?? toHex(repairColour(v));
+      if (hex) o[k] = hex;
+      else delete o[k]; // unknown word: let the viewer pick the material's default
+    } else normalizeColors(v);
   }
+}
+
+/**
+ * A hinged door that would sweep through furniture opens the other way instead (booth doors open
+ * out into the corridor). Returns ids of the doors that were flipped. Only for vertical hinge axes.
+ */
+export function fixDoorSwing(scene: Scene, margin = 0.05): string[] {
+  const flipped: string[] = [];
+  const blockers = scene.objects.filter((o) => !o.decor && o.type !== "door");
+  for (const d of scene.objects) {
+    const a = d.articulation;
+    if (d.type !== "door" || a?.kind !== "hinge" || a.axis[0] !== 0 || a.axis[2] !== 0 || a.axis[1] === 0) continue;
+    const hits = (sign: number) => {
+      const full = sign * Math.max(Math.abs(a.range[0]), Math.abs(a.range[1]));
+      const len = d.size[0];
+      const vx = (a.pivot[0] > 0 ? -1 : 1) * len;
+      let n = 0;
+      for (const f of [0.35, 0.7, 1]) {
+        const ang = full * f;
+        for (const t of [0.2, 0.4, 0.6, 0.8, 1]) {
+          // point on the open panel, door-local then world (three.js rotation about y)
+          const lx = vx * t, lz = 0;
+          const px = a.pivot[0] + lx * Math.cos(ang) + lz * Math.sin(ang);
+          const pz = a.pivot[2] - lx * Math.sin(ang) + lz * Math.cos(ang);
+          const c = Math.cos(d.rotationY), s = Math.sin(d.rotationY);
+          const wx = d.position[0] + px * c + pz * s;
+          const wz = d.position[2] - px * s + pz * c;
+          for (const o of blockers) {
+            const dx = wx - o.position[0], dz = wz - o.position[2];
+            const oc = Math.cos(o.rotationY), os = Math.sin(o.rotationY);
+            const ox = dx * oc - dz * os, oz = dx * os + dz * oc;
+            if (Math.abs(ox) < o.size[0] / 2 + margin && Math.abs(oz) < o.size[2] / 2 + margin && o.position[1] < 1.8) n++;
+          }
+        }
+      }
+      return n;
+    };
+    const dir = Math.abs(a.range[1]) >= Math.abs(a.range[0]) ? Math.sign(a.range[1]) || 1 : Math.sign(a.range[0]) || 1;
+    if (hits(dir) > 0 && hits(-dir) < hits(dir)) {
+      a.range = [-a.range[0], -a.range[1]];
+      flipped.push(d.id);
+    }
+  }
+  return flipped;
+}
+
+/** Argon writes colours as "e5e4df", "rgb(230,231,226)" or even a mangled markdown link; recover a #rrggbb when there is one. */
+export function repairColour(v: string): string {
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v;
+  if (/^[0-9a-f]{3,8}$/i.test(v)) return `#${v}`;
+  const hex = /#([0-9a-f]{6})\b/i.exec(v);
+  if (hex) return `#${hex[1]}`;
+  const rgb = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i.exec(v);
+  if (rgb) return "#" + [1, 2, 3].map((i) => Math.min(255, Number(rgb[i])).toString(16).padStart(2, "0")).join("");
+  return v;
+}
+
+/**
+ * Pushes objects out of each other and out of the door's walking zone, and back inside the room.
+ * The lighter / smaller object moves (chairs before tables), by the smallest distance that separates them.
+ * Whatever cannot be resolved stays and is reported by checkScene. Returns ids that moved.
+ */
+export function resolveLayout(scene: Scene, passes = 12): string[] {
+  const moved = new Set<string>();
+  const solids = scene.objects.filter((o) => !o.decor && !["rug", "door", "drawer"].includes(o.type));
+  const rect = (o: Scene["objects"][number]) => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
+  const weight = (o: Scene["objects"][number]) => (o.articulation?.kind === "free" || o.physics?.body === "dynamic" ? 0 : 1) * 1000 + o.size[0] * o.size[2];
+  const clamp = (o: Scene["objects"][number]) => {
+    const r = rect(o), c = Math.abs(Math.cos(r.rot)), sn = Math.abs(Math.sin(r.rot));
+    const rx = r.hx * c + r.hz * sn, rz = r.hx * sn + r.hz * c;
+    const lx = Math.max(0, scene.room.width / 2 - rx), lz = Math.max(0, scene.room.depth / 2 - rz);
+    o.position[0] = Math.max(-lx, Math.min(lx, o.position[0]));
+    o.position[2] = Math.max(-lz, Math.min(lz, o.position[2]));
+  };
+  for (let pass = 0; pass < passes; pass++) {
+    let changed = false;
+    for (const d of scene.objects.filter((o) => o.type === "door")) {
+      for (const o of solids) {
+        if (o.position[1] > 1.8) continue;
+        const sep = separation(doorZone(d), rect(o));
+        if (sep && sep.depth > 0.02) { o.position[0] += sep.dx * (sep.depth + 0.01); o.position[2] += sep.dz * (sep.depth + 0.01); moved.add(o.id); changed = true; }
+      }
+    }
+    for (let i = 0; i < solids.length; i++) {
+      for (let j = i + 1; j < solids.length; j++) {
+        const [a, b] = [solids[i], solids[j]];
+        const lo = Math.max(a.position[1], b.position[1]), hi = Math.min(a.position[1] + a.size[1], b.position[1] + b.size[1]);
+        if (hi - lo < 0.05) continue;
+        const sep = separation(rect(a), rect(b));
+        if (!sep || sep.depth <= 0.1) continue;
+        const [fixed, mover, sgn] = weight(a) >= weight(b) ? [a, b, 1] : [b, a, -1];
+        mover.position[0] += sgn * sep.dx * (sep.depth - 0.05);
+        mover.position[2] += sgn * sep.dz * (sep.depth - 0.05);
+        void fixed;
+        moved.add(mover.id);
+        changed = true;
+      }
+    }
+    solids.forEach(clamp);
+    if (!changed) break;
+  }
+  return [...moved];
 }

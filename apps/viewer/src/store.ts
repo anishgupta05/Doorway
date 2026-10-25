@@ -50,6 +50,8 @@ type State = {
   legendOpen: boolean;
   /** The local run API answered: uploads and the rooms library only exist then (not on a static host). */
   apiOk: boolean;
+  /** Bumped by the "reset view" button to re-frame the overview camera. */
+  viewNonce: number;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -62,6 +64,8 @@ type State = {
   idle: boolean;
   /** Switchable lights in the current scene (set by the stage). */
   lampIds: string[];
+  /** Walls currently cut away because the camera is outside looking through them; things against them hide too. */
+  hiddenWalls: string[];
 
   setMode: (m: Mode) => void;
   setVersion: (v: Version) => void;
@@ -111,6 +115,7 @@ export const useApp = create<State>((set) => ({
   loadError: false,
   legendOpen: false,
   apiOk: false,
+  viewNonce: 0,
   renderMode: false,
   shake: false,
   wipe: 0.5,
@@ -118,6 +123,7 @@ export const useApp = create<State>((set) => ({
   convergencePlay: null,
   idle: false,
   lampIds: [],
+  hiddenWalls: [],
 
   setMode: (mode) => set({ mode, hovered: null, split: false }),
   setVersion: (version) => set({ version, iter: null, preview: null }),

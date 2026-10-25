@@ -69,16 +69,20 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   useFrame(({ camera }) => {
     const cam = root.current.worldToLocal(local.copy(camera.position));
     const inside = Math.abs(cam.x) < room.width / 2 + 0.05 && Math.abs(cam.z) < room.depth / 2 + 0.05 && cam.y < room.height;
+    const hidden: string[] = [];
     frames.forEach((f, i) => {
       const g = groups.current[i];
       if (!g) return;
       const facing = tmp.copy(cam).sub(f.center).setY(0).dot(f.normal) > 0;
       const hide = cutaway && !inside && facing;
+      if (hide) hidden.push(f.wall);
       g.traverse((o) => {
         if (hide) o.layers.set(SHADOW_ONLY_LAYER);
         else o.layers.set(0);
       });
     });
+    const prev = useApp.getState().hiddenWalls;
+    if (prev.length !== hidden.length || prev.some((w, k) => w !== hidden[k])) useApp.setState({ hiddenWalls: hidden });
     outside.current.visible = inside || !cutaway;
     const start = useApp.getState().buildStart;
     const rise = start === null ? 1 : Math.min(1, Math.max(0, (performance.now() - start) / 900));

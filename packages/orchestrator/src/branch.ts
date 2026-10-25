@@ -29,8 +29,9 @@ export function guards(parent: Scene, child: Scene): string | null {
   const limit = 0.75 * Math.min(child.room.width, child.room.depth);
   for (const o of child.objects) {
     const before = parent.objects.find((x) => x.id === o.id);
-    if (before && before.size.every((v, i) => v === o.size[i])) continue;
     const longest = Math.max(o.size[0], o.size[2]);
+    // Only new objects and objects that got longer count: an already-long desk must not doom every patch that touches it.
+    if (before && longest <= Math.max(before.size[0], before.size[2])) continue;
     if (longest > limit) return `Hook: ${o.id} is ${longest.toFixed(1)} m long, over ${limit.toFixed(1)} m (75% of the room): too big to be furniture`;
   }
   if (child.interactions.length < parent.interactions.length) return "Hook: removed an interaction";

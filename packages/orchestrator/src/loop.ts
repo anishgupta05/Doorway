@@ -60,10 +60,11 @@ export async function runLoop(o: LoopOptions) {
   const times = sampleTimes(v0.camera_path[v0.camera_path.length - 1].t, o.frames);
 
   const critique = async (scene: Scene, rel: string): Promise<Critique> => {
-    if (truth) return fakeCompare(truth, scene);
-    const frames = await renderer.frames(o.id, rel, times);
-    return compare({ video: video!, scene, frames, times });
+    const crit = truth ? fakeCompare(truth, scene) : compare({ video: video!, scene, frames: await renderer.frames(o.id, rel, times), times });
+    return withTestIssues(await crit, scene);
   };
+  // What earlier branches tried and why it failed, so propose does not repeat itself.
+  const lessons: string[] = [];
 
   try {
     // Iteration 0: the one-pass scene from generate.
@@ -91,7 +92,7 @@ export async function runLoop(o: LoopOptions) {
       progress("propose", k, `Argon proposing ${o.branches} fixes for ${current.crit.issues.length} issues`);
       const candidates: Candidate[] = truth
         ? fakePropose(truth, current.scene, current.crit.issues, o.branches, k)
-        : await propose({ scene: current.scene, issues: current.crit.issues, n: o.branches, video });
+        : await propose({ scene: current.scene, issues: current.crit.issues, n: o.branches, video, lessons: lessons.slice(-8) });
 
       progress("test", k, `${candidates.length} branches: guards, interaction tests, render, re-score`);
       const results = await Promise.all(
@@ -113,6 +114,10 @@ export async function runLoop(o: LoopOptions) {
         }),
       );
 
+      for (const r of results) {
+        if (r.branch.verdict === "fail") lessons.push(`"${r.branch.hypothesis}" was rejected: ${String(r.branch.reason).replace(/\s+/g, " ").slice(0, 160)}`);
+        else if (r.branch.score <= currentScore) lessons.push(`"${r.branch.hypothesis}" scored ${r.branch.score} which did not beat ${currentScore}`);
+      }
       const passing = results.filter((r) => r.branch.verdict === "pass");
       const best = passing.sort((a, b) => b.branch.score - a.branch.score)[0];
       const branches = results.map((r) => r.branch).sort((a, b) => a.i - b.i);
@@ -143,4 +148,12 @@ export async function runLoop(o: LoopOptions) {
     await renderer.stop();
   }
   return manifest;
+}
+
+/** Interaction-test failures are issues too: they lower the score and tell propose what to fix. */
+function withTestIssues(c: Critique, scene: Scene): Critique {
+  const fails = interactionTests(scene)
+    .filter((t) => !t.ok)
+    .map((t): Issue => ({ objectId: t.id, severity: "high", message: `Interaction test fails: ${t.id} ${t.text}. Fix its hinge side, pivot, range or clearance so it can really be used.` }));
+  return { ...c, issues: [...fails, ...c.issues] };
 }

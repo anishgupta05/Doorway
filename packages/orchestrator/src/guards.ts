@@ -37,7 +37,10 @@ export function guard(parent: Scene, patch: Patch): Verdict {
     }
   }
   const tests = interactionTests(child);
-  const failed = tests.find((t) => !t.ok);
+  // A scene that already fails a test (e.g. the one-pass door clips a wall) must not doom every patch:
+  // only a failure the parent did not have rejects the branch.
+  const alreadyFailing = new Set(interactionTests(parent).filter((t) => !t.ok).map((t) => t.id));
+  const failed = tests.find((t) => !t.ok && !alreadyFailing.has(t.id));
   if (failed) return { ok: false, reason: `Interaction test: ${failed.id} ${failed.text}`, scene: child, tests };
   return { ok: true, scene: child, tests };
 }

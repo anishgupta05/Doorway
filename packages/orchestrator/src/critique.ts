@@ -3,7 +3,7 @@
 // Stage 4 (propose): Argon writes N *different* candidate fixes as small JSON patches,
 // so the loop can try them in parallel and let guards + scores pick the survivor.
 import { z } from "zod";
-import { Issue, MAX_PATCH_OPS, type Patch, type Scene } from "@doorway/schema";
+import { Issue, MAX_PATCH_OPS, ObjectType, type Patch, type Scene } from "@doorway/schema";
 import { callJson, models, type UploadedVideo } from "./model.js";
 
 const IGNORE = `Ignore: lighting, shadows, textures and material realism (the render is deliberately stylised);
@@ -52,7 +52,7 @@ const Proposal = z.object({
 
 export type Candidate = { hypothesis: string; patch: Patch | null; error?: string };
 
-export async function propose(opts: { scene: Scene; issues: Issue[]; n: number; video?: UploadedVideo; seed?: number }): Promise<Candidate[]> {
+export async function propose(opts: { scene: Scene; issues: Issue[]; n: number; video?: UploadedVideo; seed?: number; lessons?: string[] }): Promise<Candidate[]> {
   const index = opts.scene.objects.map((o, i) => `/objects/${i} = ${o.id} (${o.type})`).join("\n");
   const prompt = `Propose ${opts.n} DIFFERENT candidate fixes for this scene, given the issues found when comparing it to the footage.
 Each fix is a small JSON patch (RFC 6902 subset: add / replace / remove, at most ${MAX_PATCH_OPS} ops) over scene.json.
@@ -64,6 +64,9 @@ Rules (patches that break these are rejected automatically):
 - Paths use array indices; the index map is below. Prefer replacing whole small values, e.g. /objects/3/position with "[x, y, z]".
 - Keep the scene conventions: metres, y-up, position = footprint centre at the object's base, front faces +z before rotationY.
 - Every value_json must be valid JSON.
+- An added object needs every field of the existing objects (id, type, position, rotationY, size, color as "#rrggbb", ...). "type" MUST be one of: ${ObjectType.options.join(", ")}. Small items with no matching type (laptop, jacket, can, sandals) use type "other" and a descriptive label.
+- Several issues may be about the same object; one fix can address them all.
+- Do not repeat anything under FAILED ATTEMPTS: those patches were rejected or did not improve the score.
 
 OBJECT INDEX:
 ${index}`;
@@ -72,12 +75,16 @@ ${index}`;
     prompt,
     schema: Proposal,
     video: opts.video,
-    context: ["CURRENT SCENE (scene.json):\n" + JSON.stringify(opts.scene), "ISSUES:\n" + JSON.stringify(opts.issues)],
+    context: [
+      "CURRENT SCENE (scene.json):\n" + JSON.stringify(opts.scene),
+      "ISSUES:\n" + JSON.stringify(opts.issues),
+      "FAILED ATTEMPTS:\n" + (opts.lessons?.length ? opts.lessons.map((l) => `- ${l}`).join("\n") : "(none yet)"),
+    ],
     temperature: 0.7,
   });
   return res.fixes.slice(0, opts.n).map((f) => {
     try {
-      const patch = f.ops.map((o) => ({ op: o.op, path: o.path, ...(o.value_json !== undefined ? { value: JSON.parse(o.value_json) } : {}) }));
+      const patch = f.ops.map((o) => ({ op: o.op, path: o.path, ...(o.value_json !== undefined ? { value: coerceAdded(o.path, JSON.parse(o.value_json)) } : {}) }));
       return { hypothesis: f.hypothesis, patch };
     } catch (e) {
       return { hypothesis: f.hypothesis, patch: null, error: `unparseable value_json (${(e as Error).message})` };
@@ -92,4 +99,13 @@ ${index}`;
 export function score(c: Critique): number {
   const penalty = c.issues.reduce((p, i) => p + (i.severity === "high" ? 0.08 : i.severity === "medium" ? 0.04 : 0.015), 0);
   return Math.max(0, Math.min(1, Number((c.match - penalty * 0.5).toFixed(3))));
+}
+
+/** A model-invented object type would fail the whole patch; fall back to "other" instead. */
+function coerceAdded(path: string, value: unknown): unknown {
+  if (path === "/objects/-" && value && typeof value === "object") {
+    const v = value as Record<string, unknown>;
+    if (!ObjectType.safeParse(v.type).success) return { ...v, label: v.label ?? String(v.type ?? "item"), type: "other" };
+  }
+  return value;
 }

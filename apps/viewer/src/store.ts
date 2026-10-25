@@ -64,6 +64,8 @@ type State = {
   idle: boolean;
   /** Switchable lights in the current scene (set by the stage). */
   lampIds: string[];
+  /** Walls currently cut away because the camera is outside looking through them; things against them hide too. */
+  hiddenWalls: string[];
 
   setMode: (m: Mode) => void;
   setVersion: (v: Version) => void;
@@ -121,6 +123,7 @@ export const useApp = create<State>((set) => ({
   convergencePlay: null,
   idle: false,
   lampIds: [],
+  hiddenWalls: [],
 
   setMode: (mode) => set({ mode, hovered: null, split: false }),
   setVersion: (version) => set({ version, iter: null, preview: null }),

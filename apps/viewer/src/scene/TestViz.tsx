@@ -84,13 +84,13 @@ export function TestViz({ scene }: { scene: Scene }) {
   return (
     <group>
       {objects.map((o, i) => (
-        <TestGlyph key={o.id} o={o} active={i === step} result={results.find((r) => r.id === o.id)} />
+        <TestGlyph key={o.id} o={o} lift={(i % 3) * 0.22} active={i === step} result={results.find((r) => r.id === o.id)} />
       ))}
     </group>
   );
 }
 
-function TestGlyph({ o, active, result }: { o: SceneObject; active: boolean; result?: Result }) {
+function TestGlyph({ o, lift, active, result }: { o: SceneObject; lift: number; active: boolean; result?: Result }) {
   const a = o.articulation!;
   const [w, h, d] = o.size;
   const color = result ? (result.ok ? ACCENT : "#ef6b6b") : active ? ACCENT : "#6b717b";
@@ -126,7 +126,7 @@ function TestGlyph({ o, active, result }: { o: SceneObject; active: boolean; res
   return (
     <group position={o.position} rotation={[0, o.rotationY, 0]}>
       {glyph}
-      <Html position={[0, h + 0.35, 0]} center zIndexRange={[30, 0]}>
+      <Html position={[0, h + 0.35 + lift, 0]} center zIndexRange={[30, 0]}>
         <div
           className={`pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 font-mono text-[10.5px] transition-all duration-300 ${
             result ? (result.ok ? "border-accent/60 bg-ink/90 text-fg" : "border-bad/70 bg-ink/90 text-fg") : active ? "border-accent/40 bg-ink/80 text-muted" : "border-line bg-ink/60 text-dim"

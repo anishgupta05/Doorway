@@ -10,7 +10,7 @@ import type { Room } from "@doorway/schema";
 import { useApp } from "../store";
 import { SHADOW_ONLY_LAYER } from "./Room";
 
-const DAY = { sun: 3.2, hemi: 0.55, env: 0.55, sunColor: new THREE.Color("#fff0d8"), hemiColor: new THREE.Color("#fff7ec") };
+const DAY = { sun: 3.4, hemi: 0.8, env: 0.75, sunColor: new THREE.Color("#fff0d8"), hemiColor: new THREE.Color("#fff7ec") };
 const NIGHT = { sun: 0.25, hemi: 0.07, env: 0.06, sunColor: new THREE.Color("#9fb6ff"), hemiColor: new THREE.Color("#8ea2d8") };
 
 export function Lighting({ room }: { room: Room }) {
@@ -41,7 +41,7 @@ export function Lighting({ room }: { room: Room }) {
 
   return (
     <>
-      <hemisphereLight ref={hemi} args={["#fff7ec", "#4a4036", 0.55]} />
+      <hemisphereLight ref={hemi} args={["#fff7ec", "#6a5a48", 0.8]} />
       <directionalLight
         ref={sun}
         position={sunPos}
@@ -59,7 +59,7 @@ export function Lighting({ room }: { room: Room }) {
         shadow-camera-near={1}
         shadow-camera-far={25}
       />
-      <Environment resolution={256} environmentIntensity={0.55}>
+      <Environment resolution={256} environmentIntensity={0.75}>
         <Lightformer form="rect" intensity={2.2} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[8, 8, 1]} color="#fff6ea" />
         <Lightformer form="rect" intensity={1.6} position={[0, 2, -6]} scale={[10, 3, 1]} color="#eaf2ff" />
         <Lightformer form="rect" intensity={0.8} position={[6, 2, 0]} rotation-y={-Math.PI / 2} scale={[8, 2, 1]} color="#ffe2c4" />

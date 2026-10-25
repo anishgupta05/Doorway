@@ -106,7 +106,7 @@ export function CompareView({
 
       {/* issues found by Argon for this iteration */}
       <div className="absolute top-24 right-5 z-10 w-72">
-        <div className="mb-2 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
+        <div className="mb-2 inline-block rounded-full bg-ink/80 px-2.5 py-1 font-mono text-[10px] tracking-[0.18em] text-muted uppercase backdrop-blur">
           Argon found {issues.length} {issues.length === 1 ? "issue" : "issues"}
         </div>
         <AnimatePresence initial={false}>

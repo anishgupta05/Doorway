@@ -34,14 +34,12 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   if (building) [title, sub] = ["Generated as code, in one pass", `Argon watched ${secs} s of video and wrote the whole room: geometry, joints, lights.`];
   else if (tests) [title, sub] = ["Behaves right, not just looks right", "Every declared interaction is exercised and checked."];
   else if (mode === "compare") [title, sub] = ["Reality vs. reconstruction", "Same camera path as the phone. Drag the divider."];
-  else if (mode === "convergence") [title, sub] = ["Parallel fixes, verified", "Sandboxes try fixes side by side. Guards reject anything that breaks the room."];
   else if (idle && mode === "overview") [title, sub] = ATTRACT[attract];
   else [title, sub] = [`A sim-ready room from ${secs} s of video`, `${scene.objects.length} objects · ${joints} working joints${night ? " · night" : ""}`];
 
-  if (mode === "walk") return null;
-  const hideForPanel = mode === "convergence" || building;
+  if (mode === "walk" || mode === "convergence") return null;
   return (
-    <div className={`pointer-events-none absolute left-6 z-10 max-w-xl ${hideForPanel ? (building ? "bottom-6 left-[440px]" : "top-24") : "bottom-16"}`}>
+    <div className={`pointer-events-none absolute z-10 max-w-3xl ${building ? "bottom-6 left-[440px]" : "bottom-16 left-6"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={title} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.45 }}>
           <div className="text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] text-fg [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">{title}</div>

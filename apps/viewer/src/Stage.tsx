@@ -18,6 +18,7 @@ export function Stage({ scene, prevScene }: { scene: Scene | null; prevScene: Sc
   const tests = useApp((s) => s.tests);
   const building = useApp((s) => s.buildCount !== null);
   const preview = useApp((s) => s.preview !== null);
+  const renderMode = useApp((s) => s.renderMode);
   const outside = mode === "overview" || mode === "convergence";
   return (
     <Canvas
@@ -38,7 +39,7 @@ export function Stage({ scene, prevScene }: { scene: Scene | null; prevScene: Sc
             <SceneView scene={scene} cutaway={outside} />
             <Effects />
           </Selection>
-          {mode === "overview" && !tests && <CameraTrail keys={scene.camera_path} autoplay />}
+          {mode === "overview" && !tests && !renderMode && <CameraTrail keys={scene.camera_path} autoplay />}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
           {tests && <TestViz scene={scene} />}
           {mode === "walk" && <Robot scene={scene} />}

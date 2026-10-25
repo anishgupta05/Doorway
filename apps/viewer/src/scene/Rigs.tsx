@@ -25,8 +25,9 @@ export function OverviewRig({ room }: { room: Scene["room"] }) {
     (camera as THREE.PerspectiveCamera).fov = 42;
     camera.updateProjectionMatrix();
     const r = Math.max(room.width, room.depth);
-    if (mode === "convergence") c.setLookAt(r * 0.9, r * 1.35, r * 1.05, 0, -0.3, 0.6, true);
-    else c.setLookAt(r * 1.05, r * 0.95, r * 1.25, 0, 0.4, 0, true);
+    // Look from the north-east so the door wall stays standing in the background.
+    if (mode === "convergence") c.setLookAt(r * 1.05, r * 1.45, -r * 1.15, 0, -1.1, -0.2, true);
+    else c.setLookAt(r * 1.1, r * 0.9, -r * 1.2, 0, 0.3, 0.2, true);
   }, [mode, room.width, room.depth, camera]);
 
   useEffect(() => {

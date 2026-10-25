@@ -5,6 +5,8 @@
 //     &view=overview        dollhouse view instead
 //     &play=1               advance time in real time (for recording)
 //     &phone=1              handheld shake + grain, to stand in for real footage
+//     &record=1             record the canvas along the whole path (MediaRecorder → webm);
+//                           await window.doorway.recording for a base64 data URL
 //
 // Driving it from Playwright:
 //   await page.waitForFunction(() => window.doorway?.ready)
@@ -17,7 +19,13 @@ import { pathDuration } from "./scene/cameraPath";
 
 declare global {
   interface Window {
-    doorway?: { ready: boolean; duration: number; setTime: (t: number) => void; open: (id: string, v?: number) => void };
+    doorway?: {
+      ready: boolean;
+      duration: number;
+      setTime: (t: number) => void;
+      open: (id: string, v?: number) => void;
+      recording?: Promise<string>;
+    };
   }
 }
 
@@ -46,7 +54,30 @@ export function RenderApp() {
     // Give shaders, shadows and AO a moment to settle before declaring ready.
     const t = setTimeout(() => window.doorway && (window.doorway.ready = true), 2500);
     let raf = 0;
-    if (params.get("play") === "1") {
+    if (params.get("record") === "1") {
+      window.doorway.recording = new Promise<string>((resolve) => {
+        setTimeout(() => {
+          const canvas = document.querySelector("canvas")!;
+          const rec = new MediaRecorder(canvas.captureStream(30), { mimeType: "video/webm;codecs=vp9", videoBitsPerSecond: 8_000_000 });
+          const chunks: Blob[] = [];
+          rec.ondataavailable = (e) => chunks.push(e.data);
+          rec.onstop = () => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(new Blob(chunks, { type: "video/webm" }));
+          };
+          const start = performance.now();
+          const tick = (now: number) => {
+            const t = (now - start) / 1000;
+            useApp.getState().setVideoTime(Math.min(duration, t));
+            if (t >= duration + 0.2) rec.stop();
+            else raf = requestAnimationFrame(tick);
+          };
+          rec.start(250);
+          raf = requestAnimationFrame(tick);
+        }, 2500);
+      });
+    } else if (params.get("play") === "1") {
       const start = performance.now() + 2500;
       const tick = (now: number) => {
         useApp.getState().setVideoTime(Math.max(0, Math.min(duration, (now - start) / 1000)));

@@ -38,7 +38,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
   }
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between p-5">
-      <div className="pointer-events-auto flex items-center gap-3">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-ink/55 py-1.5 pr-4 pl-2 backdrop-blur">
         <DoorMark className="h-7 w-7 text-fg" />
         <div className="leading-tight">
           <div className="text-[15px] font-semibold tracking-tight">Doorway</div>

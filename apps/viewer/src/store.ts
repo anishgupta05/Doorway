@@ -42,6 +42,8 @@ type State = {
   convergencePlay: number | null;
   /** No input for a while in overview: attract mode. */
   idle: boolean;
+  /** Switchable lights in the current scene (set by the stage). */
+  lampIds: string[];
 
   setMode: (m: Mode) => void;
   setVersion: (v: Version) => void;
@@ -85,6 +87,7 @@ export const useApp = create<State>((set) => ({
   comparePlaying: true,
   convergencePlay: null,
   idle: false,
+  lampIds: [],
 
   setMode: (mode) => set({ mode, hovered: null }),
   setVersion: (version) => set({ version, iter: null, preview: null }),
@@ -100,7 +103,8 @@ export const useApp = create<State>((set) => ({
   setHovered: (hovered) => set({ hovered }),
   setVideoTime: (videoTime) => set({ videoTime }),
   reset: () => set((s) => ({ joints: {}, pushes: {}, resetNonce: s.resetNonce + 1 })),
-  toggleNight: () => set((s) => ({ night: !s.night })),
+  // Going dark also switches lamps on, so night mode lands with a moment.
+  toggleNight: () => set((s) => ({ night: !s.night, joints: !s.night ? { ...s.joints, ...Object.fromEntries(s.lampIds.map((id) => [id, 1])) } : s.joints })),
   toggleTests: () => set((s) => ({ tests: !s.tests })),
   setPreview: (preview) => set({ preview }),
   replayBuild: () => set({ buildStart: performance.now(), buildCount: 0, joints: {}, pushes: {} }),

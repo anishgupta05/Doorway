@@ -45,10 +45,10 @@ export function DiffGhosts({ prev, scene }: { prev: Scene; scene: Scene }) {
   const changes = useMemo(() => diffScenes(prev, scene), [prev, scene]);
   return (
     <group>
-      {changes.map((c) => {
+      {changes.map((c, idx) => {
         const a = c.from && center(c.from);
         const b = c.to && center(c.to);
-        const anchor = (b ?? a)!.clone().setY((c.to ?? c.from)!.position[1] + (c.to ?? c.from)!.size[1] + 0.25);
+        const anchor = (b ?? a)!.clone().setY((c.to ?? c.from)!.position[1] + (c.to ?? c.from)!.size[1] + 0.25 + (idx % 3) * 0.24);
         return (
           <group key={c.id}>
             {c.from && (

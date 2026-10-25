@@ -1,0 +1,37 @@
+[
+  {
+    "id": "cabinet_1",
+    "ok": false,
+    "text": "front door hits other_3 while opening"
+  },
+  {
+    "id": "cabinet_2",
+    "ok": true,
+    "text": "front door opens clear"
+  },
+  {
+    "id": "other_1",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "other_3",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "other_4",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "other_5",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "cabinet_3",
+    "ok": true,
+    "text": "front door opens clear"
+  }
+]

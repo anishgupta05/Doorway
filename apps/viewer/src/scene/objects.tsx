@@ -79,7 +79,13 @@ function Parts({ parts, fallback, base }: { parts: Part[]; fallback: THREE.Mater
       {parts.map((part, i) => {
         const m = part.color || part.material ? material(part.material ?? base.material ?? "paint", part.color ?? base.color ?? "#cfcac2", base.look) : fallback;
         const [w, h, d] = part.size;
-        if (part.shape === "cylinder") return <Cyl key={i} r={w / 2} h={h} p={part.offset} m={m} />;
+        if (part.shape === "cylinder") {
+          // The size is a bounding box. The axis is the side the other two do not match: a roll 0.48 x 0.12 x 0.14 lies along x.
+          const near = (a: number, b: number) => Math.abs(a - b) <= 0.25 * Math.max(a, b);
+          if (near(w, d) || (!near(h, d) && !near(h, w))) return <Cyl key={i} r={(w + d) / 4} h={h} p={part.offset} m={m} />;
+          if (near(h, d)) return <Cyl key={i} r={(h + d) / 4} h={w} p={part.offset} rot={[0, 0, Math.PI / 2]} m={m} />;
+          return <Cyl key={i} r={(h + w) / 4} h={d} p={part.offset} rot={[Math.PI / 2, 0, 0]} m={m} />;
+        }
         if (part.shape === "sphere")
           return (
             <mesh key={i} position={part.offset} scale={[w / 2, h / 2, d / 2]} material={m} castShadow receiveShadow>

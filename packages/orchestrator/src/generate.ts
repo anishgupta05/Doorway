@@ -1,5 +1,5 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
-import { Scene, checkScene, doorZone, separation } from "@doorway/schema";
+import { Scene, checkScene, checkLayout as checkPhysical, doorZone, separation } from "@doorway/schema";
 import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
@@ -37,6 +37,11 @@ ${CONVENTIONS}`;
   normalizeColors(scene);
   // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
   for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }
+  // Facing is judged on Argon's own geometry (what touches a wall there), before growing or nudging moves things off the walls.
+  const turned = snapFacing(scene);
+  if (turned.length) console.log(`turned to face into the room (back to the wall): ${turned.join(", ")}`);
+  const grown = fitRoom(scene);
+  if (grown > 1) console.log(`room grown x${grown.toFixed(2)} so the furniture fits`);
   const nudged = resolveLayout(scene);
   if (nudged.length) console.log(`moved to clear overlaps/doors: ${nudged.join(", ")}`);
   const flipped = fixDoorSwing(scene);
@@ -155,6 +160,7 @@ export function repairColour(v: string): string {
  */
 export function resolveLayout(scene: Scene, passes = 12): string[] {
   const moved = new Set<string>();
+  if (checkPhysical(scene).length === 0) return []; // already valid: leave it alone
   const solids = scene.objects.filter((o) => !o.decor && !["rug", "door", "drawer"].includes(o.type));
   const rect = (o: Scene["objects"][number]) => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
   const weight = (o: Scene["objects"][number]) => (o.articulation?.kind === "free" || o.physics?.body === "dynamic" ? 0 : 1) * 1000 + o.size[0] * o.size[2];
@@ -167,13 +173,6 @@ export function resolveLayout(scene: Scene, passes = 12): string[] {
   };
   for (let pass = 0; pass < passes; pass++) {
     let changed = false;
-    for (const d of scene.objects.filter((o) => o.type === "door")) {
-      for (const o of solids) {
-        if (o.position[1] > 1.8) continue;
-        const sep = separation(doorZone(d), rect(o));
-        if (sep && sep.depth > 0.02) { o.position[0] += sep.dx * (sep.depth + 0.01); o.position[2] += sep.dz * (sep.depth + 0.01); moved.add(o.id); changed = true; }
-      }
-    }
     for (let i = 0; i < solids.length; i++) {
       for (let j = i + 1; j < solids.length; j++) {
         const [a, b] = [solids[i], solids[j]];
@@ -189,8 +188,100 @@ export function resolveLayout(scene: Scene, passes = 12): string[] {
         changed = true;
       }
     }
+    for (const d of scene.objects.filter((o) => o.type === "door")) {
+      for (const o of solids) {
+        if (o.position[1] > 1.8) continue;
+        const sep = separation(doorZone(d), rect(o));
+        if (sep && sep.depth > 0.02) { o.position[0] += sep.dx * (sep.depth + 0.01); o.position[2] += sep.dz * (sep.depth + 0.01); moved.add(o.id); changed = true; }
+      }
+    }
     solids.forEach(clamp);
     if (!changed) break;
   }
   return [...moved];
+}
+
+/**
+ * Argon's room size is a guess from footage that rarely shows the whole room, and the door/furniture sizes are the
+ * reliable scale. If the layout is physically impossible (overlaps, blocked door), grow the room and the positions
+ * together by the smallest factor (up to +60%) that makes it valid. Things touching a wall keep touching it.
+ * Returns the factor used (1 = unchanged).
+ */
+export function fitRoom(scene: Scene, max = 1.6, step = 0.05): number {
+  const base = structuredClone(scene);
+  const bad = (sc: Scene) => checkPhysical(sc).length;
+  if (bad(scene) === 0) return 1;
+  let best = { k: 1, n: bad(scene) };
+  for (let k = 1 + step; k <= max + 1e-9; k += step) {
+    const trial = scaledRoom(base, k);
+    resolveLayout(trial); // a bigger room that still needs a small nudge is better than a much bigger one
+    const n = bad(trial);
+    if (n < best.n) best = { k, n };
+    if (n === 0) break;
+  }
+  if (best.k === 1) return 1;
+  const out = scaledRoom(base, best.k);
+  resolveLayout(out);
+  scene.room = out.room;
+  scene.objects = out.objects;
+  scene.camera_path = out.camera_path;
+  return best.k;
+}
+
+function scaledRoom(src: Scene, k: number): Scene {
+  const sc = structuredClone(src);
+  const { width: W, depth: D } = src.room;
+  sc.room.width = W * k;
+  sc.room.depth = D * k;
+  sc.room.openings = src.room.openings.map((o) => ({ ...o, offset: o.offset * k }));
+  for (const o of sc.objects) {
+    const c = Math.abs(Math.cos(o.rotationY)), s = Math.abs(Math.sin(o.rotationY));
+    const hx = (o.size[0] * c + o.size[2] * s) / 2, hz = (o.size[0] * s + o.size[2] * c) / 2;
+    const [x, z] = o.position;
+    // Doors and wall-mounted things stay on their wall; everything else scales with the room (their wall gaps grow a little).
+    const mounted = o.type === "door" || Math.min(...o.size) < 0.1;
+    const place = (pos: number, half: number, ext: number, kext: number) => {
+      if (mounted) {
+        const gapLo = Math.max(0, pos - half + ext / 2), gapHi = Math.max(0, ext / 2 - (pos + half));
+        if (gapLo < 0.1) return -kext / 2 + half + gapLo;
+        if (gapHi < 0.1) return kext / 2 - half - gapHi;
+      }
+      return pos * (kext / ext);
+    };
+    o.position = [place(x, hx, W, W * k), o.position[1], place(z, hz, D, D * k)];
+  }
+  sc.camera_path = src.camera_path.map((c) => ({ ...c, position: [c.position[0] * k, c.position[1], c.position[2] * k], lookAt: [c.lookAt[0] * k, c.lookAt[1], c.lookAt[2] * k] }));
+  return sc;
+}
+
+const BACKED = new Set(["chair", "sofa", "shelf", "cabinet", "bed"]);
+const angleDiff = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+
+/**
+ * Furniture with a back that stands against a wall faces into the room. Argon's angle guesses are often a few tens of
+ * degrees off; when the object is within `band` of a wall and within `tolerance` of facing away from it, snap it exactly.
+ * Rotation about y: local +z points to (sin r, cos r), so facing south (+z) is 0, east (+x) is PI/2, north PI, west -PI/2.
+ * Returns ids that were turned.
+ */
+export function snapFacing(scene: Scene, band = 0.25, tolerance = (70 * Math.PI) / 180): string[] {
+  const { width: W, depth: D } = scene.room;
+  const turned: string[] = [];
+  for (const o of scene.objects) {
+    if (o.decor || !BACKED.has(o.type) || o.articulation?.kind === "hinge") continue;
+    const c = Math.abs(Math.cos(o.rotationY)), s = Math.abs(Math.sin(o.rotationY));
+    const hx = (o.size[0] * c + o.size[2] * s) / 2, hz = (o.size[0] * s + o.size[2] * c) / 2;
+    // [gap to the wall, rotation that faces away from it]
+    const walls: [number, number][] = [
+      [o.position[2] - hz + D / 2, 0],               // north wall: face south
+      [D / 2 - (o.position[2] + hz), Math.PI],       // south wall: face north
+      [W / 2 - (o.position[0] + hx), -Math.PI / 2],  // east wall: face west
+      [o.position[0] - hx + W / 2, Math.PI / 2],     // west wall: face east
+    ];
+    const [gap, target] = walls.reduce((a, b) => (b[0] < a[0] ? b : a));
+    if (gap < band && angleDiff(o.rotationY, target) < tolerance && angleDiff(o.rotationY, target) > 0.02) {
+      o.rotationY = target;
+      turned.push(o.id);
+    }
+  }
+  return turned;
 }

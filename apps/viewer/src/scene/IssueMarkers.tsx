@@ -61,8 +61,6 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
     }
   });
 
-  const msg = issue?.message ?? "";
-  const short = msg.length > 46 ? msg.slice(0, 44) + "…" : msg;
   return (
     <group position={[o.position[0], o.position[1], o.position[2]]}>
       <mesh ref={ring} position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={5}>
@@ -84,7 +82,6 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
             <>
               <span className="h-1.5 w-1.5 rounded-full bg-bad" />
               <span className="font-medium">{cap(o.label ?? o.type)}</span>
-              <span className="text-muted">· {cap(short)}</span>
             </>
           ) : (
             <>

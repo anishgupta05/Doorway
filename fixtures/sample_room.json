@@ -1,0 +1,368 @@
+{
+  "room": {
+    "dimensions": [
+      5,
+      2.8,
+      4
+    ],
+    "wallColor": "#e8e4dc",
+    "floorColor": "#8b6f4e",
+    "ceilingColor": "#f5f5f5",
+    "openings": [
+      {
+        "wall": "south",
+        "kind": "door",
+        "offset": 1.0,
+        "width": 0.9,
+        "height": 2.1
+      },
+      {
+        "wall": "east",
+        "kind": "window",
+        "offset": 1.5,
+        "width": 1.4,
+        "height": 1.1
+      }
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "objects": [
+    {
+      "id": "door_1",
+      "type": "door",
+      "parts": [
+        {
+          "primitive": "box",
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "size": [
+            0.9,
+            2.1,
+            0.05
+          ],
+          "color": "#6b4a2b"
+        }
+      ],
+      "pose": {
+        "position": [
+          1.45,
+          1.05,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "size": [
+        0.9,
+        2.1,
+        0.05
+      ],
+      "color": "#6b4a2b",
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -0.45,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          100
+        ],
+        "damping": 2
+      },
+      "physics": {
+        "body": "kinematic",
+        "mass": 15,
+        "friction": 0.5,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "parts": [
+        {
+          "primitive": "box",
+          "pose": {
+            "position": [
+              0,
+              0.37,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "size": [
+            1.4,
+            0.05,
+            0.8
+          ],
+          "color": "#a0794f"
+        },
+        {
+          "primitive": "box",
+          "pose": {
+            "position": [
+              0,
+              0.17,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "size": [
+            1.2,
+            0.34,
+            0.6
+          ],
+          "color": "#8a653f"
+        }
+      ],
+      "pose": {
+        "position": [
+          2.5,
+          0.4,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "size": [
+        1.4,
+        0.75,
+        0.8
+      ],
+      "color": "#a0794f",
+      "physics": {
+        "body": "static",
+        "mass": 25,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "parts": [
+        {
+          "primitive": "box",
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "size": [
+            0.45,
+            0.9,
+            0.45
+          ],
+          "color": "#3a3a3a"
+        }
+      ],
+      "pose": {
+        "position": [
+          2.5,
+          0.45,
+          1.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "size": [
+        0.45,
+        0.9,
+        0.45
+      ],
+      "color": "#3a3a3a",
+      "articulation": {
+        "kind": "free",
+        "axis": [
+          0,
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          1
+        ]
+      },
+      "physics": {
+        "body": "dynamic",
+        "mass": 5,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "lamp_1",
+      "type": "lamp",
+      "parts": [
+        {
+          "primitive": "cylinder",
+          "pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "size": [
+            0.25,
+            1.4,
+            0.25
+          ],
+          "color": "#d9c27a"
+        }
+      ],
+      "pose": {
+        "position": [
+          0.4,
+          0.7,
+          0.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "size": [
+        0.25,
+        1.4,
+        0.25
+      ],
+      "color": "#d9c27a",
+      "articulation": {
+        "kind": "switch",
+        "axis": [
+          0,
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          1
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 3,
+        "friction": 0.5,
+        "collider": "cylinder"
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "open",
+      "target": "door_1"
+    },
+    {
+      "verb": "toggle",
+      "target": "lamp_1",
+      "effect": "light"
+    },
+    {
+      "verb": "push",
+      "target": "chair_1"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        0.8,
+        1.6,
+        3.5
+      ],
+      "lookAt": [
+        2.5,
+        1.0,
+        1.5
+      ]
+    },
+    {
+      "t": 30,
+      "position": [
+        1.5,
+        1.6,
+        0.8
+      ],
+      "lookAt": [
+        3.0,
+        1.0,
+        3.0
+      ]
+    },
+    {
+      "t": 60,
+      "position": [
+        4.2,
+        1.6,
+        3.5
+      ],
+      "lookAt": [
+        0.5,
+        1.0,
+        1.0
+      ]
+    }
+  ]
+}

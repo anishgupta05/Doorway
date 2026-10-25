@@ -1,0 +1,18 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+dist/
+.vite/
+*.log
+
+# model-call cache (large, regenerable); runs/backup is committed deliberately
+runs/.cache/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

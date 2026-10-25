@@ -21,3 +21,6 @@ Does the managed-agent sandbox have headless Chrome? If not, rendering stays loc
 
 ## Schema additions (guards)
 `object.decor` objects must be skipped by the no-deletion guard, interaction tests and scoring; `checkScene` already rejects decor with articulation/physics and more than 60 decor items.
+
+## Layout rules in checkScene (all scenes, all loop branches)
+`checkScene` now also rejects: solid objects overlapping by more than 0.1 m (rugs, drawers, decor and things resting on others excluded), anything within 0.45 m of a door on either side, objects sticking out of the room, and parts far outside their object's box. Exported `separation`, `doorZone`, `checkLayout` from `@doorway/schema`. `generate` runs `resolveLayout` first, which nudges the lighter object clear; whatever it cannot fix is reported. Guards that apply a patch get this for free through `applyPatch`.

@@ -1,5 +1,5 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
-import { Scene, checkScene } from "@doorway/schema";
+import { Scene, checkScene, doorZone, separation } from "@doorway/schema";
 import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
@@ -37,6 +37,8 @@ ${CONVENTIONS}`;
   normalizeColors(scene);
   // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
   for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }
+  const nudged = resolveLayout(scene);
+  if (nudged.length) console.log(`moved to clear overlaps/doors: ${nudged.join(", ")}`);
   const flipped = fixDoorSwing(scene);
   if (flipped.length) console.log(`door swing flipped (furniture in the way): ${flipped.join(", ")}`);
   const problems = checkScene(scene);
@@ -144,4 +146,51 @@ export function repairColour(v: string): string {
   const rgb = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i.exec(v);
   if (rgb) return "#" + [1, 2, 3].map((i) => Math.min(255, Number(rgb[i])).toString(16).padStart(2, "0")).join("");
   return v;
+}
+
+/**
+ * Pushes objects out of each other and out of the door's walking zone, and back inside the room.
+ * The lighter / smaller object moves (chairs before tables), by the smallest distance that separates them.
+ * Whatever cannot be resolved stays and is reported by checkScene. Returns ids that moved.
+ */
+export function resolveLayout(scene: Scene, passes = 12): string[] {
+  const moved = new Set<string>();
+  const solids = scene.objects.filter((o) => !o.decor && !["rug", "door", "drawer"].includes(o.type));
+  const rect = (o: Scene["objects"][number]) => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
+  const weight = (o: Scene["objects"][number]) => (o.articulation?.kind === "free" || o.physics?.body === "dynamic" ? 0 : 1) * 1000 + o.size[0] * o.size[2];
+  const clamp = (o: Scene["objects"][number]) => {
+    const r = rect(o), c = Math.abs(Math.cos(r.rot)), sn = Math.abs(Math.sin(r.rot));
+    const rx = r.hx * c + r.hz * sn, rz = r.hx * sn + r.hz * c;
+    const lx = Math.max(0, scene.room.width / 2 - rx), lz = Math.max(0, scene.room.depth / 2 - rz);
+    o.position[0] = Math.max(-lx, Math.min(lx, o.position[0]));
+    o.position[2] = Math.max(-lz, Math.min(lz, o.position[2]));
+  };
+  for (let pass = 0; pass < passes; pass++) {
+    let changed = false;
+    for (const d of scene.objects.filter((o) => o.type === "door")) {
+      for (const o of solids) {
+        if (o.position[1] > 1.8) continue;
+        const sep = separation(doorZone(d), rect(o));
+        if (sep && sep.depth > 0.02) { o.position[0] += sep.dx * (sep.depth + 0.01); o.position[2] += sep.dz * (sep.depth + 0.01); moved.add(o.id); changed = true; }
+      }
+    }
+    for (let i = 0; i < solids.length; i++) {
+      for (let j = i + 1; j < solids.length; j++) {
+        const [a, b] = [solids[i], solids[j]];
+        const lo = Math.max(a.position[1], b.position[1]), hi = Math.min(a.position[1] + a.size[1], b.position[1] + b.size[1]);
+        if (hi - lo < 0.05) continue;
+        const sep = separation(rect(a), rect(b));
+        if (!sep || sep.depth <= 0.1) continue;
+        const [fixed, mover, sgn] = weight(a) >= weight(b) ? [a, b, 1] : [b, a, -1];
+        mover.position[0] += sgn * sep.dx * (sep.depth - 0.05);
+        mover.position[2] += sgn * sep.dz * (sep.depth - 0.05);
+        void fixed;
+        moved.add(mover.id);
+        changed = true;
+      }
+    }
+    solids.forEach(clamp);
+    if (!changed) break;
+  }
+  return [...moved];
 }

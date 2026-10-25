@@ -39,7 +39,7 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
 
   if (mode === "walk" || mode === "convergence") return null;
   return (
-    <div className={`pointer-events-none absolute z-10 max-w-3xl ${building ? "bottom-6 left-[440px]" : "bottom-16 left-6"}`}>
+    <div className={`pointer-events-none absolute z-10 max-w-3xl ${building ? "bottom-16 left-[440px]" : "bottom-16 left-6"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={title} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.45 }}>
           <div className="text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] text-fg [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">{title}</div>

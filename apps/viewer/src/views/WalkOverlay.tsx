@@ -60,17 +60,17 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-20 grid cursor-pointer place-items-center bg-ink/45 backdrop-blur-[2px]"
+            className="absolute inset-0 z-20 grid cursor-pointer place-items-center bg-ink/70 backdrop-blur-[3px]"
           >
             <div className="text-center">
               <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full border border-accent/60 bg-ink/60 shadow-[0_0_40px_-8px_rgba(198,243,107,0.6)]">
                 <span className="text-2xl text-accent">▶</span>
               </div>
               <div className="text-2xl font-semibold tracking-tight">Click to take control</div>
-              <div className="mt-2 text-sm text-muted">
+              <div className="mt-2 text-sm text-fg/75">
                 {preview ? "This is the branch the guards rejected. Try the door." : "Walk to the door and open it."}
               </div>
-              <div className="mt-6 flex justify-center gap-5 font-mono text-[11px] text-muted">
+              <div className="mt-6 flex justify-center gap-5 font-mono text-[11px] text-fg/70">
                 <span><Key>W A S D</Key> move</span>
                 <span><Key>mouse</Key> look</span>
                 <span><Key>E</Key> interact</span>

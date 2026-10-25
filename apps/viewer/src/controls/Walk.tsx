@@ -56,10 +56,27 @@ export function Walk({ scene }: { scene: Scene }) {
   const ray = useMemo(() => new THREE.Raycaster(), []);
   const intro = useRef(0);
   const from = useRef({ pos: new THREE.Vector3(), quat: new THREE.Quaternion() });
+  // Start a few steps from the door, facing it: the judge's first move is to open it.
   const to = useMemo(() => {
-    const k = scene.camera_path[0];
-    const pos = new THREE.Vector3(k.position[0], EYE, k.position[2]);
-    const m = new THREE.Matrix4().lookAt(pos, new THREE.Vector3(k.lookAt[0], EYE - 0.15, k.lookAt[2]), new THREE.Vector3(0, 1, 0));
+    const door = scene.objects.find((o) => o.type === "door");
+    const { width, depth } = scene.room;
+    let pos: THREE.Vector3;
+    let look: THREE.Vector3;
+    if (door) {
+      const inward = new THREE.Vector3(-door.position[0], 0, -door.position[2]).setY(0);
+      // Snap to the axis of the wall the door sits in.
+      if (Math.abs(door.position[2]) / depth > Math.abs(door.position[0]) / width) inward.set(0, 0, -Math.sign(door.position[2]));
+      else inward.set(-Math.sign(door.position[0]), 0, 0);
+      pos = new THREE.Vector3(door.position[0], EYE, door.position[2]).addScaledVector(inward, 2.9);
+      pos.x = THREE.MathUtils.clamp(pos.x - 0.5 * inward.z, -width / 2 + 0.5, width / 2 - 0.5);
+      pos.z = THREE.MathUtils.clamp(pos.z, -depth / 2 + 0.5, depth / 2 - 0.5);
+      look = new THREE.Vector3(door.position[0], EYE - 0.35, door.position[2]);
+    } else {
+      const k = scene.camera_path[0];
+      pos = new THREE.Vector3(k.position[0], EYE, k.position[2]);
+      look = new THREE.Vector3(k.lookAt[0], EYE - 0.15, k.lookAt[2]);
+    }
+    const m = new THREE.Matrix4().lookAt(pos, look, new THREE.Vector3(0, 1, 0));
     return { pos, quat: new THREE.Quaternion().setFromRotationMatrix(m) };
   }, [scene]);
 

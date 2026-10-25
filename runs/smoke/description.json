@@ -1,0 +1,235 @@
+{
+  "summary": "This is a minimalist home office or study room featuring a desk setup, seating, and a tall bookshelf against neutral concrete-style walls. The space feels sparse, calm, and functional with clean geometric furniture and warm wood flooring.",
+  "room": {
+    "width_m": 4.8,
+    "depth_m": 4.2,
+    "height_m": 2.8,
+    "wall_color": "#b8b4ab",
+    "floor_material": "wood",
+    "floor_color": "#3d241c",
+    "ceiling_color": "#dcdbd7",
+    "openings": [
+      {
+        "kind": "window",
+        "wall": "north",
+        "width_m": 1.8,
+        "height_m": 1.35,
+        "position_along_wall": "right",
+        "sill_m": 1.1
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "shelf_1",
+      "type": "shelf",
+      "label": "Tall dark bookshelf with books",
+      "material": "darkwood",
+      "color": "#232325",
+      "size_m": [
+        0.95,
+        1.85,
+        0.35
+      ],
+      "location": "against the west wall, roughly 1.0 m from the north corner",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "label": "Potted floor plant",
+      "material": "plant",
+      "color": "#5b8a53",
+      "size_m": [
+        0.55,
+        0.95,
+        0.55
+      ],
+      "location": "against the west wall, south of the bookshelf",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "Dark study desk",
+      "material": "darkwood",
+      "color": "#1f1b18",
+      "size_m": [
+        1.2,
+        0.76,
+        0.6
+      ],
+      "location": "against the north wall beneath the left side of the window",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "Blue upholstered desk chair",
+      "material": "fabric",
+      "color": "#3f7a9a",
+      "size_m": [
+        0.48,
+        0.85,
+        0.5
+      ],
+      "location": "in front of table_1 facing north",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "Computer monitor",
+      "material": "plastic",
+      "color": "#182236",
+      "size_m": [
+        0.55,
+        0.42,
+        0.15
+      ],
+      "location": "on table_1 towards the left-center",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "lamp_1",
+      "type": "lamp",
+      "label": "Desk lamp with white shade",
+      "material": "metal",
+      "color": "#e3e3e3",
+      "size_m": [
+        0.22,
+        0.45,
+        0.22
+      ],
+      "location": "on table_1 to the right of monitor_1",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "Terracotta orange accent chair",
+      "material": "fabric",
+      "color": "#c46747",
+      "size_m": [
+        0.55,
+        0.82,
+        0.55
+      ],
+      "location": "in the center-right foreground facing northwest towards the center",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "rug_1",
+      "type": "rug",
+      "label": "Peach-colored rectangular area rug",
+      "material": "fabric",
+      "color": "#d59877",
+      "size_m": [
+        1.6,
+        0.01,
+        1.2
+      ],
+      "location": "in the central floor area between the sofa and the desk",
+      "facing": "north",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "sofa_1",
+      "type": "sofa",
+      "label": "Light grey modern sofa corner",
+      "material": "fabric",
+      "color": "#b8c5c3",
+      "size_m": [
+        1.4,
+        0.72,
+        0.85
+      ],
+      "location": "in the foreground on the southwest side of the room",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "uncertain": [
+    "Full extent and wall openings of the south and east walls which are outside the camera frame",
+    "Full dimensions of sofa_1 as it is partially cropped by the camera frame"
+  ]
+}

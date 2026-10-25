@@ -18,3 +18,6 @@ Does the managed-agent sandbox have headless Chrome? If not, rendering stays loc
 
 ## Orchestrator (Person 2)
 `packages/orchestrator`: `npm run describe -w @doorway/orchestrator -- --video <file>` turns a video into `runs/<id>/description.json` (an Argon-written structured description). Generate, compare and the branch loop come next and consume that description plus your `render` / `guards` / `testInteractions`. All Gemini calls are cached in `runs/.cache` (git-ignored).
+
+## Schema additions (guards)
+`object.decor` objects must be skipped by the no-deletion guard, interaction tests and scoring; `checkScene` already rejects decor with articulation/physics and more than 60 decor items.

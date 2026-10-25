@@ -21,6 +21,9 @@ const unescape = (s: string) => s.replace(/~1/g, "/").replace(/~0/g, "~");
 // Patch paths come from a model, so never let them reach the prototype chain.
 const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
+/** Decor is cheap to draw but should stay a garnish, not the scene. */
+export const MAX_DECOR = 60;
+
 /** Largest coordinate or size we accept, in metres. A room is never this big. */
 const MAX_EXTENT = 100;
 
@@ -42,6 +45,10 @@ export function checkScene(scene: Scene): string[] {
     if (o.articulation?.kind === "hinge" && o.articulation.range[0] === o.articulation.range[1]) {
       problems.push(`${o.id}: hinge range is zero, it could never open`);
     }
+  }
+  if (scene.objects.filter((o) => o.decor).length > MAX_DECOR) problems.push(`more than ${MAX_DECOR} decor objects`);
+  for (const o of scene.objects) {
+    if (o.decor && (o.articulation || o.physics)) problems.push(`${o.id}: decor cannot be articulated or have physics`);
   }
   for (const it of scene.interactions) {
     const target = byId.get(it.target);

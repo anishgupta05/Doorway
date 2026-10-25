@@ -1,0 +1,5 @@
+{
+  "installCommand": "npm install",
+  "buildCommand": "npm run build -w @doorway/viewer && node scripts/pack-demo.mjs",
+  "outputDirectory": "apps/viewer/dist"
+}

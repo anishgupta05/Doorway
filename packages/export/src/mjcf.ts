@@ -2,7 +2,7 @@
 // (x, y, z) maps to (x, -z, y). Rotations about scene +y become rotations about
 // MuJoCo +z with the same angle, because the mapping is a proper rotation.
 import type { Opening, Scene, SceneObject, Vec3 } from "@doorway/schema";
-import { ROBOT_HEIGHT, ROBOT_RADIUS, robotStart } from "./floor";
+import { restPose, ROBOT_HEIGHT, ROBOT_RADIUS, robotStart } from "./floor";
 
 const WALL_T = 0.12;
 const f = (n: number) => (Math.abs(n) < 1e-9 ? "0" : Number(n.toFixed(4)).toString());
@@ -24,11 +24,12 @@ function joint(o: SceneObject) {
     case "hinge": {
       const [lo, hi] = [...a.range].sort((p, q) => p - q);
       // frictionloss keeps a pushed door where the robot left it instead of drifting.
-      return `<joint name="${o.id}_hinge" type="hinge" axis="${v(mj(a.axis))}" pos="${v(mj(a.pivot))}" range="${f(lo)} ${f(hi)}" limited="true" damping="${f(damping)}" frictionloss="1"/>`;
+      // ref = the closed angle: the body is exported already closed (restPose), so the sim starts closed and qpos is the scene's angle.
+      return `<joint name="${o.id}_hinge" type="hinge" axis="${v(mj(a.axis))}" pos="${v(mj(a.pivot))}" range="${f(lo)} ${f(hi)}" ref="${f(a.range[0])}" limited="true" damping="${f(damping)}" frictionloss="1"/>`;
     }
     case "slide": {
       const [lo, hi] = [...a.range].sort((p, q) => p - q);
-      return `<joint name="${o.id}_slide" type="slide" axis="${v(mj(a.axis))}" range="${f(lo)} ${f(hi)}" limited="true" damping="${f(damping)}"/>`;
+      return `<joint name="${o.id}_slide" type="slide" axis="${v(mj(a.axis))}" range="${f(lo)} ${f(hi)}" ref="${f(a.range[0])}" limited="true" damping="${f(damping)}"/>`;
     }
     case "free":
       return `<freejoint name="${o.id}_free"/>`;
@@ -195,8 +196,9 @@ export function toMJCF(scene: Scene, opts: MJCFOptions = {}): string {
       ? `\n      <light name="${o.id}_light" pos="0 0 ${f(o.size[1] * 0.8)}" diffuse="${rgba(o.light.color).split(" ").slice(0, 3).join(" ")}" attenuation="1 0 ${f(1 / Math.max(o.light.distance, 0.1) ** 2)}" active="${o.articulation?.kind === "switch" && o.articulation.initial ? "true" : "false"}"/>`
       : "";
     const j = joint(o);
+    const at = restPose(o);
     return `    <!-- ${o.type}${o.label ? `: ${o.label.replace(/--/g, "-")}` : ""} -->
-    <body name="${o.id}" pos="${v(mj(o.position))}" euler="0 0 ${f(o.rotationY)}">${j ? `\n      ${j}` : ""}
+    <body name="${o.id}" pos="${v(mj(at.pos))}" euler="0 0 ${f(at.yaw)}">${j ? `\n      ${j}` : ""}
       ${geoms(o).join("\n      ")}${light}
     </body>`;
   });

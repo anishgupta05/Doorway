@@ -22,20 +22,20 @@
   <worldbody>
     <light name="sun" directional="true" pos="0 0 6" dir="0.2 0.3 -1"/>
     <!-- MuJoCo takes the higher friction of two touching geoms, so the floor stays low and objects keep their own. -->
-    <geom name="floor" type="plane" size="4 3.5 0.05" material="mat_floor" friction="0.4 0.005 0.0001"/>
-    <geom name="wall_north_0" type="box" size="0.56 0.06 1.35" pos="-2.06 2.06 1.35" material="mat_wall"/>
-    <geom name="wall_north_1" type="box" size="0.9 0.06 0.425" pos="-0.6 2.06 0.425" material="mat_wall"/>
-    <geom name="wall_north_2" type="box" size="0.9 0.06 0.275" pos="-0.6 2.06 2.425" material="mat_wall"/>
-    <geom name="wall_north_3" type="box" size="1.16 0.06 1.35" pos="1.46 2.06 1.35" material="mat_wall"/>
-    <geom name="wall_south_0" type="box" size="1.885 0.06 1.35" pos="-0.735 -2.06 1.35" material="mat_wall"/>
-    <geom name="wall_south_1" type="box" size="0.45 0.06 0.3" pos="1.6 -2.06 2.4" material="mat_wall"/>
-    <geom name="wall_south_2" type="box" size="0.285 0.06 1.35" pos="2.335 -2.06 1.35" material="mat_wall"/>
-    <geom name="wall_east_0" type="box" size="0.06 2 1.35" pos="2.56 0 1.35" material="mat_wall"/>
-    <geom name="wall_west_0" type="box" size="0.06 2 1.35" pos="-2.56 0 1.35" material="mat_wall"/>
+    <geom name="floor" type="plane" size="4 3.5 0.05" material="mat_floor" friction="0.4 0.005 0.0001" contype="4" conaffinity="4"/>
+    <geom name="wall_north_0" type="box" size="0.56 0.06 1.35" pos="-2.06 2.06 1.35" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_north_1" type="box" size="0.9 0.06 0.425" pos="-0.6 2.06 0.425" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_north_2" type="box" size="0.9 0.06 0.275" pos="-0.6 2.06 2.425" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_north_3" type="box" size="1.16 0.06 1.35" pos="1.46 2.06 1.35" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_south_0" type="box" size="1.885 0.06 1.35" pos="-0.735 -2.06 1.35" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_south_1" type="box" size="0.45 0.06 0.3" pos="1.6 -2.06 2.4" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_south_2" type="box" size="0.285 0.06 1.35" pos="2.335 -2.06 1.35" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_east_0" type="box" size="0.06 2 1.35" pos="2.56 0 1.35" material="mat_wall" contype="4" conaffinity="4"/>
+    <geom name="wall_west_0" type="box" size="0.06 2 1.35" pos="-2.56 0 1.35" material="mat_wall" contype="4" conaffinity="4"/>
     <!-- door: Entry door -->
     <body name="door_1" pos="1.6 -2.03 0" euler="0 0 0">
-      <joint name="door_1_hinge" type="hinge" axis="0 0 1" pos="-0.45 0 0" range="0 1.6" limited="true" damping="2" frictionloss="1"/>
-      <geom name="door_1_geom" type="box" size="0.45 0.0225 1.05" pos="0 0 1.05" material="mat_door_1" friction="0.5 0.005 0.0001" mass="15" contype="2" conaffinity="2"/>
+      <joint name="door_1_hinge" type="hinge" axis="0 0 1" pos="-0.45 0 0" range="0 1.6" ref="0" limited="true" damping="2" frictionloss="1"/>
+      <geom name="door_1_geom" type="box" size="0.45 0.0225 1.05" pos="0 0 1.05" material="mat_door_1" friction="0.5 0.005 0.0001" mass="15" contype="2" conaffinity="3"/>
     </body>
     <!-- table: Desk -->
     <body name="desk_1" pos="-1.2 1.55 0" euler="0 0 0">
@@ -57,14 +57,14 @@
     <!-- chair: Desk chair -->
     <body name="chair_1" pos="-1.15 0.95 0" euler="0 0 3.1416">
       <freejoint name="chair_1_free"/>
-      <geom name="chair_1_geom_0" type="box" size="0.25 0.25 0.2525" pos="0 0 0.2525" material="mat_chair_1" friction="0.7 0.005 0.0001" mass="5.5135" contype="3" conaffinity="3"/>
-      <geom name="chair_1_geom_1" type="box" size="0.235 0.03 0.1975" pos="0 0.2 0.7025" material="mat_chair_1" friction="0.7 0.005 0.0001" mass="0.4865" contype="3" conaffinity="3"/>
+      <geom name="chair_1_geom_0" type="box" size="0.25 0.25 0.2525" pos="0 0 0.2525" material="mat_chair_1" friction="0.7 0.005 0.0001" mass="5.5135" contype="3" conaffinity="7"/>
+      <geom name="chair_1_geom_1" type="box" size="0.235 0.03 0.1975" pos="0 0.2 0.7025" material="mat_chair_1" friction="0.7 0.005 0.0001" mass="0.4865" contype="3" conaffinity="7"/>
     </body>
     <!-- chair: Side chair -->
     <body name="chair_2" pos="1 0.25 0" euler="0 0 -2.3">
       <freejoint name="chair_2_free"/>
-      <geom name="chair_2_geom_0" type="box" size="0.24 0.24 0.2428" pos="0 0 0.2428" material="mat_chair_2" friction="0.7 0.005 0.0001" mass="4.5947" contype="3" conaffinity="3"/>
-      <geom name="chair_2_geom_1" type="box" size="0.2256 0.03 0.1822" pos="0 0.19 0.6678" material="mat_chair_2" friction="0.7 0.005 0.0001" mass="0.4053" contype="3" conaffinity="3"/>
+      <geom name="chair_2_geom_0" type="box" size="0.24 0.24 0.2428" pos="0 0 0.2428" material="mat_chair_2" friction="0.7 0.005 0.0001" mass="4.5947" contype="3" conaffinity="7"/>
+      <geom name="chair_2_geom_1" type="box" size="0.2256 0.03 0.1822" pos="0 0.19 0.6678" material="mat_chair_2" friction="0.7 0.005 0.0001" mass="0.4053" contype="3" conaffinity="7"/>
     </body>
     <!-- cabinet: Filing cabinet -->
     <body name="cabinet_1" pos="2.265 1.5 0" euler="0 0 -1.5708">
@@ -72,7 +72,7 @@
     </body>
     <!-- drawer: Top drawer -->
     <body name="drawer_1" pos="2.245 1.5 0.7" euler="0 0 -1.5708">
-      <joint name="drawer_1_slide" type="slide" axis="0 -1 0" range="0 0.32" limited="true" damping="1"/>
+      <joint name="drawer_1_slide" type="slide" axis="0 -1 0" range="0 0.32" ref="0" limited="true" damping="1"/>
       <geom name="drawer_1_geom" type="box" size="0.27 0.215 0.1" pos="0 0 0.1" material="mat_drawer_1" friction="0.5 0.005 0.0001" density="400" contype="2" conaffinity="2"/>
     </body>
     <!-- shelf: Bookshelf -->
@@ -96,8 +96,8 @@
       <joint name="robot_x" type="slide" axis="1 0 0"/>
       <joint name="robot_y" type="slide" axis="0 1 0"/>
       <joint name="robot_yaw" type="hinge" axis="0 0 1"/>
-      <geom name="robot_base" type="cylinder" size="0.17 0.1" pos="0 0 0.1" mass="8" rgba="0.91 0.91 0.89 1" contype="3" conaffinity="3"/>
-      <geom name="robot_mast" type="capsule" size="0.03" fromto="0 0 0.2 0 0 1.2" mass="1" rgba="0.13 0.15 0.16 1" contype="3" conaffinity="3"/>
+      <geom name="robot_base" type="cylinder" size="0.17 0.1" pos="0 0 0.1" mass="8" rgba="0.91 0.91 0.89 1" contype="3" conaffinity="7"/>
+      <geom name="robot_mast" type="capsule" size="0.03" fromto="0 0 0.2 0 0 1.2" mass="1" rgba="0.13 0.15 0.16 1" contype="3" conaffinity="7"/>
       <site name="robot_front" pos="0.17 0 0.1"/>
     </body>
   </worldbody>

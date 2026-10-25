@@ -1,6 +1,7 @@
 // Real footage under the render, with a draggable wipe between them. The 3D
 // camera follows the recovered path at the video's current time (see CompareRig),
 // so dragging the divider shows exactly where the reconstruction is right or wrong.
+import { roundName } from "../ui/plain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Issue, RunManifest, Scene } from "@doorway/schema";
@@ -100,14 +101,14 @@ export function CompareView({
         Real footage
       </Tag>
       <Tag side="right" style={{ left: `${wipe * 100}%` }}>
-        Doorway · {k === 0 ? "v0 one pass" : `iteration ${k}`}
-        {score !== undefined && <span className="ml-2 text-accent tabular">{score.toFixed(2)}</span>}
+        Doorway · {k === null ? "" : roundName(k)}
+        {score !== undefined && <span className="ml-2 text-accent tabular">{Math.round(score * 100)}%</span>}
       </Tag>
 
       {/* issues found by Argon for this iteration */}
       <div className="absolute top-24 right-5 z-10 w-72">
-        <div className="mb-2 inline-block rounded-full bg-ink/80 px-2.5 py-1 font-mono text-[10px] tracking-[0.18em] text-muted uppercase backdrop-blur">
-          Argon found {issues.length} {issues.length === 1 ? "issue" : "issues"}
+        <div className="mb-2 inline-block rounded-full bg-ink/80 px-2.5 py-1 text-[11px] text-muted backdrop-blur">
+          Spotted {issues.length} {issues.length === 1 ? "difference" : "differences"}
         </div>
         <AnimatePresence initial={false}>
           {issues.map((i) => (
@@ -119,15 +120,15 @@ export function CompareView({
               exit={{ opacity: 0, x: 20, transition: { duration: 0.25 } }}
               className="mb-1.5 rounded-lg border border-line bg-ink/80 px-3 py-2 backdrop-blur"
             >
-              <div className="flex items-center gap-2 font-mono text-[11px]">
+              <div className="flex items-center gap-2 text-[12px] font-medium">
                 <span className={`h-1.5 w-1.5 rounded-full ${i.severity === "high" ? "bg-bad" : i.severity === "medium" ? "bg-warn" : "bg-muted"}`} />
-                <span className="text-fg">{i.objectId}</span>
+                <span className="text-fg">{scene.objects.find((o) => o.id === i.objectId)?.label ?? i.objectId.replace(/_\d+$/, "")}</span>
               </div>
               <div className="mt-0.5 text-[12px] leading-snug text-muted">{i.message}</div>
             </motion.div>
           ))}
         </AnimatePresence>
-        {issues.length === 0 && <div className="rounded-lg border border-accent/40 bg-ink/80 px-3 py-2 text-[12px] text-accent">No mismatches left.</div>}
+        {issues.length === 0 && <div className="rounded-lg border border-accent/40 bg-ink/80 px-3 py-2 text-[12px] text-accent">Everything matches your video.</div>}
       </div>
 
       {/* timeline */}
@@ -157,7 +158,7 @@ export function CompareView({
               onClick={() => useApp.getState().setIter(i)}
               className={`rounded px-2 py-1 transition ${i === k ? "bg-accent text-ink" : "text-muted hover:text-fg"}`}
             >
-              {i === 0 ? "v0" : `i${i}`}
+              {i + 1}
             </button>
           ))}
         </div>

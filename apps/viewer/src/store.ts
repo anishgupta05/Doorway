@@ -34,6 +34,7 @@ type State = {
   exportOpen: boolean;
   /** Overview: v0 and the final room side by side. */
   split: boolean;
+  uploadOpen: boolean;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -84,6 +85,7 @@ export const useApp = create<State>((set) => ({
   muted: false,
   exportOpen: false,
   split: false,
+  uploadOpen: false,
   renderMode: false,
   shake: false,
   wipe: 0.5,

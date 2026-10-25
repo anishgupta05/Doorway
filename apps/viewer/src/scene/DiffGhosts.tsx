@@ -24,14 +24,14 @@ export function diffScenes(prev: Scene, next: Scene): Change[] {
     }
     const notes: string[] = [];
     const moved = Math.hypot(to.position[0] - from.position[0], to.position[1] - from.position[1], to.position[2] - from.position[2]);
-    if (moved > 0.04) notes.push(`moved ${moved.toFixed(2)} m`);
+    if (moved > 0.04) notes.push(`moved ${moved.toFixed(1)} m`);
     const turned = Math.abs(wrap(to.rotationY - from.rotationY));
     if (turned > 0.08) notes.push(`turned ${deg(turned)}°`);
     const resized = to.size.some((s, i) => Math.abs(s - from.size[i]) > 0.03);
-    if (resized) notes.push(`resized to ${to.size.map((s) => s.toFixed(2)).join("×")}`);
+    if (resized) notes.push("resized");
     if ((to.color ?? "") !== (from.color ?? "")) notes.push("recolored");
     if (JSON.stringify(to.articulation) !== JSON.stringify(from.articulation)) {
-      notes.push(to.articulation?.kind === "hinge" ? "hinge fixed" : `${to.articulation?.kind ?? "joint"} fixed`);
+      notes.push(to.articulation?.kind === "hinge" ? "swing fixed" : "movement fixed");
     }
     if (notes.length) out.push({ id, label, from, to, notes });
   }

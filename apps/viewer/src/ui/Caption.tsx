@@ -4,13 +4,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { RunManifest, Scene } from "@doorway/schema";
 import { useApp } from "../store";
 import { KEYS } from "../hotkeys";
-import { pathDuration } from "../scene/cameraPath";
 
 const ATTRACT = [
   ["A phone video in.", "A working simulation out."],
   ["Doors open. Drawers slide. Lights switch.", "Every object knows what it is."],
-  ["Checked against reality", "and corrected until it matches."],
-  ["Ready for the robot.", "Exports straight to MuJoCo."],
+  ["Checked against your video", "and fixed until it matches."],
+  ["Ready for the robot.", "Exports straight to a robot simulator."],
 ];
 
 export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManifest | undefined }) {
@@ -28,16 +27,14 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
     return () => clearInterval(t);
   }, [idle]);
 
-  const joints = scene.objects.filter((o) => o.articulation && o.articulation.kind !== "free").length;
-  const secs = Math.round(pathDuration(scene.camera_path));
   let title: string;
   let sub: string;
-  if (building) [title, sub] = ["Generated as code, in one pass", `Argon watched ${secs} s of video and wrote the whole room: geometry, joints, lights.`];
-  else if (tests) [title, sub] = ["Behaves right, not just looks right", "Every declared interaction is exercised and checked."];
-  else if (split && mode === "overview") [title, sub] = ["One pass vs. verified", "Same video. Left: Argon's first pass. Right: after the loop's parallel fixes and guards."];
-  else if (mode === "compare") [title, sub] = ["Reality vs. reconstruction", "Same camera path as the phone. Drag the divider."];
+  if (building) [title, sub] = ["Written in one go", "Doorway watched your video and wrote the whole room: shapes, doors, lights."];
+  else if (tests) [title, sub] = ["It works, not just looks right", "Every door, drawer and light is tried out and checked."];
+  else if (split && mode === "overview") [title, sub] = ["First attempt vs. checked", "Same video. Left: Doorway's first attempt. Right: after it tried fixes and threw out the ones that broke something."];
+  else if (mode === "compare") [title, sub] = ["Your video vs. the 3D room", "Same camera path as the phone. Drag the divider."];
   else if (idle && mode === "overview") [title, sub] = ATTRACT[attract];
-  else [title, sub] = [`A sim-ready room from ${secs} s of video`, `${scene.objects.length} objects · ${joints} working joints${night ? " · night" : ""}`];
+  else [title, sub] = [`A working 3D room, built from your video`, `${scene.room.width} × ${scene.room.depth} m with a ${scene.room.floorMaterial} floor${night ? ", at night" : ""}.`];
 
   if (mode === "walk" || mode === "convergence") return null;
   return (
@@ -53,28 +50,28 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
   );
 }
 
-function Stats({ scene, manifest }: { scene: Scene; manifest: RunManifest | undefined }) {
-  const iterations = manifest?.iterations ?? [];
-  const branches = iterations.reduce((n, it) => n + (it.k === 0 ? 0 : it.branches.length), 0);
-  const rejected = iterations.reduce((n, it) => n + it.branches.filter((b) => b.verdict === "fail").length, 0);
-  const tests = scene.objects.filter((o) => o.articulation).length;
-  const items: [string | number, string][] = [
-    [`${Math.round(pathDuration(scene.camera_path))}s`, "video"],
-    [scene.objects.length, "objects"],
-    [Math.max(iterations.length - 1, 0), "iterations"],
-    [branches, "branches"],
-    [rejected, "rejected"],
-    [`${tests}/${tests}`, "tests pass"],
-  ];
+const list = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+const NUM = ["", "a", "two", "three", "four", "five", "six"];
+
+/** What's in the room, in words: contents first, then what you can do with it. */
+function describe(scene: Scene) {
+  const counts = new Map<string, number>();
+  scene.objects.filter((o) => o.type !== "door" && o.type !== "drawer").forEach((o) => counts.set(o.type, (counts.get(o.type) ?? 0) + 1));
+  const things = [...counts].map(([t, n]) => (n === 1 ? `a ${t}` : `${NUM[n] ?? n} ${t}s`));
+  const label = (id: string) => (scene.objects.find((o) => o.id === id)?.label ?? id).toLowerCase();
+  const verbs = scene.interactions.filter((i) => i.verb === "open" || i.verb === "toggle").map((i) => (i.verb === "open" ? `open the ${label(i.target)}` : `switch the ${label(i.target)} on`));
+  const pushed = scene.interactions.filter((i) => i.verb === "push").map((i) => scene.objects.find((o) => o.id === i.target)?.type).filter(Boolean);
+  if (pushed.length) verbs.push(`push the ${pushed[0]}s around`);
+  return { things, verbs };
+}
+
+function Stats({ scene }: { scene: Scene; manifest: RunManifest | undefined }) {
+  const { things, verbs } = describe(scene);
   return (
-    <div className="mt-5 flex gap-5">
-      {items.map(([n, l]) => (
-        <div key={l}>
-          <div className="font-mono text-[17px] leading-none text-fg tabular">{n}</div>
-          <div className="mt-1 font-mono text-[9.5px] tracking-[0.16em] text-muted uppercase">{l}</div>
-        </div>
-      ))}
-    </div>
+    <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-fg/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.8)]">
+      {things.length > 0 && <>Inside you'll find {list(things)}. </>}
+      {verbs.length > 0 && <>Go ahead and {list(verbs)}.</>}
+    </p>
   );
 }
 

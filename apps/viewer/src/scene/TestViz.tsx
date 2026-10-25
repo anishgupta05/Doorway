@@ -25,17 +25,17 @@ function describe(o: SceneObject): Result {
     case "hinge": {
       const sweep = Math.abs(a.range[1] - a.range[0]);
       const ok = sweep > (60 * Math.PI) / 180;
-      return { id: o.id, ok, text: ok ? `swings 0→${Math.round((sweep * 180) / Math.PI)}°` : `swing only ${Math.round((sweep * 180) / Math.PI)}°` };
+      return { id: o.id, ok, text: ok ? `swings open ${Math.round((sweep * 180) / Math.PI)}°` : `only opens ${Math.round((sweep * 180) / Math.PI)}°` };
     }
     case "slide": {
       const travel = Math.abs(a.range[1] - a.range[0]);
       const ok = travel > 0.1;
-      return { id: o.id, ok, text: ok ? `slides ${Math.round(travel * 100)} cm` : "doesn't slide" };
+      return { id: o.id, ok, text: ok ? `slides ${Math.round(travel * 100)} cm` : "won't slide open" };
     }
     case "switch":
-      return { id: o.id, ok: !!o.light, text: o.light ? "light toggles" : "no light attached" };
+      return { id: o.id, ok: !!o.light, text: o.light ? "switches on and off" : "has no light" };
     case "free":
-      return { id: o.id, ok: true, text: "pushable" };
+      return { id: o.id, ok: true, text: "can be pushed" };
   }
 }
 
@@ -128,12 +128,12 @@ function TestGlyph({ o, lift, active, result }: { o: SceneObject; lift: number; 
       {glyph}
       <Html position={[0, h + 0.35 + lift, 0]} center zIndexRange={[30, 0]}>
         <div
-          className={`pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 font-mono text-[10.5px] transition-all duration-300 ${
+          className={`pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11.5px] transition-all duration-300 ${
             result ? (result.ok ? "border-accent/60 bg-ink/90 text-fg" : "border-bad/70 bg-ink/90 text-fg") : active ? "border-accent/40 bg-ink/80 text-muted" : "border-line bg-ink/60 text-dim"
           }`}
         >
           <span className={result ? (result.ok ? "text-accent" : "text-bad") : ""}>{result ? (result.ok ? "✓" : "✗") : active ? "…" : "○"}</span>
-          <span>{o.id}</span>
+          <span>{o.label ?? o.type}</span>
           {result && <span className="text-muted">· {result.text}</span>}
         </div>
       </Html>

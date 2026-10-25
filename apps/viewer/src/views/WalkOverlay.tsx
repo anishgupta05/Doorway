@@ -68,7 +68,7 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
               </div>
               <div className="text-2xl font-semibold tracking-tight">Click to take control</div>
               <div className="mt-2 text-sm text-fg/75">
-                {preview ? "This is the branch the guards rejected. Try the door." : "Walk to the door and open it."}
+                {preview ? "This idea was thrown out. Try the door and see why." : "Walk to the door and open it."}
               </div>
               <div className="mt-6 flex justify-center gap-5 font-mono text-[11px] text-fg/70">
                 <span><Key>W A S D</Key> move</span>

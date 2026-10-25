@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Stage, type SplitPair } from "./Stage";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
-import { FixToast } from "./ui/FixToast";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
 import { TopBar } from "./ui/TopBar";
@@ -12,17 +11,19 @@ import { ConvergencePanel } from "./views/ConvergencePanel";
 import { BuildPanel } from "./views/BuildPanel";
 import { ExportPanel } from "./views/ExportPanel";
 import { WalkOverlay } from "./views/WalkOverlay";
+import { UploadPanel } from "./views/UploadPanel";
 
 export function App() {
   useRunData();
   const current = useCurrentScene();
-  const { scene, prevScene, manifest, runId, k, issues, fixed, branch, prevScore } = current;
+  const { scene, prevScene, manifest, runId, k, issues, fixed } = current;
   const split = useSplitPair(runId, manifest);
   const mode = useApp((s) => s.mode);
   const wipe = useApp((s) => s.wipe);
   const playing = useApp((s) => s.comparePlaying);
   const building = useApp((s) => s.buildCount !== null);
   const exportOpen = useApp((s) => s.exportOpen);
+  const uploadOpen = useApp((s) => s.uploadOpen);
 
   const stepIter = useCallback(
     (d: number) => {
@@ -46,18 +47,18 @@ export function App() {
         <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} />
       </div>
       <TopBar current={current} />
-      {(mode === "compare" || mode === "overview") && <FixToast k={k} fixed={fixed} score={branch?.score} prevScore={prevScore} />}
       {scene && <Caption scene={scene} manifest={manifest} />}
       <Legend />
       <AnimatePresence>
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
+        {uploadOpen && <UploadPanel key="upload" />}
       </AnimatePresence>
       {mode === "walk" && scene && <WalkOverlay scene={scene} />}
       {!scene && (
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="font-mono text-xs tracking-[0.2em] text-muted uppercase">Loading run…</div>
+          <div className="text-sm text-muted">Opening your room…</div>
         </div>
       )}
     </div>

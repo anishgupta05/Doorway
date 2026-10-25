@@ -3,15 +3,16 @@ import { useApp, type Mode } from "./store";
 import { setMuted, sfx } from "./sfx";
 
 export const KEYS: { key: string; label: string }[] = [
-  { key: "1", label: "Footage vs v0" },
-  { key: "2", label: "Convergence" },
-  { key: "3", label: "Backup" },
-  { key: "4", label: "Walk" },
+  { key: "1", label: "Compare" },
+  { key: "2", label: "How it improved" },
+  { key: "3", label: "Saved room" },
+  { key: "4", label: "Explore" },
   { key: "F", label: "Before / after" },
-  { key: "B", label: "Build from code" },
-  { key: "T", label: "Interaction tests" },
+  { key: "B", label: "How it's built" },
+  { key: "T", label: "Try everything" },
   { key: "N", label: "Night" },
-  { key: "X", label: "Export MuJoCo" },
+  { key: "X", label: "Export for robots" },
+  { key: "U", label: "New video" },
   { key: "R", label: "Reset" },
 ];
 
@@ -78,6 +79,10 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           if (s.mode !== "overview") go("overview");
           useApp.setState({ split: !s.split, tests: false });
           sfx.whoosh();
+          break;
+        case "KeyU":
+          useApp.setState({ uploadOpen: !s.uploadOpen });
+          sfx.tick();
           break;
         case "KeyX":
           useApp.setState({ exportOpen: !s.exportOpen });

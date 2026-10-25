@@ -216,7 +216,7 @@ const video = existsSync(truthVideo) ? "video.webm" : null;
 if (video) copyFileSync(truthVideo, join(outDir, video));
 // Ground truth, for recording stand-in footage (scripts/record-truth.ts).
 write("truth.json", truth);
-const manifest = RunManifest.parse({ id: runId, title: "Sample office", video, status: "done", iterations });
+const manifest = RunManifest.parse({ id: runId, title: "Home office", video, status: "done", iterations });
 write("manifest.json", manifest);
 
 // runs/index.json tells the viewer which run is "live" and which is the demo backup.

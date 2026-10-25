@@ -1,0 +1,32 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 front door hits other_3 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_2",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_2 front door hits cabinet_1 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "table_1",
+    "message": "Positioned at x = -1.15m, which is about 0.2m too far east and causes it to sit directly behind other_1 instead of tucked into the northwest corner between cabinet_3 and other_1.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Rendered with horizontal drawer divisions instead of the 6 vertical hinged cabinet doors seen in the footage.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Rendered with horizontal divisions instead of the 6 vertical hinged cabinet doors seen in the footage.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_3",
+    "message": "Rendered as 2 large vertical compartments instead of a 4x4 grid of 16 small lockers.",
+    "severity": "low"
+  }
+]

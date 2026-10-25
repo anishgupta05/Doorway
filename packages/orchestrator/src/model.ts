@@ -117,11 +117,11 @@ export async function callJson<T extends z.ZodType>(c: JsonCall<T>): Promise<z.i
 
   const run = async (extra?: string) => {
     const p = extra ? [...parts, { text: extra }] : parts;
-    const r = await ai().models.generateContent({
+    const r = await withTimeout(() => ai().models.generateContent({
       model: c.model,
       contents: [{ role: "user", parts: p }],
       config: { responseMimeType: "application/json", responseJsonSchema: jsonSchema, temperature: c.temperature ?? 0 },
-    });
+    }));
     return r.text ?? "";
   };
 
@@ -132,6 +132,29 @@ export async function callJson<T extends z.ZodType>(c: JsonCall<T>): Promise<z.i
   const err = first.error.issues.slice(0, 8).map((i) => `${i.path.join(".")}: ${i.message}`).join("\n");
   const retry = await cached(key + "-retry", () => run(`Your previous answer failed validation:\n${err}\nReturn corrected JSON only.`));
   return c.schema.parse(safeJson(retry));
+}
+
+/**
+ * A hung request must never stall a live run: give up after CALL_TIMEOUT_MS
+ * (default 120 s) and try once more before failing.
+ */
+async function withTimeout<T>(fn: () => Promise<T>): Promise<T> {
+  const ms = Number(process.env.CALL_TIMEOUT_MS ?? 120_000);
+  const once = () =>
+    new Promise<T>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error(`model call timed out after ${ms / 1000}s`)), ms);
+      fn().then(
+        (v) => (clearTimeout(t), resolve(v)),
+        (e) => (clearTimeout(t), reject(e)),
+      );
+    });
+  try {
+    return await once();
+  } catch (e) {
+    if (!/timed out/.test((e as Error).message)) throw e;
+    console.warn(`${(e as Error).message}; retrying once`);
+    return once();
+  }
 }
 
 function safeJson(t: string): unknown {

@@ -16,3 +16,9 @@ From Person 2 (model loop). Pull `main` first, then `npm install`.
 
 ## Rendering physics
 Render what the scene says: doors swing by `articulation.range` (radians), `switch` objects toggle their `light`. Physics numbers are for the runtime (Person 3), not for you to simulate.
+
+## Schema additions: look, decor, wallLook, unseenWalls
+All optional, old scenes still parse.
+- `object.look`: procedural surface pattern (`brick|plaster|concrete|carpet|weave|plush|paper|wood|tile`).
+- `object.decor: true`: small clutter. Drawn, never scored or patched, may overlap, no articulation/physics. Max 60 per scene.
+- `room.wallLook`: pattern on the walls (e.g. `brick`). `room.unseenWalls`: walls the video never showed, drawn open.

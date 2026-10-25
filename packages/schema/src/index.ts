@@ -39,6 +39,13 @@ export const ObjectType = z.enum([
 ]);
 export type ObjectType = z.infer<typeof ObjectType>;
 
+/**
+ * Surface pattern the viewer paints procedurally (no image files). Argon picks the one that
+ * matches what the footage shows; without it the material kind's default look is used.
+ */
+export const Look = z.enum(["brick", "plaster", "concrete", "carpet", "weave", "plush", "paper", "wood", "tile"]);
+export type Look = z.infer<typeof Look>;
+
 /** Optional explicit geometry. Without parts, the viewer builds a type-appropriate shape from `size`. */
 export const Part = z.object({
   shape: z.enum(["box", "cylinder", "sphere"]),
@@ -101,6 +108,13 @@ export const SceneObject = z.object({
   color: z.string().optional(),
   material: MaterialKind.optional(),
   parts: z.array(Part).optional(),
+  /** Surface pattern, e.g. "weave" for upholstery, "paper" for a notebook. */
+  look: Look.optional(),
+  /**
+   * Small clutter that makes the room feel lived in (bottles, papers, plush toys). Decor is
+   * drawn but never scored, tested or patched by the loop, and may rest on or overlap other objects.
+   */
+  decor: z.boolean().default(false),
   articulation: Articulation.optional(),
   light: LightSpec.optional(),
   physics: Physics.optional(),
@@ -135,6 +149,10 @@ export const Room = z.object({
   wallColor: z.string().default("#ece8e1"),
   floorColor: z.string().default("#cfc8bd"),
   floorMaterial: z.enum(["wood", "concrete", "carpet", "tile"]).default("wood"),
+  /** Pattern painted on the walls, e.g. "brick". Default is plain painted plaster. */
+  wallLook: Look.optional(),
+  /** Walls the video never showed. The viewer draws them open instead of inventing a surface. */
+  unseenWalls: z.array(Wall).default([]),
   openings: z.array(Opening).default([]),
   /** m/s^2, default [0, -9.81, 0]. */
   gravity: Vec3.optional(),

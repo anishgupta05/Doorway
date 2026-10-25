@@ -13,3 +13,5 @@ runs/.cache/
 
 # scratch outputs of test runs
 runs/smoke/
+runs/loop-test/
+runs/*/progress.json

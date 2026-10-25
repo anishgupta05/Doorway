@@ -22,7 +22,10 @@ export const Description = z.object({
       height_m: z.number(),
       position_along_wall: z.enum(["left", "center", "right"]).describe("As seen standing at the room centre facing that wall."),
       sill_m: z.number().describe("0 for a door."),
+      shape: z.enum(["rect", "arch"]).optional().describe("arch = rounded/semicircular top; a half-round window is an arch whose height is at most half its width."),
     })),
+    wall_looks: z.array(z.object({ wall: Dir, look: z.enum(["brick", "plaster", "concrete", "paper", "wood", "tile"]) })).optional()
+      .describe("Walls whose surface differs from plain paint, e.g. one exposed-brick wall. Omit walls that are plain."),
   }),
   objects: z.array(z.object({
     id: z.string().regex(/^[a-z][a-z0-9_]*$/).describe("snake_case with index, e.g. chair_1"),
@@ -53,7 +56,7 @@ Rules:
 - List every distinct object a person could walk into, sit on, open or switch. Skip small clutter.
 - Prefer a rough but consistent layout to false precision. If you cannot judge something, say so in "uncertain".
 - Do not invent objects that are not visible.
-- The room is its bounding rectangle. If the space is not a plain rectangle (an interior wall, a half wall, an alcove, a column), give width_m/depth_m for the whole bounding box and list each interior wall or column as an object of type "partition": size_m = [length, height, thickness], location says which walls it runs between, facing is the side its length faces. Use partitions to close off any part of the bounding box that is not inside the room.`;
+- The room is its bounding rectangle. If the space is not a plain rectangle (an interior wall, a half wall, an alcove, a column), give width_m/depth_m for the whole bounding box and list each interior wall or column as an object of type "partition": size_m = [length, height, thickness], location says which walls it runs between, facing is the side its length faces. Use partitions to close off any part of the bounding box that is not inside the room. A partition is a thin wall (thickness 0.1-0.15 m) unless it is clearly a column or boxed-in duct: give its length and where its two ends are, and leave open floor open.`;
 
 export function describeFootage(video: UploadedVideo): Promise<Description> {
   return callJson({ model: models.argon(), prompt: PROMPT, schema: Description, video });

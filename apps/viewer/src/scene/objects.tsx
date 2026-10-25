@@ -8,7 +8,7 @@ import * as THREE from "three";
 import type { MaterialKind, Part, SceneObject, Vec3 } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue } from "./Placed";
-import { Fronts } from "./Fronts";
+import { Fronts, Shell, hasFrontDoors } from "./Fronts";
 import { ModelBody, modelFor } from "./models";
 
 type V3 = [number, number, number];
@@ -63,6 +63,8 @@ export function ObjectBody({ obj }: { obj: SceneObject }) {
 
 function ProceduralBody({ obj }: { obj: SceneObject }) {
   if (obj.parts?.length) return <Parts parts={obj.parts} fallback={mainMat(obj)} base={obj} />;
+  // Anything with doors on its front is a hollow carcass, so opening it shows an inside.
+  if (hasFrontDoors(obj)) return <Shell o={obj} />;
   switch (obj.type) {
     case "door": return <Door o={obj} />;
     case "drawer": return <Drawer o={obj} />;

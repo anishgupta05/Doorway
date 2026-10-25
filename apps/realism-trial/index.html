@@ -23,7 +23,7 @@
 </head>
 <body>
 <div id="mode" class="box">loading…</div>
-<div id="hud" class="box"><b>R</b> real models / boxes &nbsp; <b>A</b> ambient occlusion &nbsp; <b>O</b> door &nbsp; <b>L</b> lamp &nbsp; <b>1-4</b> camera views &nbsp; drag = orbit</div>
+<div id="hud" class="box"><b>R</b> real models / boxes &nbsp; <b>A</b> ambient occlusion &nbsp; <b>O</b> door &nbsp; <b>L</b> lamp &nbsp; <b>V</b> follow video &nbsp; <b>1-4</b> camera views &nbsp; drag = orbit</div>
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -40,18 +40,36 @@ const S = await (await fetch(sceneUrl)).json();
 const R = S.room;
 const W = R.width, D = R.depth, H = R.height, T = 0.1;
 
+// ?video=<url>: footage on the left, the render on the right, camera following the scene's camera_path in sync.
+const VIDEO_URL = new URLSearchParams(location.search).get("video");
+const VW = () => (VIDEO_URL ? Math.floor(innerWidth / 2) : innerWidth);
+let vid = null;
+if (VIDEO_URL) {
+  vid = Object.assign(document.createElement("video"), { src: VIDEO_URL, muted: true, loop: true, playsInline: true, autoplay: true });
+  Object.assign(vid.style, { position: "fixed", left: 0, top: 0, width: "50%", height: "100%", objectFit: "contain", background: "#000" });
+  document.body.appendChild(vid); vid.play().catch(() => {});
+}
+let follow = !!VIDEO_URL;
+function pathAt(t) { // linear interpolation along camera_path
+  const k = S.camera_path; if (t <= k[0].t) return k[0]; const last = k[k.length - 1]; if (t >= last.t) return last;
+  let i = 0; while (k[i + 1].t < t) i++;
+  const a = k[i], b = k[i + 1], u = (t - a.t) / (b.t - a.t), l = (p, q) => p.map((v, j) => v + (q[j] - v) * u);
+  return { position: l(a.position, b.position), lookAt: l(a.lookAt, b.lookAt) };
+}
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(VW(), innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
+if (VIDEO_URL) Object.assign(renderer.domElement.style, { position: "fixed", right: 0, top: 0 });
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#bcd3e8");
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 60);
+const camera = new THREE.PerspectiveCamera(55, VW() / innerHeight, 0.05, 60);
 const controls = new OrbitControls(camera, renderer.domElement);
 const VIEWS = {
   Digit1: [[W * 0.42, 1.75, D * 0.42], [-W * 0.1, 0.8, -D * 0.15]],
@@ -93,9 +111,14 @@ const add = (geo, mat, x, y, z, parent = scene) => { const m = new THREE.Mesh(ge
 const box = (w, h, d, mat, x, y, z, p) => add(new THREE.BoxGeometry(w, h, d), mat, x, y, z, p);
 
 // room shell
-add(new THREE.BoxGeometry(W + 2 * T, T, D + 2 * T), surface("floor", W / 2, D / 2), 0, -T / 2, 0);
+// floor and walls follow the scene: carpet = plush texture tinted to the floor colour, wood = real planks
+const FLOOR = R.floorMaterial ?? "wood";
+const floorMat = FLOOR === "wood" ? surface("floor", W / 2, D / 2)
+  : FLOOR === "carpet" ? surface("rug", W / 0.7, D / 0.7, R.floorColor, false)
+  : surface("wall", W / 1.5, D / 1.5, R.floorColor, false);
+add(new THREE.BoxGeometry(W + 2 * T, T, D + 2 * T), floorMat, 0, -T / 2, 0);
 ceiling = add(new THREE.BoxGeometry(W + 2 * T, T, D + 2 * T), flat("#efece6", 0.9), 0, H + T / 2, 0);
-const wallMat = () => surface("wall", 2, 1.2, R.wallColor);
+const wallMat = () => surface("wall", 2, 1.2, R.wallColor, false); // plaster relief only; the colour comes from the scene
 function wall(side) {
   const horizontal = side === "north" || side === "south";
   const along = horizontal ? W : D, sign = side === "north" || side === "west" ? -1 : 1;
@@ -123,7 +146,7 @@ for (const [w, d, x, z] of [[W, 0.02, 0, -D / 2 + 0.01], [W, 0.02, 0, D / 2 - 0.
 const ASSET = { table: "WoodenTable_01", sofa: "sofa_02", shelf: "wooden_bookshelf_worn", cabinet: "modern_wooden_cabinet", lamp: "desk_lamp_arm_01", plant: "calathea_orbifolia_01" };
 const CHAIRS = ["ArmChair_01", "SchoolChair_01"];
 // Rotation (rad) that turns each model's own front toward +z, tuned by eye.
-const FRONT = { WoodenTable_01: 0, ArmChair_01: 0, SchoolChair_01: 0, sofa_02: 0, wooden_bookshelf_worn: 0, modern_wooden_cabinet: 0, desk_lamp_arm_01: 0, calathea_orbifolia_01: 0 };
+const FRONT = { side_table_01: 0, WoodenTable_01: 0, ArmChair_01: 0, SchoolChair_01: 0, sofa_02: 0, wooden_bookshelf_worn: 0, modern_wooden_cabinet: 0, desk_lamp_arm_01: 0, calathea_orbifolia_01: 0 };
 const gl = new GLTFLoader();
 const modelCache = {};
 const loadModel = (name) => modelCache[name] ??= new Promise((res) => gl.load(`/apps/realism-trial/assets/${name}/${name}.gltf`, (g) => res(g.scene)));
@@ -137,13 +160,15 @@ async function build(o) {
   const g = new THREE.Group(); g.position.set(...o.position); g.rotation.y = o.rotationY ?? 0; scene.add(g);
   const [w, h, d] = o.size, real = new THREE.Group(), prim = new THREE.Group();
   g.add(real, prim); realParts[o.id] = real; boxParts[o.id] = prim;
-  const asset = o.type === "chair" ? CHAIRS[chairN++ % CHAIRS.length] : ASSET[o.type];
+  const asset = o.type === "chair" ? CHAIRS[chairN++ % CHAIRS.length] : o.type === "table" && (h < 0.6 || w < 0.7) ? "side_table_01" : ASSET[o.type];
   if (asset) {
     const m = (await loadModel(asset)).clone(true);
     m.rotation.y = FRONT[asset] ?? 0;
     m.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
-    const k = o.type === "plant" ? Math.min(h / sz.y, w / sz.x, d / sz.z) : h / sz.y; // match the described height; width and depth follow the model's own proportions
+    const kh = h / sz.y, kfit = Math.min(w / sz.x, h / sz.y, d / sz.z);
+    // match the described height, unless that makes the model much wider or deeper than described
+    const k = o.type === "plant" || sz.x * kh > w * 1.25 || sz.z * kh > d * 1.25 ? kfit : kh;
     const wrap = new THREE.Group(); wrap.add(m);
     m.position.set(-c.x, -b.min.y, -c.z); wrap.scale.setScalar(k);
     wrap.traverse((n) => { if (n.isMesh) { n.castShadow = n.receiveShadow = true; if (n.material) n.material.envMapIntensity = 1; } });
@@ -182,12 +207,12 @@ const composer = new EffectComposer(renderer);
 let aoPass;
 if (AO_MODE === "gtao") {
   composer.addPass(new RenderPass(scene, camera));
-  aoPass = new GTAOPass(scene, camera, innerWidth, innerHeight);
+  aoPass = new GTAOPass(scene, camera, VW(), innerHeight);
   aoPass.output = GTAOPass.OUTPUT.Default;
   aoPass.updateGtaoMaterial({ radius: 0.35, distanceExponent: 1.5, thickness: 1, scale: 1.2, samples: 12 });
 } else {
   // N8AO renders the scene itself, then adds a denoised, depth-aware occlusion term.
-  aoPass = new N8AOPass(scene, camera, innerWidth, innerHeight);
+  aoPass = new N8AOPass(scene, camera, VW(), innerHeight);
   const c = aoPass.configuration;
   c.aoRadius = 0.5; c.distanceFalloff = 0.8; c.intensity = 2.2; c.color = new THREE.Color("#1a120c");
   c.gammaCorrection = false; // OutputPass does tone mapping + sRGB
@@ -207,17 +232,18 @@ function apply() {
     realParts[id].visible = useReal && hasReal; boxParts[id].visible = !(useReal && hasReal);
   }
   aoPass.enabled = aoOn;
-  modeEl.textContent = `${useReal ? "real models" : "primitive boxes"} · AO ${aoOn ? "on" : "off"}`;
+  modeEl.textContent = `${useReal ? "real models" : "primitive boxes"} · AO ${aoOn ? "on" : "off"}${vid ? " · camera " + (follow ? "follows video" : "free (V)") : ""}`;
 }
 addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
+  if (k === "v" && vid) { follow = !follow; apply(); }
   if (k === "r") { useReal = !useReal; apply(); }
   if (k === "a") { aoOn = !aoOn; apply(); }
   if (k === "o" && interactive.door) interactive.door.target = interactive.door.target ? 0 : 1;
   if (k === "l" && interactive.lamp) interactive.lamp.target = interactive.lamp.target ? 0 : 1;
   if (VIEWS[e.code]) setView(e.code);
 });
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
+addEventListener("resize", () => { camera.aspect = VW() / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(VW(), innerHeight); composer.setSize(VW(), innerHeight); });
 apply();
 window.__ready = true;
 
@@ -227,7 +253,8 @@ renderer.setAnimationLoop(() => {
   const dt = clock.getDelta();
   const dr = interactive.door; if (dr) { dr.t += (dr.target - dr.t) * Math.min(1, dt * 4); dr.pivot.rotation.y = dr.sign * ease(dr.t) * dr.range[1]; }
   const lp = interactive.lamp; if (lp) { lp.level += (lp.target - lp.level) * Math.min(1, dt * 6); lampLight.intensity = lp.level * 6; }
-  controls.update();
+  if (follow && vid) { const p = pathAt(vid.currentTime); camera.position.set(...p.position); camera.lookAt(...p.lookAt); controls.target.set(...p.lookAt); }
+  else controls.update();
   composer.render();
 });
 </script>

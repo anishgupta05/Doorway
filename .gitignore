@@ -10,3 +10,6 @@ dist/
 
 # model-call cache (regenerable)
 runs/.cache/
+
+# scratch outputs of test runs
+runs/smoke/

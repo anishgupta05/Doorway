@@ -11,7 +11,6 @@ import { CompareRig, OverviewRig } from "./scene/Rigs";
 import { CameraTrail } from "./scene/CameraTrail";
 import { DiffGhosts } from "./scene/DiffGhosts";
 import { TestViz } from "./scene/TestViz";
-import { Robot } from "./scene/Robot";
 import { Walk } from "./controls/Walk";
 import { IssueMarkers } from "./scene/IssueMarkers";
 import { Html } from "@react-three/drei";
@@ -97,7 +96,6 @@ export function Stage({
               }}
             />
           )}
-          {mode === "walk" && <Robot scene={scene} />}
           {outside && <OverviewRig room={scene.room} wide={splitOn} />}
           {mode === "compare" && <CompareRig scene={scene} />}
           {mode === "walk" && <Walk scene={scene} />}

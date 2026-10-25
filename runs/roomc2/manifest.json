@@ -1,0 +1,135 @@
+{
+  "id": "roomc2",
+  "title": "Office Copy and Locker Room",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.55,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 0,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.68,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Flip the hinge pivots of cabinet_1 and cabinet_2 to the south edge (+1.35) and adjust their front pivots and ranges so they swing cleanly into the room, while also fixing all spatial and color issues.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.65,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Set the hinge pivots of cabinet_1 and cabinet_2 to the front face with a smaller opening angle to clear nearby objects, while shifting the shredders, copier, side table, and partition.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.6,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Focus strictly on resolving the high-severity cabinet door collision issues and the doorway partition overlap by moving the cabinet hinges to the south front corners and narrowing the partition.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 3,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.68,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Move the copier and shredders west for clearance, align cabinet_2 front face with cabinet_1, and reduce both cabinet door swing ranges so they open cleanly without collision.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.4,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Flip the hinge pivot and swing direction on cabinet_1 and cabinet_2 while shifting the copier 0.2 m west to eliminate overlap with the black shredder.",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.68,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shorten cabinet_1 and cabinet_2 slightly away from the north shredder, raise cabinet_2, reduce door swing angles, and shift the copier and shredders west.",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": "iter_2/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.68,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_2/branch_3/scene.json",
+          "thumb": "iter_2/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 2,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.65,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Move the hinge pivots of cabinet_1 and cabinet_2 to their southern ends (-1.35) so the doors swing away from the shredders and each other, and move the copier 0.2m west.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: cabinet_1 lost its hinge",
+          "hypothesis": "Switch cabinet_1 and cabinet_2 from wide single-door hinges to compact drawer slides so they open straight out into the room without colliding with each other or the shredder, and shift the copier west.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.72,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Set the hinge pivots of cabinet_1 and cabinet_2 to their front-center (0, 0, 0.3) with a small opening range, move cabinet_2 slightly higher and forward, and shift the copier and shredders west.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        }
+      ]
+    }
+  ]
+}

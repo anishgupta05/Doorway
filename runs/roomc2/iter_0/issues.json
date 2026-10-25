@@ -1,0 +1,32 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 front door hits other_3 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_2",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_2 front door hits cabinet_1 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "partition_1",
+    "message": "Extends to x = -0.2 m, overlapping and blocking about 0.35 m of the south doorway; it should be narrower (around 1.1 m wide instead of 1.5 m) so its east edge aligns with the doorway frame at x = -0.55 m.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_1",
+    "message": "Positioned about 0.25 m too far west and 0.15 m too far south, which crowds against cabinet_3 and obscures table_1 in the northwest corner.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "table_1",
+    "message": "Tucked too far into the corner behind other_1; it should sit slightly further east (around x = -1.15 m) so it is clearly visible between the lockers and the copier as seen in the footage.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_3",
+    "message": "Color #36393d appears nearly black in the scene, whereas the lockers in the footage are a lighter slate grey.",
+    "severity": "low"
+  }
+]

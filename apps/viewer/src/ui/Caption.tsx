@@ -119,7 +119,8 @@ export function Tip() {
       localStorage.setItem("doorway-tip", "1");
     } catch {}
   };
-  if (!show) return null;
+  const mode = useApp((s) => s.mode);
+  if (!show || mode === "walk") return null;
   return (
     <div className="absolute top-24 left-1/2 z-20 -translate-x-1/2 rounded-full border border-line bg-panel/90 px-5 py-2 text-[13px] text-fg/90 shadow-xl backdrop-blur">
       Press <kbd className="mx-1 rounded border border-line bg-ink px-1.5 font-mono text-[11px]">4</kbd> to walk inside, then <kbd className="mx-1 rounded border border-line bg-ink px-1.5 font-mono text-[11px]">E</kbd> to open doors and switch lights.

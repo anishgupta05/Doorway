@@ -10,22 +10,36 @@ import { motion } from "framer-motion";
 import * as THREE from "three";
 import type { Issue, Scene, SceneObject } from "@doorway/schema";
 import { ACCENT } from "./materials";
+import { cap } from "../ui/plain";
 
 const RED = "#ef6b6b";
+/** Past this many, extra problems keep their ring but lose the name tag so labels never pile up. */
+const MAX_LABELS = 4;
+const RANK = { high: 0, medium: 1, low: 2 } as const;
 
 export function IssueMarkers({ scene, issues, fixed, k }: { scene: Scene; issues: Issue[]; fixed: Issue[]; k: number | null }) {
   const byId = useMemo(() => new Map(scene.objects.map((o) => [o.id, o])), [scene]);
   // One marker per object, even if Argon raised several issues on it.
-  const open = useMemo(() => dedupe(issues).filter((i) => byId.has(i.objectId)), [issues, byId]);
+  const open = useMemo(() => dedupe(issues).filter((i) => byId.has(i.objectId)).sort((a, b) => RANK[a.severity] - RANK[b.severity]), [issues, byId]);
   const done = useMemo(() => dedupe(fixed).filter((i) => byId.has(i.objectId) && !open.some((o) => o.objectId === i.objectId)), [fixed, open, byId]);
   const openById = new Map(open.map((i, n) => [i.objectId, { i, n }]));
   const doneById = new Map(done.map((i, n) => [i.objectId, { i, n: n + open.length }]));
+  // Name tags: most severe first, skipping any whose object sits close to one already tagged.
+  const tagged = new Map<string, number>();
+  for (const i of [...open, ...done]) {
+    const o = byId.get(i.objectId)!;
+    const clash = [...tagged.keys()].some((id) => {
+      const t = byId.get(id)!;
+      return Math.hypot(t.position[0] - o.position[0], t.position[2] - o.position[2]) < 1.1;
+    });
+    if (!clash && tagged.size < MAX_LABELS) tagged.set(i.objectId, tagged.size);
+  }
   return (
     <group>
       {scene.objects.map((o) => {
         const hit = openById.get(o.id) ?? doneById.get(o.id);
         const state = openById.has(o.id) ? "open" : doneById.has(o.id) ? "fixed" : "none";
-        return <Marker key={o.id} o={o} issue={hit?.i} lift={((hit?.n ?? 0) % 3) * 0.2} state={state} nonce={k ?? 0} />;
+        return <Marker key={o.id} o={o} issue={hit?.i} lift={(tagged.get(o.id) ?? 0) * 0.3} labeled={tagged.has(o.id)} state={state} nonce={k ?? 0} />;
       })}
     </group>
   );
@@ -37,7 +51,7 @@ function dedupe(list: Issue[]) {
   return [...seen.values()];
 }
 
-function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issue; lift: number; state: "open" | "fixed" | "none"; nonce: number }) {
+function Marker({ o, lift, labeled, state, nonce }: { o: SceneObject; issue?: Issue; lift: number; labeled: boolean; state: "open" | "fixed" | "none"; nonce: number }) {
   const ring = useRef<THREE.Mesh>(null!);
   const mat = useRef<THREE.MeshBasicMaterial>(null!);
   const born = useRef(performance.now());
@@ -60,8 +74,6 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
     }
   });
 
-  const msg = issue?.message ?? "";
-  const short = msg.length > 46 ? msg.slice(0, 44) + "…" : msg;
   return (
     <group position={[o.position[0], o.position[1], o.position[2]]}>
       <mesh ref={ring} position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={5}>
@@ -69,7 +81,7 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
         <meshBasicMaterial ref={mat} color={color} transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       <Html position={[0, o.size[1] + 0.3 + lift, 0]} center zIndexRange={[25, 0]}>
-        {state !== "none" && (
+        {state !== "none" && labeled && (
         <motion.div
           key={`${state}-${nonce}`}
           initial={{ opacity: 0, y: 8, scale: 0.9 }}
@@ -82,13 +94,12 @@ function Marker({ o, issue, lift, state, nonce }: { o: SceneObject; issue?: Issu
           {state === "open" ? (
             <>
               <span className="h-1.5 w-1.5 rounded-full bg-bad" />
-              <span className="font-medium">{o.label ?? o.type}</span>
-              <span className="text-muted">· {short}</span>
+              <span className="font-medium">{cap(o.label ?? o.type)}</span>
             </>
           ) : (
             <>
               <span className="text-accent">✓</span>
-              <span className="font-medium">{o.label ?? o.type} fixed</span>
+              <span className="font-medium">{cap(o.label ?? o.type)} fixed</span>
             </>
           )}
         </motion.div>

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cabinet_1",
+    "ok": true,
+    "text": "swings 69° clear"
+  },
+  {
+    "id": "cabinet_2",
+    "ok": false,
+    "text": "hits cabinet_1 while opening"
+  },
+  {
+    "id": "other_1",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "other_2",
+    "ok": true,
+    "text": "switches"
+  },
+  {
+    "id": "cabinet_3",
+    "ok": false,
+    "text": "hits other_3 while opening"
+  },
+  {
+    "id": "door_1",
+    "ok": true,
+    "text": "swings 92° clear"
+  }
+]

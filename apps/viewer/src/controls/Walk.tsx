@@ -12,7 +12,7 @@ import { sfx } from "../sfx";
 const EYE = 1.6;
 const RADIUS = 0.22;
 const REACH = 2.4;
-const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "other"]);
+const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "partition", "other"]);
 
 /** Free articulations and dynamic physics bodies get pushed; everything else articulated gets toggled. */
 const pushable = (o: SceneObject) => o.articulation?.kind === "free" || (!o.articulation && o.physics?.body === "dynamic");

@@ -26,7 +26,7 @@ export const Description = z.object({
   }),
   objects: z.array(z.object({
     id: z.string().regex(/^[a-z][a-z0-9_]*$/).describe("snake_case with index, e.g. chair_1"),
-    type: z.enum(["door", "drawer", "table", "chair", "cabinet", "shelf", "lamp", "rug", "plant", "monitor", "sofa", "bed", "box", "other"]),
+    type: z.enum(["door", "drawer", "table", "chair", "cabinet", "shelf", "lamp", "rug", "plant", "monitor", "sofa", "bed", "box", "partition", "other"]),
     label: z.string(),
     material: z.enum(["wood", "darkwood", "fabric", "leather", "metal", "plastic", "glass", "ceramic", "paint", "plant"]),
     color: z.string().describe("hex"),
@@ -52,7 +52,8 @@ Rules:
 - Give x_m, z_m for every object, consistent with room width_m and depth_m, and with the relations in "location" (e.g. "left of desk_1" means a smaller x). An object should sit inside the room, with its footprint touching the wall it is "against".
 - List every distinct object a person could walk into, sit on, open or switch. Skip small clutter.
 - Prefer a rough but consistent layout to false precision. If you cannot judge something, say so in "uncertain".
-- Do not invent objects that are not visible.`;
+- Do not invent objects that are not visible.
+- The room is its bounding rectangle. If the space is not a plain rectangle (an interior wall, a half wall, an alcove, a column), give width_m/depth_m for the whole bounding box and list each interior wall or column as an object of type "partition": size_m = [length, height, thickness], location says which walls it runs between, facing is the side its length faces. Use partitions to close off any part of the bounding box that is not inside the room.`;
 
 export function describeFootage(video: UploadedVideo): Promise<Description> {
   return callJson({ model: models.argon(), prompt: PROMPT, schema: Description, video });

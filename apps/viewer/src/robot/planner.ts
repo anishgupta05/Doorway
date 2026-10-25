@@ -6,10 +6,10 @@ import type { Opening, Scene, SceneObject } from "@doorway/schema";
 
 export const CELL = 0.04; // metres per grid cell
 export const ROBOT_RADIUS = 0.17;
-const OUTSIDE = 1.0; // how far past a doorway the grid extends, so "leave the room" has a goal
+const OUTSIDE = 1.6; // how far past a doorway the grid extends: room to wait clear of a door's swing
 
 /** Furniture that blocks a floor robot. Rugs are driven over; lamps/monitors sit on tables. */
-const BLOCKS = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "other", "drawer"]);
+const BLOCKS = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "partition", "other", "drawer"]);
 export const blocksRobot = (o: SceneObject) => BLOCKS.has(o.type) && o.position[1] < 0.3;
 
 export type Vec2 = [number, number]; // world x, z

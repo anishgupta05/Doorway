@@ -1,5 +1,6 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
 import { Scene, checkScene } from "@doorway/schema";
+import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
 
@@ -10,6 +11,7 @@ const CONVENTIONS = `Scene conventions (follow exactly):
 - "size" is [width, height, depth] in the object's own frame. Its front faces local +z before "rotationY" (radians, about y) is applied. rotationY = 0 faces south, PI faces north, PI/2 faces east... verify against the description's "facing".
 - Opening "offset" is the centre of the opening measured from the wall's midpoint (+x for north/south walls, +z for east/west walls).
 - Objects must sit inside the room and must not overlap each other, except things resting on a surface.
+- Interior walls, half walls and columns are objects of type "partition": size = [length, height, thickness] with the length along the object's local x, colour = the room's wall colour, material "paint", physics "static", no articulation. Furniture may stand against a partition.
 - Hinged door: articulation { kind: "hinge", axis: [0,1,0], pivot: [-width/2, 0, 0] or [+width/2, 0, 0] in the door's local frame, range: [0, 1.6] }. The pivot side is the hinge side.
 - Drawers use kind "slide" with range [0, depth*0.7]. Lamps and monitors use kind "switch"; lamps also get a "light". Pushable furniture (chairs) use kind "free".
 - Every object in the survey must appear exactly once, with the same id. The survey's x_m, z_m, base_y_m are in this same frame: use them as the position unless the footage clearly contradicts them, and refine only when you can justify it.
@@ -23,15 +25,18 @@ export async function generateScene(description: Description, video?: UploadedVi
   const prompt = `Build the 3D scene for this room as a scene.json. A survey written from the footage is attached as JSON${video ? ", along with the footage itself, so check it against the video when they disagree" : ""}.
 
 ${CONVENTIONS}`;
-  const scene = await callJson({
+  const generated = await callJson({
     model: models.argon(),
     prompt,
     schema: Scene,
     video,
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
+  // Doorways always get a working door, even if the model left it out.
+  const { scene, added } = ensureDoors(generated);
   normalizeColors(scene);
   const problems = checkScene(scene);
+  if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
   if (missing.length) problems.push(`missing described objects: ${missing.join(", ")}`);
   problems.push(...checkLayout(description, scene));

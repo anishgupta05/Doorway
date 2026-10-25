@@ -6,11 +6,14 @@ export type Task = { id: string; label: string; start: Vec2; goal: Vec2; target?
 
 const TARGETS = new Set<SceneObject["type"]>(["table", "cabinet", "shelf", "sofa", "bed", "chair"]);
 
-/** Where the robot starts: just outside the first doorway, or the room centre if there is none. */
+/**
+ * Where the robot starts: outside the first doorway, far enough back that a door
+ * swinging out toward it can't hit it. The room centre if there is no doorway.
+ */
 export function startPoint(scene: Scene): Vec2 {
   const d = scene.room.openings.find((o) => o.kind === "door");
   if (!d) return [0, 0];
-  const out = 0.6;
+  const out = Math.max(0.6, d.width + ROBOT_RADIUS + 0.12);
   const { width: w, depth: dp } = scene.room;
   switch (d.wall) {
     case "north": return [d.offset, -dp / 2 - out];

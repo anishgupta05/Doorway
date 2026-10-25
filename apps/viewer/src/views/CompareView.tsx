@@ -1,7 +1,7 @@
 // Real footage under the render, with a draggable wipe between them. The 3D
 // camera follows the recovered path at the video's current time (see CompareRig),
 // so dragging the divider shows exactly where the reconstruction is right or wrong.
-import { roundName } from "../ui/plain";
+import { cap, roundName } from "../ui/plain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Issue, RunManifest, Scene } from "@doorway/schema";
@@ -123,9 +123,9 @@ export function CompareView({
             >
               <div className="flex items-center gap-2 text-[12px] font-medium">
                 <span className={`h-1.5 w-1.5 rounded-full ${i.severity === "high" ? "bg-bad" : i.severity === "medium" ? "bg-warn" : "bg-muted"}`} />
-                <span className="text-fg">{scene.objects.find((o) => o.id === i.objectId)?.label ?? i.objectId.replace(/_\d+$/, "")}</span>
+                <span className="text-fg">{cap(scene.objects.find((o) => o.id === i.objectId)?.label ?? i.objectId.replace(/_\d+$/, ""))}</span>
               </div>
-              <div className="mt-0.5 text-[12px] leading-snug text-muted">{i.message}</div>
+              <div className="mt-0.5 text-[12px] leading-snug text-muted">{cap(i.message)}</div>
             </motion.div>
           ))}
         </AnimatePresence>

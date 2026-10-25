@@ -1,0 +1,993 @@
+{
+  "version": 1,
+  "name": "Office Copy and Storage Room with Circular Brick Window",
+  "room": {
+    "width": 4.2,
+    "depth": 2.6,
+    "height": 2.9,
+    "wallColor": "#ebe9e2",
+    "floorColor": "#8a857e",
+    "floorMaterial": "carpet",
+    "wallLook": "brick",
+    "unseenWalls": [],
+    "openings": [
+      {
+        "wall": "north",
+        "kind": "window",
+        "offset": 0,
+        "width": 2.6,
+        "height": 2.2,
+        "sill": 0.7,
+        "view": "outdoors"
+      },
+      {
+        "wall": "east",
+        "kind": "door",
+        "offset": 0.43,
+        "width": 1.1,
+        "height": 2.4,
+        "sill": 0,
+        "view": "indoors"
+      }
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "objects": [
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "white base counter cabinet",
+      "position": [
+        0.4,
+        0,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        2.8,
+        0.9,
+        0.6
+      ],
+      "color": "#e9e7e0",
+      "material": "paint",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -1.4,
+          0,
+          0.3
+        ],
+        "range": [
+          -1.3,
+          0
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 95,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "cabinet_2",
+      "type": "cabinet",
+      "label": "white wall cabinet",
+      "position": [
+        0.8,
+        1.5,
+        -1.1
+      ],
+      "rotationY": 0,
+      "size": [
+        2.4,
+        0.9,
+        0.4
+      ],
+      "color": "#e9e7e0",
+      "material": "paint",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -1.2,
+          0,
+          0.2
+        ],
+        "range": [
+          -1.2,
+          0
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 60,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "other_1",
+      "type": "other",
+      "label": "Canon office copier",
+      "position": [
+        -1.8,
+        0,
+        -0.95
+      ],
+      "rotationY": 0,
+      "size": [
+        0.65,
+        1.15,
+        0.65
+      ],
+      "color": "#e3e1da",
+      "material": "plastic",
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": true
+      },
+      "light": {
+        "color": "#ffffff",
+        "intensity": 0.5,
+        "distance": 1.5
+      },
+      "physics": {
+        "body": "static",
+        "mass": 85,
+        "friction": 0.7,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "other_2",
+      "type": "other",
+      "label": "paper shredder",
+      "position": [
+        -1.3,
+        0,
+        -1.05
+      ],
+      "rotationY": 0,
+      "size": [
+        0.42,
+        0.65,
+        0.35
+      ],
+      "color": "#26282a",
+      "material": "plastic",
+      "decor": false,
+      "articulation": {
+        "kind": "switch",
+        "initial": false
+      },
+      "light": {
+        "color": "#ffffff",
+        "intensity": 0.3,
+        "distance": 1
+      },
+      "physics": {
+        "body": "static",
+        "mass": 18,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "other_3",
+      "type": "other",
+      "label": "black waste bin",
+      "position": [
+        -0.85,
+        0,
+        -1.05
+      ],
+      "rotationY": 0,
+      "size": [
+        0.42,
+        0.65,
+        0.35
+      ],
+      "color": "#2b2d30",
+      "material": "plastic",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 3,
+        "friction": 0.5,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "other_4",
+      "type": "other",
+      "label": "stainless steel trash can",
+      "position": [
+        -1.75,
+        0,
+        -0.55
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.4,
+        0.75,
+        0.4
+      ],
+      "color": "#a8aaad",
+      "material": "metal",
+      "decor": false,
+      "physics": {
+        "body": "static",
+        "mass": 6,
+        "friction": 0.5,
+        "collider": "cylinder"
+      }
+    },
+    {
+      "id": "cabinet_3",
+      "type": "cabinet",
+      "label": "grey metal locker bank",
+      "position": [
+        -1.85,
+        0,
+        0.1
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        1.6,
+        1.85,
+        0.45
+      ],
+      "color": "#58656e",
+      "material": "metal",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -0.8,
+          0,
+          0
+        ],
+        "range": [
+          -1.2,
+          0
+        ]
+      },
+      "physics": {
+        "body": "static",
+        "mass": 110,
+        "friction": 0.6,
+        "collider": "box"
+      }
+    },
+    {
+      "id": "other_5",
+      "type": "other",
+      "label": "paper trimmer",
+      "position": [
+        -0.55,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.45,
+        0.1,
+        0.4
+      ],
+      "color": "#c59b65",
+      "material": "wood",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.025,
+            0
+          ],
+          "size": [
+            0.44,
+            0.05,
+            0.38
+          ],
+          "color": "#c59b65",
+          "material": "wood"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0.21,
+            0.06,
+            0
+          ],
+          "size": [
+            0.03,
+            0.04,
+            0.4
+          ],
+          "color": "#5a4632",
+          "material": "metal"
+        }
+      ],
+      "look": "wood",
+      "decor": true
+    },
+    {
+      "id": "other_6",
+      "type": "other",
+      "label": "electric stapler",
+      "position": [
+        0.25,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.45,
+        0.18,
+        0.2
+      ],
+      "color": "#383a3d",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.04,
+            0
+          ],
+          "size": [
+            0.44,
+            0.08,
+            0.18
+          ],
+          "color": "#383a3d",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.12,
+            -0.02
+          ],
+          "size": [
+            0.4,
+            0.08,
+            0.12
+          ],
+          "color": "#8c9094",
+          "material": "plastic"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "other_7",
+      "type": "other",
+      "label": "heavy duty hole punch",
+      "position": [
+        0.7,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.25,
+        0.22,
+        0.25
+      ],
+      "color": "#505255",
+      "material": "metal",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.03,
+            0
+          ],
+          "size": [
+            0.24,
+            0.06,
+            0.24
+          ],
+          "color": "#2b2d2f",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.13,
+            -0.03
+          ],
+          "size": [
+            0.18,
+            0.14,
+            0.08
+          ],
+          "color": "#8a8d91",
+          "material": "metal"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "box_1",
+      "type": "box",
+      "label": "black mesh desk organizer",
+      "position": [
+        0.92,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.22,
+        0.12,
+        0.15
+      ],
+      "color": "#1e1f21",
+      "material": "metal",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.06,
+            0
+          ],
+          "size": [
+            0.22,
+            0.12,
+            0.15
+          ],
+          "color": "#1e1f21",
+          "material": "metal"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "Juice power bank rental station",
+      "position": [
+        1.25,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.3,
+        0.45,
+        0.22
+      ],
+      "color": "#222629",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.13,
+            0
+          ],
+          "size": [
+            0.28,
+            0.26,
+            0.2
+          ],
+          "color": "#1f2326",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.05,
+            0.14,
+            0.105
+          ],
+          "size": [
+            0.12,
+            0.18,
+            0.02
+          ],
+          "color": "#4caf50",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.35,
+            -0.02
+          ],
+          "size": [
+            0.26,
+            0.16,
+            0.03
+          ],
+          "color": "#2b3035",
+          "material": "glass"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "other_8",
+      "type": "other",
+      "label": "hand sanitizer bottle",
+      "position": [
+        1.5,
+        0.9,
+        -1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.08,
+        0.18,
+        0.08
+      ],
+      "color": "#c8d6cd",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.07,
+            0
+          ],
+          "size": [
+            0.07,
+            0.14,
+            0.07
+          ],
+          "color": "#c8d6cd",
+          "material": "glass"
+        },
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.16,
+            0
+          ],
+          "size": [
+            0.025,
+            0.04,
+            0.025
+          ],
+          "color": "#e6e6e6",
+          "material": "plastic"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "box_2",
+      "type": "box",
+      "label": "black tissue box",
+      "position": [
+        1.65,
+        0.9,
+        -0.95
+      ],
+      "rotationY": 0,
+      "size": [
+        0.24,
+        0.13,
+        0.13
+      ],
+      "color": "#1a1a1a",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.05,
+            0
+          ],
+          "size": [
+            0.24,
+            0.1,
+            0.13
+          ],
+          "color": "#1a1a1a",
+          "material": "plastic"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.115,
+            0
+          ],
+          "size": [
+            0.1,
+            0.03,
+            0.04
+          ],
+          "color": "#f2f2f0",
+          "material": "fabric"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "other_9",
+      "type": "other",
+      "label": "wooden Wi-Fi sign",
+      "position": [
+        0.78,
+        1.25,
+        -1.28
+      ],
+      "rotationY": 0,
+      "size": [
+        0.14,
+        0.18,
+        0.02
+      ],
+      "color": "#b88a58",
+      "material": "wood",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.09,
+            0
+          ],
+          "size": [
+            0.14,
+            0.18,
+            0.02
+          ],
+          "color": "#b88a58",
+          "material": "wood"
+        }
+      ],
+      "look": "wood",
+      "decor": true
+    },
+    {
+      "id": "other_10",
+      "type": "other",
+      "label": "folding step stool",
+      "position": [
+        0.1,
+        2.4,
+        -1.1
+      ],
+      "rotationY": 0,
+      "size": [
+        0.45,
+        0.12,
+        0.35
+      ],
+      "color": "#333638",
+      "material": "metal",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.05,
+            0
+          ],
+          "size": [
+            0.42,
+            0.08,
+            0.34
+          ],
+          "color": "#333638",
+          "material": "metal"
+        },
+        {
+          "shape": "box",
+          "offset": [
+            -0.2,
+            0.09,
+            0
+          ],
+          "size": [
+            0.04,
+            0.04,
+            0.32
+          ],
+          "color": "#9ba83b",
+          "material": "plastic"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "label": "dried grass in pink vase",
+      "position": [
+        -1.8,
+        1.85,
+        -0.9
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.2,
+        0.45,
+        0.2
+      ],
+      "color": "#d8c2be",
+      "material": "ceramic",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "offset": [
+            0,
+            0.11,
+            0
+          ],
+          "size": [
+            0.14,
+            0.22,
+            0.14
+          ],
+          "color": "#d8c2be",
+          "material": "ceramic"
+        },
+        {
+          "shape": "sphere",
+          "offset": [
+            0,
+            0.32,
+            0
+          ],
+          "size": [
+            0.2,
+            0.24,
+            0.2
+          ],
+          "color": "#d2be96",
+          "material": "plant"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "box_3",
+      "type": "box",
+      "label": "small white storage box",
+      "position": [
+        -1.85,
+        1.85,
+        -0.65
+      ],
+      "rotationY": 1.5708,
+      "size": [
+        0.2,
+        0.15,
+        0.25
+      ],
+      "color": "#dcdad3",
+      "material": "plastic",
+      "parts": [
+        {
+          "shape": "box",
+          "offset": [
+            0,
+            0.075,
+            0
+          ],
+          "size": [
+            0.2,
+            0.15,
+            0.25
+          ],
+          "color": "#dcdad3",
+          "material": "plastic"
+        }
+      ],
+      "decor": true
+    },
+    {
+      "id": "door_1",
+      "type": "door",
+      "label": "Door",
+      "position": [
+        2.1305,
+        0,
+        0.43
+      ],
+      "rotationY": 1.5707963267948966,
+      "size": [
+        1.08,
+        2.39,
+        0.045
+      ],
+      "color": "#d9d4ca",
+      "material": "paint",
+      "decor": false,
+      "articulation": {
+        "kind": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "pivot": [
+          -0.54,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          1.6
+        ]
+      },
+      "physics": {
+        "body": "kinematic",
+        "mass": 15,
+        "friction": 0.5,
+        "collider": "box",
+        "damping": 2
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "verb": "open",
+      "target": "cabinet_1"
+    },
+    {
+      "verb": "open",
+      "target": "cabinet_2"
+    },
+    {
+      "verb": "open",
+      "target": "cabinet_3"
+    },
+    {
+      "verb": "toggle",
+      "target": "other_1"
+    },
+    {
+      "verb": "toggle",
+      "target": "other_2"
+    },
+    {
+      "verb": "open",
+      "target": "door_1"
+    }
+  ],
+  "camera_path": [
+    {
+      "t": 0,
+      "position": [
+        0.2,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        0.2,
+        0.1,
+        -0.4
+      ]
+    },
+    {
+      "t": 8,
+      "position": [
+        0.2,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        1.8,
+        1.8,
+        -0.5
+      ]
+    },
+    {
+      "t": 13,
+      "position": [
+        0.2,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        0.9,
+        1.2,
+        -1.1
+      ]
+    },
+    {
+      "t": 20,
+      "position": [
+        0,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        -0.8,
+        1.3,
+        -1.1
+      ]
+    },
+    {
+      "t": 26,
+      "position": [
+        -0.2,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        -1.85,
+        1.3,
+        0.1
+      ]
+    },
+    {
+      "t": 34,
+      "position": [
+        -0.1,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        -1.3,
+        1,
+        -1
+      ]
+    },
+    {
+      "t": 41,
+      "position": [
+        0.2,
+        1.5,
+        0.3
+      ],
+      "lookAt": [
+        0.6,
+        1.1,
+        -1
+      ]
+    },
+    {
+      "t": 47,
+      "position": [
+        0.3,
+        1.5,
+        0.2
+      ],
+      "lookAt": [
+        1.8,
+        1.5,
+        0.4
+      ]
+    }
+  ]
+}

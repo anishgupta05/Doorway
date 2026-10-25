@@ -7,7 +7,7 @@ import type { Scene, SceneObject } from "@doorway/schema";
 export type TestResult = { id: string; ok: boolean; text: string };
 
 /** Types that block movement. Rugs, lamps and monitors sit on or under things. */
-const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "other"]);
+const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "partition", "other"]);
 
 type Box = { id: string; cx: number; cz: number; hw: number; hd: number; rot: number };
 
@@ -57,6 +57,8 @@ export function interactionTests(scene: Scene): TestResult[] {
         for (const f of [0.35, 0.7, 1]) {
           const lx = a.pivot[0] + dir * len * f * Math.cos(ang);
           const lz = a.pivot[2] - dir * len * f * Math.sin(ang);
+          // Doors face out (local +z): beyond their own wall is the corridor, not furniture.
+          if (o.type === "door" && lz > 0.01) continue;
           const [x, z] = toWorld(o, lx, lz);
           if (!inRoom(x, z)) hit = "the wall";
           const b = obstacles.find((ob) => inside(ob, x, z, 0.02));

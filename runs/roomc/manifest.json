@@ -1,0 +1,135 @@
+{
+  "id": "roomc",
+  "title": "Office Copy and Storage Room with Circular Brick Window",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.25,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 0,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.48,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix cabinet widths, positions, and pivots to eliminate overlapping and resolve interaction test collisions, while adding light emitters to switchable devices.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.45,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix object positions, widths, and the vertically mounted paper trimmer, while adjusting cabinet_3 position and range so all cabinets open cleanly.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.45,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Enhance visual details for the Canon copier and vertical paper trimmer while fixing cabinet sizes and adding sliding or reduced articulation ranges to pass all interaction checks.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 1,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: cabinet_1 is 2.8 m long, over 2.0 m (75% of the room): too big to be furniture",
+          "hypothesis": "Fix cabinet hinge pivots to swing outward from the front edge and adjust cabinet sizes and floor appliance positions so nothing collides or floats.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.58,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Resolve cabinet interaction collisions by shifting countertop and upper cabinet positions slightly and moving the paper trimmer onto the existing counter while shifting floor bins west.",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: cabinet_1 is 2.8 m long, over 2.0 m (75% of the room): too big to be furniture",
+          "hypothesis": "Widen both cabinets to match the footage, shift the copier, shredder, and waste bin west so they don't overlap the widened base cabinet, and fix cabinet hinge swings.",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": "iter_2/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 3,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.4,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix cabinet_2 hinge range to -1.5 rad so it opens past 57 degrees without changing cabinet sizes over the 2.0m hook limit.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: cabinet_3 hits other_1 while opening",
+          "hypothesis": "Keep cabinets within the 2.0m hook limit, shift them flush against the east wall, fix cabinet_2 hinge swing, and separate the copier, shredder, and waste bin.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: cabinet_3 hits other_3 while opening",
+          "hypothesis": "Add a second 0.8m base cabinet segment to make up the 2.8m total counter width while staying under the 2.0m single-object limit, and fix cabinet_2 hinge and floor appliance spacing.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.58,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_3/branch_3/scene.json",
+          "thumb": "iter_3/branch_3/thumb.png"
+        }
+      ]
+    }
+  ]
+}

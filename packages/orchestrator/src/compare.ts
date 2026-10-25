@@ -19,7 +19,16 @@ Check, in this order: missing or extra objects, positions (relative to walls and
 - Do not list nitpicks. If the scene is already good, return few or no issues.
 - match_score is 0-10: 10 = indistinguishable layout, 7 = recognisably the same room with some errors, 4 = same kind of room but many objects wrong, 0 = unrelated.`;
 
-export async function compareScene(scene: Scene, description: Description, video?: UploadedVideo): Promise<Comparison> {
+/** Rendered views of the scene from the footage's camera path, so Argon judges what we actually built. */
+export interface Renders {
+  frames: Buffer[];
+  /** Seconds into the footage for each frame. */
+  times: number[];
+}
+
+const RENDERS_NOTE = `The images are renders of the scene JSON from the same camera path as the footage, at the stated timestamps. Compare each one with what the footage shows at that moment. The renders are deliberately stylised: ignore lighting, shadows, textures, and anything seen through a window or glass.`;
+
+export async function compareScene(scene: Scene, description: Description, video?: UploadedVideo, renders?: Renders): Promise<Comparison> {
   const ids = scene.objects.map((o) => o.id) as [string, ...string[]];
   const schema = z.object({
     match_score: z.number().min(0).max(10),
@@ -36,7 +45,8 @@ export async function compareScene(scene: Scene, description: Description, video
     prompt: PROMPT,
     schema,
     video,
-    context: ["SURVEY:\n" + JSON.stringify(description), "SCENE:\n" + JSON.stringify(scene)],
+    context: ["SURVEY:\n" + JSON.stringify(description), "SCENE:\n" + JSON.stringify(scene), ...(renders ? [RENDERS_NOTE] : [])],
+    images: renders?.frames.map((data, i) => ({ caption: `RENDER at t=${renders.times[i]}s:`, mimeType: "image/jpeg", data })),
   });
   return { score: r.match_score / 10, issues: r.issues };
 }

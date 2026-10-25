@@ -7,7 +7,8 @@
   "scripts": {
     "describe": "tsx --env-file=../../.env src/cli-describe.ts",
     "generate": "tsx --env-file=../../.env src/cli-generate.ts",
-    "step": "tsx --env-file=../../.env src/cli-step.ts"
+    "step": "tsx --env-file=../../.env src/cli-step.ts",
+    "loop": "tsx --env-file-if-exists=../../.env src/cli-loop.ts"
   },
   "dependencies": {
     "@doorway/schema": "*",

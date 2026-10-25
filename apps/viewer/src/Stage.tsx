@@ -43,7 +43,7 @@ export function Stage({
   k?: number | null;
   split?: SplitPair | null;
   robot?: ReturnType<typeof useRobotTask> | null;
-  mission?: { mission: Mission; start: Vec2; runKey: string | null } | null;
+  mission?: { mission: Mission; start: Vec2; runKey: string | null; radius: number } | null;
 }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
@@ -91,7 +91,7 @@ export function Stage({
           })()}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
           {tests && <TestViz scene={scene} />}
-          {mission && mode === "overview" && !splitOn && <MissionSim mission={mission.mission} start={mission.start} runKey={mission.runKey} />}
+          {mission && mode === "overview" && !splitOn && <MissionSim mission={mission.mission} start={mission.start} runKey={mission.runKey} radius={mission.radius} />}
           {compareOn && (
             <RobotSim
               grid={robot!.sim!.grid}

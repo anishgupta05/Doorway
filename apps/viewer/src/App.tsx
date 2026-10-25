@@ -7,6 +7,7 @@ import { MissionPanel } from "./robot/MissionPanel";
 import { ProgressView } from "./views/ProgressView";
 import { actionsFor } from "./robot/actions";
 import { planMission } from "./robot/mission";
+import { profileById } from "./robot/profiles";
 import { startPoint } from "./robot/tasks";
 import { ROBOT } from "./features";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
@@ -35,14 +36,15 @@ export function App() {
   const robotTab = useApp((s) => s.robotTab);
   const queue = useApp((s) => s.missionQueue);
   const missionRun = useApp((s) => s.mission);
+  const robotProfile = profileById(useApp((s) => s.robotProfile));
   // Missions run in the room on stage: every door, locker and switch in it is something to do.
   const actions = useMemo(() => (scene ? actionsFor(scene) : []), [scene]);
   const mission = useMemo(() => {
     if (!scene) return null;
     const byId = new Map(actions.map((a) => [a.id, a]));
     const steps = queue.map((id) => byId.get(id)).filter((a): a is NonNullable<typeof a> => !!a);
-    return planMission(scene, steps, startPoint(scene));
-  }, [scene, actions, queue]);
+    return planMission(scene, steps, startPoint(scene), robotProfile);
+  }, [scene, actions, queue, robotProfile]);
   // Stable, so re-renders (e.g. status updates) don't restart a running job.
   const missionStart = useMemo(() => (scene ? startPoint(scene) : null), [scene]);
   const mode = useApp((s) => s.mode);
@@ -75,7 +77,7 @@ export function App() {
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
         <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen && robotTab === "compare" ? robot : null}
-          mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
+          mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null, radius: robotProfile.radius } : null}
         />
       </div>
       <TopBar current={current} />

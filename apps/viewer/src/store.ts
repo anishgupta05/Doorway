@@ -43,6 +43,8 @@ type State = {
   robotTab: "compare" | "mission";
   /** Action ids queued for the mission (see robot/actions.ts). */
   missionQueue: string[];
+  /** Which robot does the job (robot/profiles.ts). */
+  robotProfile: string;
   /** A running/finished mission: which leg, and each leg's status. */
   mission: { key: string; current: number; status: ("pending" | "driving" | "acting" | "done" | "failed")[] } | null;
   /** Overview: v0 and the final room side by side. */
@@ -118,6 +120,7 @@ export const useApp = create<State>((set) => ({
   robotDone: {},
   robotTab: "mission",
   missionQueue: [],
+  robotProfile: "delivery",
   mission: null,
   split: false,
   uploadOpen: false,

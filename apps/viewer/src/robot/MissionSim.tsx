@@ -15,7 +15,7 @@ import type { Mission } from "./mission";
 const SPEED = 0.42; // m/s
 const ACT = 1.3; // seconds spent opening a thing
 
-export function MissionSim({ mission, start, runKey }: { mission: Mission; start: Vec2; runKey: string | null }) {
+export function MissionSim({ mission, start, runKey, radius = ROBOT_RADIUS }: { mission: Mission; start: Vec2; runKey: string | null; radius?: number }) {
   const g = useRef<THREE.Group>(null!);
   const arm = useRef(0);
   const st = useRef({ leg: 0, s: 0, phase: "idle" as "idle" | "drive" | "act" | "done", t: 0, acted: false });
@@ -42,7 +42,15 @@ export function MissionSim({ mission, start, runKey }: { mission: Mission; start
     }
     if (r.phase === "drive") {
       const p = pts[r.leg];
-      if (!leg.plan.ok || p.length < 2) {
+      // Already standing in the right spot (e.g. the next locker in the same column): just act.
+      if (leg.plan.ok && p.length < 2) {
+        r.phase = "act";
+        r.t = 0;
+        r.acted = false;
+        setStatus(r.leg, "acting");
+        return;
+      }
+      if (!leg.plan.ok) {
         // Can't reach it: say so and move on.
         setStatus(r.leg, "failed");
         sfx.reject();
@@ -114,7 +122,7 @@ export function MissionSim({ mission, start, runKey }: { mission: Mission; start
         ) : null,
       )}
       <group ref={g}>
-        <RobotBody active={!!runKey} scale={ROBOT_RADIUS / ROBOT_MESH_RADIUS} arm={arm} />
+        <RobotBody active={!!runKey} scale={radius / ROBOT_MESH_RADIUS} arm={arm} />
       </group>
     </group>
   );

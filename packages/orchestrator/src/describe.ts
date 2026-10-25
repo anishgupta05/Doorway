@@ -22,6 +22,7 @@ export const Description = z.object({
       height_m: z.number(),
       position_along_wall: z.enum(["left", "center", "right"]).describe("As seen standing at the room centre facing that wall."),
       sill_m: z.number().describe("0 for a door."),
+      has_door_leaf: z.boolean().optional().describe("For doors: true if an actual door panel hangs in the opening, false for an open walk-through threshold."),
       shape: z.enum(["rect", "arch"]).optional().describe("arch = rounded/semicircular top; a half-round window is an arch whose height is at most half its width."),
     })),
     wall_looks: z.array(z.object({ wall: Dir, look: z.enum(["brick", "plaster", "concrete", "paper", "wood", "tile"]) })).optional()

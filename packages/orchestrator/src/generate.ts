@@ -35,7 +35,9 @@ ${CONVENTIONS}`;
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
   // Doorways always get a working door, even if the model left it out.
-  const { scene, added } = ensureDoors(generated);
+  // ...unless the survey says the doorway is an open threshold.
+  const thresholds = new Set(description.room.openings.filter((o) => o.kind === "door" && o.has_door_leaf === false).map((o) => o.wall));
+  const { scene, added } = ensureDoors(generated, thresholds);
   normalizeColors(scene);
   // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
   for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }

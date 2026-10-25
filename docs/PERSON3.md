@@ -24,3 +24,5 @@ Does the managed-agent sandbox have headless Chrome? If not, rendering stays loc
 
 ## Layout rules in checkScene (all scenes, all loop branches)
 `checkScene` now also rejects: solid objects overlapping by more than 0.1 m (rugs, drawers, decor and things resting on others excluded), anything within 0.45 m of a door on either side, objects sticking out of the room, and parts far outside their object's box. Exported `separation`, `doorZone`, `checkLayout` from `@doorway/schema`. `generate` runs `resolveLayout` first, which nudges the lighter object clear; whatever it cannot fix is reported. Guards that apply a patch get this for free through `applyPatch`.
+
+Cabinet doors are `type: "door"` objects shorter than 1.6 m; only room doors (`isRoomDoor`) get the 0.45 m walking-clearance zone. Affordance children are `drawer`/`door` objects with kinematic physics and `open` interactions; the body they sit on is static.

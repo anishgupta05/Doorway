@@ -9,6 +9,7 @@ import type { MaterialKind, Part, SceneObject, Vec3 } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue } from "./Placed";
 import { ModelBody, modelFor } from "./models";
+import { TexturedPart } from "./TexturedPart";
 
 type V3 = [number, number, number];
 
@@ -92,6 +93,7 @@ function Parts({ parts, fallback, base }: { parts: Part[]; fallback: THREE.Mater
               <sphereGeometry args={[1, 24, 16]} />
             </mesh>
           );
+        if (part.texture) return <TexturedPart key={i} part={part} plain={m} />;
         return <RB key={i} s={part.size} p={part.offset as V3} m={m} />;
       })}
     </>
@@ -104,6 +106,7 @@ function Door({ o }: { o: SceneObject }) {
   const panel = material("paint", `#${new THREE.Color(o.color ?? "#d9cdbb").offsetHSL(0, 0, -0.03).getHexString()}`);
   const hingeLeft = o.articulation?.kind !== "hinge" || o.articulation.pivot[0] <= 0;
   const hx = (hingeLeft ? 1 : -1) * (w / 2 - 0.08);
+  const hy = Math.min(1.0, h * 0.55); // lever height: 1 m on a room door, mid-height on a cabinet door
   return (
     <group>
       <RB s={[w - 0.006, h - 0.006, d]} p={[0, h / 2, 0]} r={0.006} m={m} />
@@ -111,8 +114,8 @@ function Door({ o }: { o: SceneObject }) {
         <group key={side}>
           <RB s={[w - 0.22, h * 0.36, 0.006]} p={[0, h * 0.72, (side * d) / 2]} r={0.002} m={panel} />
           <RB s={[w - 0.22, h * 0.36, 0.006]} p={[0, h * 0.28, (side * d) / 2]} r={0.002} m={panel} />
-          <Cyl r={0.028} h={0.012} p={[hx, 1.0, side * (d / 2 + 0.006)]} rot={[Math.PI / 2, 0, 0]} m={brushed()} />
-          <RB s={[0.13, 0.02, 0.02]} p={[hx - (hingeLeft ? 0.055 : -0.055), 1.0, side * (d / 2 + 0.03)]} r={0.008} m={brushed()} />
+          <Cyl r={0.028} h={0.012} p={[hx, hy, side * (d / 2 + 0.006)]} rot={[Math.PI / 2, 0, 0]} m={brushed()} />
+          <RB s={[0.13, 0.02, 0.02]} p={[hx - (hingeLeft ? 0.055 : -0.055), hy, side * (d / 2 + 0.03)]} r={0.008} m={brushed()} />
         </group>
       ))}
     </group>

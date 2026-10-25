@@ -1,5 +1,5 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
-import { Scene, checkScene, checkLayout as checkPhysical, doorZone, separation } from "@doorway/schema";
+import { Scene, checkScene, checkLayout as checkPhysical, doorZone, isRoomDoor, separation } from "@doorway/schema";
 import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
@@ -107,7 +107,7 @@ export function fixDoorSwing(scene: Scene, margin = 0.05): string[] {
   const blockers = scene.objects.filter((o) => !o.decor && o.type !== "door");
   for (const d of scene.objects) {
     const a = d.articulation;
-    if (d.type !== "door" || a?.kind !== "hinge" || a.axis[0] !== 0 || a.axis[2] !== 0 || a.axis[1] === 0) continue;
+    if (!isRoomDoor(d) || a?.kind !== "hinge" || a.axis[0] !== 0 || a.axis[2] !== 0 || a.axis[1] === 0) continue;
     const hits = (sign: number) => {
       const full = sign * Math.max(Math.abs(a.range[0]), Math.abs(a.range[1]));
       const len = d.size[0];
@@ -161,6 +161,8 @@ export function repairColour(v: string): string {
 export function resolveLayout(scene: Scene, passes = 12): string[] {
   const moved = new Set<string>();
   if (checkPhysical(scene).length === 0) return []; // already valid: leave it alone
+  const riders = ridersByParent(scene);
+  const start = new Map(scene.objects.map((o) => [o.id, [o.position[0], o.position[2]] as [number, number]]));
   const solids = scene.objects.filter((o) => !o.decor && !["rug", "door", "drawer"].includes(o.type));
   const rect = (o: Scene["objects"][number]) => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
   const weight = (o: Scene["objects"][number]) => (o.articulation?.kind === "free" || o.physics?.body === "dynamic" ? 0 : 1) * 1000 + o.size[0] * o.size[2];
@@ -188,7 +190,7 @@ export function resolveLayout(scene: Scene, passes = 12): string[] {
         changed = true;
       }
     }
-    for (const d of scene.objects.filter((o) => o.type === "door")) {
+    for (const d of scene.objects.filter(isRoomDoor)) {
       for (const o of solids) {
         if (o.position[1] > 1.8) continue;
         const sep = separation(doorZone(d), rect(o));
@@ -197,6 +199,16 @@ export function resolveLayout(scene: Scene, passes = 12): string[] {
     }
     solids.forEach(clamp);
     if (!changed) break;
+  }
+  // Whatever rests on a piece of furniture travels with it.
+  for (const [parent, ids] of riders) {
+    const p = scene.objects.find((o) => o.id === parent)!;
+    const [x0, z0] = start.get(parent)!;
+    for (const id of ids) {
+      const r = scene.objects.find((o) => o.id === id)!;
+      r.position[0] += p.position[0] - x0;
+      r.position[2] += p.position[2] - z0;
+    }
   }
   return [...moved];
 }
@@ -250,6 +262,14 @@ function scaledRoom(src: Scene, k: number): Scene {
     };
     o.position = [place(x, hx, W, W * k), o.position[1], place(z, hz, D, D * k)];
   }
+  // Things resting on furniture keep their offset on it instead of scaling away from it.
+  for (const [parent, ids] of ridersByParent(src)) {
+    const op = src.objects.find((o) => o.id === parent)!, np = sc.objects.find((o) => o.id === parent)!;
+    for (const id of ids) {
+      const o = src.objects.find((x) => x.id === id)!, n = sc.objects.find((x) => x.id === id)!;
+      n.position = [np.position[0] + (o.position[0] - op.position[0]), n.position[1], np.position[2] + (o.position[2] - op.position[2])];
+    }
+  }
   sc.camera_path = src.camera_path.map((c) => ({ ...c, position: [c.position[0] * k, c.position[1], c.position[2] * k], lookAt: [c.lookAt[0] * k, c.lookAt[1], c.lookAt[2] * k] }));
   return sc;
 }
@@ -284,4 +304,22 @@ export function snapFacing(scene: Scene, band = 0.25, tolerance = (70 * Math.PI)
     }
   }
   return turned;
+}
+
+/** For each piece of furniture, the objects resting on it (a laptop on a table, a jacket on a chair seat): their base is within its height and their centre is over it. */
+export function ridersByParent(scene: Scene): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const o of scene.objects) {
+    if (o.position[1] < 0.2 || o.type === "door") continue;
+    for (const p of scene.objects) {
+      if (p === o || p.type === "door" || p.type === "drawer" || o.position[1] < p.position[1] + 0.15 || o.position[1] > p.position[1] + p.size[1] + 0.12) continue;
+      const dx = o.position[0] - p.position[0], dz = o.position[2] - p.position[2];
+      const lx = dx * Math.cos(p.rotationY) - dz * Math.sin(p.rotationY), lz = dx * Math.sin(p.rotationY) + dz * Math.cos(p.rotationY);
+      if (Math.abs(lx) <= p.size[0] / 2 + 0.05 && Math.abs(lz) <= p.size[2] / 2 + 0.05) {
+        out.set(p.id, [...(out.get(p.id) ?? []), o.id]);
+        break;
+      }
+    }
+  }
+  return out;
 }

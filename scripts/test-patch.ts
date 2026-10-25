@@ -30,4 +30,8 @@ const door = scene.objects.findIndex((o) => o.id === "door_1");
 assert.throws(() => applyPatch(scene, [{ op: "remove", path: `/objects/${door}` }]), /missing object/);
 assert.deepEqual(checkScene(scene), [], "fixture must be clean");
 
+assert.throws(() => applyPatch(scene, [{ op: "replace", path: `/objects/${i}/color`, value: "d4ae80" }]), /colour/);
+assert.throws(() => applyPatch(scene, [{ op: "replace", path: `/objects/${i}/color`, value: "banana" }]), /colour/);
+applyPatch(scene, [{ op: "replace", path: `/objects/${i}/color`, value: "#d4ae80" }]);
+
 console.log("patch tests ok");

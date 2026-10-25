@@ -1,5 +1,6 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
 import { Scene, checkScene } from "@doorway/schema";
+import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
 
@@ -26,13 +27,15 @@ export async function generateScene(description: Description, video?: UploadedVi
   const prompt = `Build the 3D scene for this room as a scene.json. A survey written from the footage is attached as JSON${video ? ", along with the footage itself, so check it against the video when they disagree" : ""}.
 
 ${CONVENTIONS}`;
-  const scene = await callJson({
+  const generated = await callJson({
     model: models.argon(),
     prompt,
     schema: Scene,
     video,
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
+  // Doorways always get a working door, even if the model left it out.
+  const { scene, added } = ensureDoors(generated);
   normalizeColors(scene);
   // Decor is garnish: whatever the model attached, it cannot move or have physics.
   const decorIds = new Set(description.objects.filter((o) => o.decor).map((o) => o.id));
@@ -45,6 +48,7 @@ ${CONVENTIONS}`;
   }
   scene.interactions = scene.interactions.filter((i) => !decorIds.has(i.target));
   const problems = checkScene(scene);
+  if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
   if (missing.length) problems.push(`missing described objects: ${missing.join(", ")}`);
   problems.push(...checkLayout(description, scene));

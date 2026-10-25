@@ -1,0 +1,27 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 front door hits other_3 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Countertop misses several small items visible in the footage: the laminator, digital clock, tape dispenser, stapler, hole punch, and tissue box between other_2 and other_1.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_5",
+    "message": "Positioned slightly too far west and south, partially overlapping the view of table_1 and plant_1 at t=22.08s; should be shifted about 0.15 m east and 0.1 m north closer to the window.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Cabinet door handles are rendered vertically near the top of the doors, whereas in the footage they are horizontal black pulls along the top edge of the lower doors.",
+    "severity": "low"
+  },
+  {
+    "objectId": "cabinet_3",
+    "message": "Locker keypad locks are rendered horizontally instead of vertically along the left side of each locker door.",
+    "severity": "low"
+  }
+]

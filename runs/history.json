@@ -1,0 +1,35 @@
+{
+  "room": "Copy & locker room",
+  "video": "RoomC.mp4 (55 s, retaken to cover the whole room)",
+  "runs": [
+    {
+      "id": "roomc2",
+      "label": "Run 1",
+      "note": "First full pipeline on the retaken video. Before the fixes below, this run sat at 55% for 4 rounds with 12 of 12 fixes rejected.",
+      "changes": [
+        "Dividing walls (partitions) for rooms that aren't a plain rectangle",
+        "Loop repairs inherited problems (colour names, decor with physics, toggles with no switch) so fixes are judged on what they change",
+        "Interaction tests fixed: cabinets swing a front door, only lamps need a light, only floor obstacles count",
+        "Model calls time out and retry instead of hanging"
+      ]
+    },
+    {
+      "id": "roomc3",
+      "label": "Run 2",
+      "note": "Same video, improved Doorway.",
+      "changes": [
+        "Arched and half-round windows; one wall can be brick while the rest are plaster",
+        "Lockers are a grid of small doors (4×4 here); cabinets are hollow with front doors",
+        "Dividing walls described as thin walls, not blocks",
+        "Describe reports whether a doorway has a door panel, so no phantom door",
+        "Openable furniture keeps its doors; tests only count obstacles at the same height"
+      ]
+    },
+    {
+      "id": "roomc4",
+      "label": "Run 3",
+      "note": "Same system, every model call made fresh (no cache): shows how much a run varies. Argon read the alcove as a thick block this time.",
+      "changes": ["Fresh run: DOORWAY_FRESH=1, nothing reused from earlier runs"]
+    }
+  ]
+}

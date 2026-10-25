@@ -55,7 +55,7 @@ export function ObjectBody({ obj }: { obj: SceneObject }) {
 }
 
 function ProceduralBody({ obj }: { obj: SceneObject }) {
-  if (obj.parts?.length) return <Parts parts={obj.parts} fallback={mainMat(obj)} />;
+  if (obj.parts?.length) return <Parts parts={obj.parts} fallback={mainMat(obj)} base={obj} />;
   switch (obj.type) {
     case "door": return <Door o={obj} />;
     case "drawer": return <Drawer o={obj} />;
@@ -73,11 +73,11 @@ function ProceduralBody({ obj }: { obj: SceneObject }) {
   }
 }
 
-function Parts({ parts, fallback }: { parts: Part[]; fallback: THREE.Material }) {
+function Parts({ parts, fallback, base }: { parts: Part[]; fallback: THREE.Material; base: SceneObject }) {
   return (
     <>
       {parts.map((part, i) => {
-        const m = part.color || part.material ? material(part.material ?? "paint", part.color ?? "#cfcac2") : fallback;
+        const m = part.color || part.material ? material(part.material ?? base.material ?? "paint", part.color ?? base.color ?? "#cfcac2", base.look) : fallback;
         const [w, h, d] = part.size;
         if (part.shape === "cylinder") return <Cyl key={i} r={w / 2} h={h} p={part.offset} m={m} />;
         if (part.shape === "sphere")

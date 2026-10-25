@@ -22,3 +22,6 @@ All optional, old scenes still parse.
 - `object.look`: procedural surface pattern (`brick|plaster|concrete|carpet|weave|plush|paper|wood|tile`).
 - `object.decor: true`: small clutter. Drawn, never scored or patched, may overlap, no articulation/physics. Max 60 per scene.
 - `room.wallLook`: pattern on the walls (e.g. `brick`). `room.unseenWalls`: walls the video never showed, drawn open.
+
+## Detail pass (`npm run detail -- --id <run>`)
+After the layout is accepted, rebuilds how objects look (`parts`, `look`, `material`) from the footage. It cannot change `position`, `rotationY` or `size` (not in its answer schema) and drops parts outside the object's box. Writes `scene.v0.json` and keeps `scene.v0.nodetail.json`. `generate` now also maps colour words to hex (white capped at #d7d7d7) and flips a door's swing if the inward swing would hit furniture.

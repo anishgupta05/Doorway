@@ -13,6 +13,20 @@ import type { Scene, SceneObject } from "@doorway/schema";
 import { hashSeed, material, mulberry32 } from "./materials";
 import { useJointValue, wholeBodyJoint } from "./Placed";
 import { useSceneCtx } from "./sceneContext";
+import { partTarget, useApp } from "../store";
+
+/** Per-part eased values: each door follows its own state (or the whole object's), independently. */
+function usePartValues(id: string, n: number) {
+  const v = useRef<number[]>([]);
+  return (dt: number) => {
+    const joints = useApp.getState().joints;
+    for (let i = 0; i < n; i++) {
+      const t = partTarget(joints, id, i);
+      v.current[i] = THREE.MathUtils.damp(v.current[i] ?? 0, t, 7, dt);
+    }
+    return v.current;
+  };
+}
 
 const LEAF_MAX = 0.6; // metres per cabinet door leaf
 const CELL = 0.45; // metres per locker door
@@ -178,13 +192,14 @@ function Leaves({ obj }: { obj: SceneObject }) {
   const scene = useSceneCtx();
   const plans = useMemo(() => planLeaves(obj, scene, n), [obj, scene, n]);
   const mat = material(obj.material ?? "paint", shade(obj.color, 0.03));
-  const value = useJointValue();
+  const values = usePartValues(obj.id, n);
   const hinges = useRef<(THREE.Group | null)[]>([]);
-  useFrame(() => {
+  useFrame((_, dt) => {
+    const v = values(Math.min(dt, 1 / 30));
     hinges.current.forEach((g, i) => {
       if (!g) return;
       const p = plans[i];
-      g.rotation.y = (p.hingeLeft ? -1 : 1) * p.max * Math.max(0, Math.min(1.05, value.current));
+      g.rotation.y = (p.hingeLeft ? -1 : 1) * p.max * Math.max(0, Math.min(1, v[i]));
     });
   });
   return (
@@ -194,7 +209,7 @@ function Leaves({ obj }: { obj: SceneObject }) {
         const hx = p.hingeLeft ? x0 : x0 + leaf;
         const dir = p.hingeLeft ? 1 : -1;
         return (
-          <group key={i} ref={(g) => void (hinges.current[i] = g)} position={[hx, bottom, d / 2]}>
+          <group key={i} ref={(g) => void (hinges.current[i] = g)} position={[hx, bottom, d / 2]} userData={{ part: i }}>
             <RoundedBox args={[leaf - 0.006, lh, 0.02]} radius={0.004} smoothness={2} position={[(dir * leaf) / 2, lh / 2, 0.01]} material={mat} castShadow receiveShadow />
             <mesh position={[dir * (leaf - 0.05), lh * (h < 1.2 ? 0.8 : 0.5), 0.032]} material={material("metal", "#2b2b2b")} castShadow>
               <boxGeometry args={[0.014, Math.min(0.16, lh * 0.25), 0.018]} />
@@ -215,17 +230,21 @@ function LockerDoors({ obj }: { obj: SceneObject }) {
   const ch = (h - bottom - top) / rows;
   const mat = material(obj.material ?? "metal", shade(obj.color ?? "#2f3438", 0.02));
   const keypad = material("plastic", "#d9d8d2");
-  const value = useJointValue();
-  const hinges = useRef<(THREE.Group | null)[]>([]);
   const n = cols * rows;
-  useFrame(() => {
-    const v = Math.max(0, Math.min(1, value.current));
+  const values = usePartValues(obj.id, n);
+  const whole = useRef(0);
+  const hinges = useRef<(THREE.Group | null)[]>([]);
+  useFrame((_, dt) => {
+    const d1 = Math.min(dt, 1 / 30);
+    const v = values(d1);
+    // Opening the whole bank ripples across it; a single locker just opens.
+    const all = useApp.getState().joints[obj.id] ?? 0;
+    whole.current = THREE.MathUtils.damp(whole.current, all, 2.5, d1);
     hinges.current.forEach((g, i) => {
       if (!g) return;
-      // Each door starts a little after the previous one: a ripple, not a slam.
-      const delay = (i / n) * 0.6;
-      const t = Math.max(0, Math.min(1, (v - delay) / 0.4));
-      g.rotation.y = -t * (95 * Math.PI) / 180;
+      const own = useApp.getState().joints[`${obj.id}#${i}`];
+      const t = own !== undefined ? v[i] : Math.max(0, Math.min(1, (whole.current - (i / n) * 0.6) / 0.4));
+      g.rotation.y = -Math.max(0, Math.min(1, t)) * (95 * Math.PI) / 180;
     });
   });
   return (
@@ -236,7 +255,7 @@ function LockerDoors({ obj }: { obj: SceneObject }) {
         const x = -w / 2 + T + c * cw;
         const y = bottom + (rows - 1 - r) * ch;
         return (
-          <group key={i} ref={(g) => void (hinges.current[i] = g)} position={[x, y, d / 2]}>
+          <group key={i} ref={(g) => void (hinges.current[i] = g)} position={[x, y, d / 2]} userData={{ part: i }}>
             <RoundedBox args={[cw - 0.008, ch - 0.008, 0.016]} radius={0.003} smoothness={2} position={[cw / 2, ch / 2, 0.008]} material={mat} castShadow receiveShadow />
             <mesh position={[cw * 0.72, ch * 0.55, 0.019]} material={keypad}>
               <boxGeometry args={[Math.min(0.09, cw * 0.3), Math.min(0.03, ch * 0.12), 0.008]} />

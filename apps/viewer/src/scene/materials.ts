@@ -1,7 +1,7 @@
 // Material presets by kind, cached by kind+color so the whole scene shares a handful of materials.
 // The look is "architectural maquette": soft, matte, warm — not photoreal.
 import * as THREE from "three";
-import type { MaterialKind } from "@doorway/schema";
+import type { Look, MaterialKind } from "@doorway/schema";
 
 type Preset = Partial<THREE.MeshPhysicalMaterialParameters>;
 
@@ -20,11 +20,19 @@ const PRESETS: Record<MaterialKind, Preset> = {
 
 const cache = new Map<string, THREE.MeshPhysicalMaterial>();
 
-export function material(kind: MaterialKind = "paint", color = "#d8d4cc"): THREE.MeshPhysicalMaterial {
-  const key = `${kind}|${color}`;
+export function material(kind: MaterialKind = "paint", color = "#d8d4cc", look?: Look): THREE.MeshPhysicalMaterial {
+  const key = `${kind}|${color}|${look ?? ""}`;
   let m = cache.get(key);
   if (!m) {
     m = new THREE.MeshPhysicalMaterial({ color, ...PRESETS[kind] });
+    if (look && look !== "wood") {
+      const t = lookTexture(look).clone();
+      t.repeat.set(look === "paper" ? 1 : 4, look === "paper" ? 1 : 4);
+      t.needsUpdate = true;
+      m.map = t;
+      m.bumpMap = t;
+      m.bumpScale = look === "brick" || look === "plush" ? 1.5 : 0.6;
+    }
     if (kind === "fabric") m.sheenColor = new THREE.Color(color).lerp(new THREE.Color("#ffffff"), 0.35);
     if (kind === "wood" || kind === "darkwood") {
       m.map = woodGrain();
@@ -32,6 +40,107 @@ export function material(kind: MaterialKind = "paint", color = "#d8d4cc"): THREE
     cache.set(key, m);
   }
   return m;
+}
+
+/** Wall surface sized in metres so bricks and plaster keep their real scale on any wall. */
+const wallCache = new Map<string, THREE.MeshPhysicalMaterial>();
+export function wallMaterial(look: Look | undefined, color: string, along: number, h: number): THREE.MeshPhysicalMaterial {
+  if (!look || look === "wood") return material("paint", color);
+  const key = `${look}|${color}|${along.toFixed(2)}|${h.toFixed(2)}`;
+  let m = wallCache.get(key);
+  if (!m) {
+    const t = lookTexture(look).clone();
+    const [tw, th] = LOOK_TILE_M[look];
+    t.repeat.set(along / tw, h / th);
+    t.needsUpdate = true;
+    m = new THREE.MeshPhysicalMaterial({ color: look === "brick" ? "#ffffff" : color, map: t, bumpMap: t, bumpScale: look === "brick" ? 2 : 0.5, roughness: look === "brick" ? 0.9 : 0.8 });
+    wallCache.set(key, m);
+  }
+  return m;
+}
+
+/** Size in metres of one texture tile when used on a wall. */
+const LOOK_TILE_M: Record<Look, [number, number]> = {
+  brick: [1.72, 0.54], plaster: [1.5, 1.5], concrete: [2, 2], carpet: [1, 1], weave: [0.5, 0.5], plush: [0.5, 0.5], paper: [1, 1], wood: [1, 1], tile: [1.2, 1.2],
+};
+
+const looks = new Map<Look, THREE.CanvasTexture>();
+/** Grayscale-ish procedural patterns, multiplied by the object's colour (brick carries its own colours). */
+export function lookTexture(look: Look): THREE.CanvasTexture {
+  let tex = looks.get(look);
+  if (tex) return tex;
+  const S = 512;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d")!;
+  const rand = mulberry32(hashSeed(look));
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, S, S);
+  const speckle = (n: number, size: number, a: number) => {
+    for (let i = 0; i < n; i++) {
+      g.fillStyle = `rgba(${rand() > 0.5 ? "255,255,255" : "0,0,0"},${rand() * a})`;
+      g.fillRect(rand() * S, rand() * S, size, size);
+    }
+  };
+  if (look === "brick") {
+    g.fillStyle = "#b9aea0"; // mortar
+    g.fillRect(0, 0, S, S);
+    const rows = 8, cols = 4, bh = S / rows, bw = S / cols;
+    for (let r = 0; r < rows; r++) {
+      for (let k = -1; k <= cols; k++) {
+        const x = k * bw + (r % 2 ? bw / 2 : 0);
+        const hue = 8 + rand() * 10, l = 30 + rand() * 14;
+        g.fillStyle = `hsl(${hue} ${48 + rand() * 14}% ${l}%)`;
+        g.fillRect(x + 3, r * bh + 3, bw - 6, bh - 6);
+      }
+    }
+    speckle(5000, 2, 0.18);
+  } else if (look === "plaster") {
+    speckle(9000, 2, 0.05);
+    for (let i = 0; i < 120; i++) {
+      g.fillStyle = `rgba(0,0,0,${rand() * 0.025})`;
+      g.beginPath();
+      g.arc(rand() * S, rand() * S, 8 + rand() * 40, 0, 7);
+      g.fill();
+    }
+  } else if (look === "concrete") {
+    speckle(6000, 3, 0.07);
+    for (let i = 0; i < 80; i++) {
+      g.fillStyle = `rgba(0,0,0,${rand() * 0.05})`;
+      g.beginPath();
+      g.arc(rand() * S, rand() * S, 12 + rand() * 60, 0, 7);
+      g.fill();
+    }
+  } else if (look === "carpet" || look === "plush") {
+    speckle(look === "plush" ? 26000 : 16000, look === "plush" ? 3 : 2, look === "plush" ? 0.22 : 0.12);
+  } else if (look === "weave") {
+    g.strokeStyle = "rgba(0,0,0,0.09)";
+    g.lineWidth = 1;
+    for (let i = 0; i <= S; i += 8) {
+      g.beginPath(); g.moveTo(i, 0); g.lineTo(i, S); g.stroke();
+      g.beginPath(); g.moveTo(0, i); g.lineTo(S, i); g.stroke();
+    }
+    speckle(3000, 2, 0.06);
+  } else if (look === "paper") {
+    g.strokeStyle = "rgba(60,90,160,0.22)";
+    for (let y = 40; y < S; y += 28) {
+      g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke();
+    }
+  } else if (look === "tile") {
+    g.strokeStyle = "rgba(0,0,0,0.25)";
+    g.lineWidth = 3;
+    for (let i = 0; i <= S; i += S / 2) {
+      g.beginPath(); g.moveTo(i, 0); g.lineTo(i, S); g.stroke();
+      g.beginPath(); g.moveTo(0, i); g.lineTo(S, i); g.stroke();
+    }
+    speckle(2000, 2, 0.05);
+  }
+  tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  looks.set(look, tex);
+  return tex;
 }
 
 /** Subtle grayscale grain multiplied into wood colors. */

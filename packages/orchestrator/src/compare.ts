@@ -28,9 +28,9 @@ export interface Renders {
 
 const RENDERS_NOTE = `The images are renders of the scene JSON from the same camera path as the footage, at the stated timestamps. Compare each one with what the footage shows at that moment. The renders are deliberately stylised: ignore lighting, shadows, textures, and anything seen through a window or glass.`;
 
-/** Experiment knobs (defaults = current behaviour). DOORWAY_SCALE=100 asks for a 0-100 score; DOORWAY_SCORE=issues subtracts open-issue penalties. */
-const SCALE = Number(process.env.DOORWAY_SCALE ?? 10);
-const SCORE_MODE = process.env.DOORWAY_SCORE ?? "match";
+/** Experiment knobs . Defaults: the judge scores 0-100 (a 0-10 score is too coarse to see one fixed object), and open issues subtract a penalty, so fixing an issue always moves the score. DOORWAY_SCALE=10 / DOORWAY_SCORE=match restore the old behaviour. */
+const SCALE = Number(process.env.DOORWAY_SCALE ?? 100);
+const SCORE_MODE = process.env.DOORWAY_SCORE ?? "issues";
 const penalty = (issues: Comparison["issues"]) => issues.reduce((p, i) => p + (i.severity === "high" ? 0.08 : i.severity === "medium" ? 0.04 : 0.015), 0);
 
 export async function compareScene(scene: Scene, description: Description, video?: UploadedVideo, renders?: Renders): Promise<Comparison> {

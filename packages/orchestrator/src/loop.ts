@@ -143,10 +143,11 @@ export async function runLoop(o: LoopOptions) {
 
       for (const r of results) if (r.branch.verdict === "pass" && r.branch.score <= currentScore) lessons.push(`${r.branch.hypothesis} → scored ${r.branch.score}, which did not beat ${currentScore}`);
       const passing = results.filter((r) => r.branch.verdict === "pass");
-      const best = passing.sort((a, b) => b.branch.score - a.branch.score)[0];
+      // Highest score wins; on a tie, the branch that leaves fewer open issues.
+      const best = passing.sort((a, b) => b.branch.score - a.branch.score || a.crit!.issues.length - b.crit!.issues.length)[0];
       const branches = results.map((r) => r.branch).sort((a, b) => a.i - b.i);
       let selected: number;
-      if (best && best.branch.score > currentScore) {
+      if (best && (best.branch.score > currentScore || (best.branch.score === currentScore && best.crit!.issues.length < current.crit.issues.length))) {
         selected = best.branch.i;
         current = { scene: best.scene!, crit: best.crit! };
         currentScore = best.branch.score;

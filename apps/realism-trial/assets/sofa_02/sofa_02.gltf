@@ -98,17 +98,17 @@
     {
       "mimeType": "image/jpeg",
       "name": "sofa_02_nor_gl",
-      "uri": "textures/sofa_02_nor_gl_1k.jpg"
+      "uri": "textures/sofa_02_nor_gl_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "sofa_02_diff",
-      "uri": "textures/sofa_02_diff_1k.jpg"
+      "uri": "textures/sofa_02_diff_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "sofa_02_metallic-sofa_02_roughness",
-      "uri": "textures/sofa_02_arm_1k.jpg"
+      "uri": "textures/sofa_02_arm_2k.jpg"
     }
   ],
   "accessors": [

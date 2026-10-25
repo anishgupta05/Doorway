@@ -1,36 +1,14 @@
-// Screenshots the viewer for visual review (and PR attachments).
-// Usage: npx tsx scripts/shot.ts <url> <outDir> [name[=Key,Key...][@waitMs] ...]
-//   e.g. npx tsx scripts/shot.ts http://localhost:5173 /tmp/shots overview compare=Digit1@4000
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+// Screenshots a page after a key sequence. Usage: npx tsx scripts/shot.ts <url> <out.png> [keys,comma,separated]
 import { chromium } from "playwright-core";
 import { chromePath } from "./chrome";
-
-const [url = "http://localhost:5173", outDir = "shots", ...steps] = process.argv.slice(2);
-mkdirSync(outDir, { recursive: true });
-
-const browser = await chromium.launch({
-  headless: true,
-  executablePath: chromePath(),
-  args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"],
-});
-const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
-page.on("console", (m) => m.type() === "error" && console.error("[page]", m.text()));
+const [url, out, keys = ""] = process.argv.slice(2);
+const browser = await chromium.launch({ headless: true, executablePath: chromePath(), args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
+const page = await browser.newPage({ viewport: { width: 1400, height: 850 } });
 page.on("pageerror", (e) => console.error("[pageerror]", e.message));
+page.on("console", (m) => m.type() === "error" && console.error("[console]", m.text()));
 await page.goto(url);
-await page.waitForFunction(() => document.querySelector("canvas") !== null, null, { timeout: 30000 });
-await page.waitForTimeout(4000);
-
-for (const step of steps.length ? steps : ["overview"]) {
-  const [head, wait] = step.split("@");
-  const [name, keys] = head.split("=");
-  for (const k of keys ? keys.split(",") : []) {
-    await page.keyboard.press(k);
-    await page.waitForTimeout(300);
-  }
-  await page.waitForTimeout(wait ? Number(wait) : 2500);
-  const file = join(outDir, `${name}.png`);
-  await page.screenshot({ path: file });
-  console.log(file);
-}
+await page.waitForFunction("window.__ready === true", null, { timeout: 60000 }).catch(() => console.error("not ready"));
+await page.waitForTimeout(2500);
+for (const k of keys.split(",").filter(Boolean)) { await page.keyboard.press(k); await page.waitForTimeout(1500); }
+await page.screenshot({ path: out });
 await browser.close();

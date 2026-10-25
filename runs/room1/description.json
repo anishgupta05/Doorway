@@ -1,0 +1,349 @@
+{
+  "summary": "This is a minimalist home office and study room with clean modern furniture. The contrasting dark ceiling, light walls, and wood flooring create a calm and focused atmosphere.",
+  "room": {
+    "width_m": 4.2,
+    "depth_m": 4.8,
+    "height_m": 2.6,
+    "wall_color": "#d9d5c8",
+    "floor_material": "wood",
+    "floor_color": "#e0cbb0",
+    "ceiling_color": "#332d29",
+    "openings": [
+      {
+        "kind": "window",
+        "wall": "north",
+        "width_m": 1.8,
+        "height_m": 1.3,
+        "position_along_wall": "center",
+        "sill_m": 0.9
+      },
+      {
+        "kind": "door",
+        "wall": "east",
+        "width_m": 0.9,
+        "height_m": 2.05,
+        "position_along_wall": "right",
+        "sill_m": 0
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "table_1",
+      "type": "table",
+      "label": "study desk",
+      "material": "wood",
+      "color": "#c8a57e",
+      "size_m": [
+        1.2,
+        0.75,
+        0.6
+      ],
+      "x_m": -0.2,
+      "z_m": -2.1,
+      "base_y_m": 0,
+      "location": "against the north wall centered under the window",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        22,
+        23
+      ]
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "computer monitor",
+      "material": "plastic",
+      "color": "#1f2229",
+      "size_m": [
+        0.55,
+        0.42,
+        0.15
+      ],
+      "x_m": -0.3,
+      "z_m": -2.15,
+      "base_y_m": 0.75,
+      "location": "on table_1 towards the left side",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        22,
+        23
+      ]
+    },
+    {
+      "id": "lamp_1",
+      "type": "lamp",
+      "label": "black desk lamp",
+      "material": "metal",
+      "color": "#151515",
+      "size_m": [
+        0.2,
+        0.35,
+        0.2
+      ],
+      "x_m": 0.05,
+      "z_m": -2.15,
+      "base_y_m": 0.75,
+      "location": "on table_1 to the right of monitor_1",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        22,
+        23
+      ]
+    },
+    {
+      "id": "chair_1",
+      "type": "chair",
+      "label": "blue desk chair",
+      "material": "fabric",
+      "color": "#385b73",
+      "size_m": [
+        0.5,
+        0.85,
+        0.5
+      ],
+      "x_m": -0.45,
+      "z_m": -1.5,
+      "base_y_m": 0,
+      "location": "in front of table_1 facing north towards the desk",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        23
+      ]
+    },
+    {
+      "id": "shelf_1",
+      "type": "shelf",
+      "label": "tall dark wood bookcase",
+      "material": "darkwood",
+      "color": "#2c1c11",
+      "size_m": [
+        0.85,
+        1.8,
+        0.35
+      ],
+      "x_m": -1.92,
+      "z_m": -1.2,
+      "base_y_m": 0,
+      "location": "against the west wall near the north corner",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "label": "topiary plant in pot",
+      "material": "plant",
+      "color": "#29582d",
+      "size_m": [
+        0.35,
+        0.9,
+        0.35
+      ],
+      "x_m": -1.9,
+      "z_m": -0.3,
+      "base_y_m": 0,
+      "location": "against the west wall, south of shelf_1",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "metal filing cabinet",
+      "material": "metal",
+      "color": "#767c82",
+      "size_m": [
+        0.45,
+        0.75,
+        0.5
+      ],
+      "x_m": 1.85,
+      "z_m": -1.6,
+      "base_y_m": 0,
+      "location": "against the east wall near the northeast corner",
+      "facing": "west",
+      "can_do": "opens_slide",
+      "seen_at_s": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        21,
+        22
+      ]
+    },
+    {
+      "id": "chair_2",
+      "type": "chair",
+      "label": "orange accent chair",
+      "material": "fabric",
+      "color": "#c46347",
+      "size_m": [
+        0.55,
+        0.8,
+        0.55
+      ],
+      "x_m": 0.5,
+      "z_m": 0.8,
+      "base_y_m": 0,
+      "location": "in the central-south area of the room, facing north",
+      "facing": "north",
+      "can_do": "pushable",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        10,
+        11,
+        13,
+        14,
+        15,
+        21,
+        22
+      ]
+    },
+    {
+      "id": "rug_1",
+      "type": "rug",
+      "label": "peach area rug",
+      "material": "fabric",
+      "color": "#dc9981",
+      "size_m": [
+        1.6,
+        0.01,
+        2
+      ],
+      "x_m": -0.3,
+      "z_m": 0.8,
+      "base_y_m": 0,
+      "location": "on the floor in the central-south area left of chair_2",
+      "facing": "north",
+      "can_do": "none",
+      "seen_at_s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        9,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "id": "sofa_1",
+      "type": "sofa",
+      "label": "two-seater sofa",
+      "material": "fabric",
+      "color": "#9ca79d",
+      "size_m": [
+        1.5,
+        0.75,
+        0.8
+      ],
+      "x_m": 1.1,
+      "z_m": 2,
+      "base_y_m": 0,
+      "location": "against the south wall near the southeast corner",
+      "facing": "north",
+      "can_do": "none",
+      "seen_at_s": [
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "id": "door_1",
+      "type": "door",
+      "label": "interior room door",
+      "material": "wood",
+      "color": "#ded9cb",
+      "size_m": [
+        0.1,
+        2.05,
+        0.9
+      ],
+      "x_m": 2.05,
+      "z_m": 1.2,
+      "base_y_m": 0,
+      "location": "installed in the east wall opening near the southeast corner",
+      "facing": "west",
+      "can_do": "opens_hinge",
+      "hinge_side": "right",
+      "seen_at_s": [
+        14,
+        15,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    }
+  ],
+  "uncertain": [
+    "Details of the southwest corner and south wall to the left of the sofa are not visible in the footage."
+  ]
+}

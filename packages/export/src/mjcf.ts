@@ -37,6 +37,22 @@ function joint(o: SceneObject) {
   }
 }
 
+/**
+ * Collision bits. Two geoms collide if (contype1 & conaffinity2) || (contype2 & conaffinity1).
+ *   1 static furniture (MuJoCo's default), 2 doors and fitted parts, 4 walls and floor.
+ * - Doors hit furniture (a swing can't pass through a sofa) but not walls or the floor, so the
+ *   frame they hang in doesn't hold them.
+ * - Fitted parts (drawers, hinged cabinet fronts) hit only each other, not the cabinet around them.
+ * - Moving bodies (chairs, the robot) hit everything.
+ */
+const GROUPS = {
+  none: `contype="0" conaffinity="0"`,
+  door: `contype="2" conaffinity="3"`,
+  fitted: `contype="2" conaffinity="2"`,
+  moving: `contype="3" conaffinity="7"`,
+  structure: `contype="4" conaffinity="4"`,
+};
+
 /** One collision shape in the object's local frame (scene axes, y-up; `at` is the shape's center). */
 type Shape = { shape: "box" | "cylinder" | "sphere"; at: Vec3; size: Vec3 };
 
@@ -74,19 +90,19 @@ function geoms(o: SceneObject) {
   const mass = o.physics?.mass;
   const total = parts.reduce((n, p) => n + volume(p), 0);
   const friction = o.physics?.friction ?? 0.5;
-  // Collision groups: static geoms are 1/1. Hinged and sliding parts are 2/2 so they don't
-  // fight the frame or cabinet they're mounted in; dynamic bodies and the robot are 3/3 and hit everything.
-  // Rugs are skipped: a 1 cm solid slab only snags the robot and chairs. So is decor,
-  // which the schema lets rest on or overlap other objects.
+  // Rugs and decor never collide (see GROUPS); a 1 cm solid slab only snags the robot and
+  // chairs, and the schema lets decor rest on or overlap other objects.
   const kind = o.articulation?.kind;
   const group =
     o.physics?.collider === "none" || o.type === "rug" || o.decor
-      ? `contype="0" conaffinity="0"`
-      : kind === "hinge" || kind === "slide"
-        ? `contype="2" conaffinity="2"`
-        : kind === "free" || o.physics?.body === "dynamic"
-          ? `contype="3" conaffinity="3"`
-          : null;
+      ? GROUPS.none
+      : o.type === "door" && kind === "hinge"
+        ? GROUPS.door
+        : kind === "hinge" || kind === "slide"
+          ? GROUPS.fitted
+          : kind === "free" || o.physics?.body === "dynamic"
+            ? GROUPS.moving
+            : null;
   return parts.map((p, i) => {
     const [w, h, d] = p.size;
     const size = p.shape === "box" ? v([w / 2, d / 2, h / 2]) : p.shape === "cylinder" ? v([Math.max(w, d) / 2, h / 2]) : v([Math.max(w, h, d) / 2]);
@@ -130,7 +146,7 @@ function wallGeoms(scene: Scene) {
     pieces.forEach(([u0, u1, y0, y1], i) => {
       const [sx, sz] = wl.at((u0 + u1) / 2);
       const half = wl.alongX ? [(u1 - u0) / 2, WALL_T / 2, (y1 - y0) / 2] : [WALL_T / 2, (u1 - u0) / 2, (y1 - y0) / 2];
-      out.push(`<geom name="wall_${wl.wall}_${i}" type="box" size="${v(half)}" pos="${v(mj([sx, (y0 + y1) / 2, sz]))}" material="mat_wall"/>`);
+      out.push(`<geom name="wall_${wl.wall}_${i}" type="box" size="${v(half)}" pos="${v(mj([sx, (y0 + y1) / 2, sz]))}" material="mat_wall" ${GROUPS.structure}/>`);
     });
   }
   return out;
@@ -138,7 +154,7 @@ function wallGeoms(scene: Scene) {
 
 /**
  * A small planar mobile base (no wheels): world-aligned x/y slides and a yaw hinge, driven by
- * velocity actuators. It floats 1 cm off the floor so only its sides touch anything, and faces
+ * velocity actuators (collision group "moving"). It floats 1 cm off the floor so only its sides touch anything, and faces
  * local +x. Base and mast match the viewer's robot, so it can't drive under a desk the viewer
  * robot's mast would hit.
  */
@@ -148,8 +164,8 @@ function robotBody([x, z]: [number, number]) {
       <joint name="robot_x" type="slide" axis="1 0 0"/>
       <joint name="robot_y" type="slide" axis="0 1 0"/>
       <joint name="robot_yaw" type="hinge" axis="0 0 1"/>
-      <geom name="robot_base" type="cylinder" size="${f(ROBOT_RADIUS)} 0.1" pos="0 0 0.1" mass="8" rgba="0.91 0.91 0.89 1" contype="3" conaffinity="3"/>
-      <geom name="robot_mast" type="capsule" size="0.03" fromto="0 0 0.2 0 0 ${f(ROBOT_HEIGHT)}" mass="1" rgba="0.13 0.15 0.16 1" contype="3" conaffinity="3"/>
+      <geom name="robot_base" type="cylinder" size="${f(ROBOT_RADIUS)} 0.1" pos="0 0 0.1" mass="8" rgba="0.91 0.91 0.89 1" ${GROUPS.moving}/>
+      <geom name="robot_mast" type="capsule" size="0.03" fromto="0 0 0.2 0 0 ${f(ROBOT_HEIGHT)}" mass="1" rgba="0.13 0.15 0.16 1" ${GROUPS.moving}/>
       <site name="robot_front" pos="${f(ROBOT_RADIUS)} 0 0.1"/>
     </body>`;
 }
@@ -172,7 +188,7 @@ export function toMJCF(scene: Scene, opts: MJCFOptions = {}): string {
   const materials = [
     `<material name="mat_wall" rgba="${rgba(scene.room.wallColor)}"/>`,
     `<material name="mat_floor" rgba="${rgba(scene.room.floorColor)}"/>`,
-    ...scene.objects.map((o) => `<material name="mat_${o.id}" rgba="${rgba(o.color)}"/>`),
+    ...scene.objects.map((o) => `<material name="mat_${o.id}" rgba="${rgba(o.color ?? (o.type === "partition" ? scene.room.wallColor : undefined))}"/>`),
   ];
   const bodies = scene.objects.map((o) => {
     const light = o.light
@@ -195,7 +211,7 @@ export function toMJCF(scene: Scene, opts: MJCFOptions = {}): string {
   <worldbody>
     <light name="sun" directional="true" pos="0 0 6" dir="0.2 0.3 -1"/>
     <!-- MuJoCo takes the higher friction of two touching geoms, so the floor stays low and objects keep their own. -->
-    <geom name="floor" type="plane" size="${f(scene.room.width / 2 + 1.5)} ${f(scene.room.depth / 2 + 1.5)} 0.05" material="mat_floor" friction="0.4 0.005 0.0001"/>
+    <geom name="floor" type="plane" size="${f(scene.room.width / 2 + 1.5)} ${f(scene.room.depth / 2 + 1.5)} 0.05" material="mat_floor" friction="0.4 0.005 0.0001" ${GROUPS.structure}/>
     ${wallGeoms(scene).join("\n    ")}
 ${bodies.join("\n")}${robot ? `\n${robotBody(robot)}` : ""}
   </worldbody>

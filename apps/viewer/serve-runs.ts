@@ -21,6 +21,11 @@ export function serveRuns(runsDir = "../../runs"): Plugin {
   const handler: Connect.NextHandleFunction = (req, res, next) => {
     if (!req.url?.startsWith("/runs/")) return next();
     const rel = decodeURIComponent(req.url.split("?")[0].slice("/runs/".length));
+    // Raw uploads and build logs are private: the viewer never needs them, and this server can be public.
+    if (/(^|\/)(upload\.[^/]*|job\.log)$/.test(rel)) {
+      res.statusCode = 404;
+      return res.end("not found");
+    }
     const file = resolve(join(root, rel));
     if (!file.startsWith(root + sep) || !existsSync(file) || statSync(file).isDirectory()) {
       res.statusCode = 404;

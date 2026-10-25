@@ -17,10 +17,10 @@ import { Html } from "@react-three/drei";
 import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
 import { RobotSim } from "./robot/RobotSim";
-import { ROBOT } from "./features";
 import { MissionSim } from "./robot/MissionSim";
 import type { Mission } from "./robot/mission";
 import type { Vec2 } from "./robot/planner";
+import { ROBOT } from "./features";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { sfx } from "./sfx";
 

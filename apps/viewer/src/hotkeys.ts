@@ -13,6 +13,8 @@ export const KEYS: { key: string; label: string }[] = [
   { key: "B", label: "How it's built" },
   { key: "T", label: "Try everything" },
   { key: "N", label: "Night" },
+  { key: "P", label: "Robot task" },
+  { key: "X", label: "Export for robots" },
   { key: "U", label: "New video" },
   { key: "L", label: "Your rooms" },
   { key: "R", label: "Reset" },
@@ -96,14 +98,21 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           break;
         case "KeyP":
           if (!ROBOT) break;
-          useApp.setState({ robotOpen: !s.robotOpen, robotDone: {} });
-          if (!s.robotOpen) goToStep(0);
+          useApp.setState({ robotOpen: !s.robotOpen, robotDone: {}, mission: null, joints: {} });
+          if (!s.robotOpen) {
+            if (s.robotTab === "compare") goToStep(0);
+            else {
+              // Jobs run in the verified room.
+              s.setVersion("latest");
+              useApp.setState({ mode: "overview", split: false, tests: false });
+            }
+          }
           sfx.whoosh();
           break;
         case "Enter":
           // Don't let Enter also "click" whichever panel button has focus.
           if (s.robotOpen) e.preventDefault();
-          if (s.robotOpen && s.robotStep < 3) {
+          if (s.robotOpen && s.robotTab === "compare" && s.robotStep < 3) {
             goToStep((s.robotStep + 1) as 1 | 2 | 3);
             sfx.whoosh();
           }

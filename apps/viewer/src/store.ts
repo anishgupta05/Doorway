@@ -18,6 +18,8 @@ type State = {
   /** Accumulated pushes for free objects, world-space [dx, dz]. */
   pushes: Record<string, [number, number]>;
   hovered: string | null;
+  /** Which front part (cabinet leaf / locker door index) of the hovered object, if any. */
+  hoveredPart: number | null;
   /** Bumped on reset so components can snap back. */
   resetNonce: number;
   /** Seconds into the source video; drives the camera in compare mode. */
@@ -37,6 +39,12 @@ type State = {
   robotTask: string | null;
   robotStep: 0 | 1 | 2 | 3;
   robotDone: Record<string, boolean>;
+  /** Robot panel tab: compare v0 vs verified plans, or run a mission of actions. */
+  robotTab: "compare" | "mission";
+  /** Action ids queued for the mission (see robot/actions.ts). */
+  missionQueue: string[];
+  /** A running/finished mission: which leg, and each leg's status. */
+  mission: { key: string; current: number; status: ("pending" | "driving" | "acting" | "done" | "failed")[] } | null;
   /** Overview: v0 and the final room side by side. */
   split: boolean;
   uploadOpen: boolean;
@@ -74,7 +82,7 @@ type State = {
   setIter: (k: number | null) => void;
   toggleJoint: (id: string, initial?: number) => void;
   push: (id: string, dx: number, dz: number) => void;
-  setHovered: (id: string | null) => void;
+  setHovered: (id: string | null, part?: number | null) => void;
   setVideoTime: (t: number) => void;
   reset: () => void;
   toggleNight: () => void;
@@ -94,6 +102,7 @@ export const useApp = create<State>((set) => ({
   joints: {},
   pushes: {},
   hovered: null,
+  hoveredPart: null,
   resetNonce: 0,
   videoTime: 0,
   night: false,
@@ -107,6 +116,9 @@ export const useApp = create<State>((set) => ({
   robotTask: null,
   robotStep: 0,
   robotDone: {},
+  robotTab: "mission",
+  missionQueue: [],
+  mission: null,
   split: false,
   uploadOpen: false,
   roomsOpen: false,
@@ -136,7 +148,7 @@ export const useApp = create<State>((set) => ({
       const [x, z] = s.pushes[id] ?? [0, 0];
       return { pushes: { ...s.pushes, [id]: [x + dx, z + dz] } };
     }),
-  setHovered: (hovered) => set({ hovered }),
+  setHovered: (hovered, hoveredPart = null) => set({ hovered, hoveredPart }),
   setVideoTime: (videoTime) => set({ videoTime }),
   reset: () => set((s) => ({ joints: {}, pushes: {}, resetNonce: s.resetNonce + 1 })),
   // Going dark also switches lamps on, so night mode lands with a moment.
@@ -157,3 +169,8 @@ export function iterFor(version: Version, manifest: RunManifest | undefined, ove
   if (override !== null) return Math.min(override, manifest.iterations.length - 1);
   return version === "v0" ? 0 : manifest.iterations.length - 1;
 }
+
+/** Joint key for one front part of an object (a cabinet leaf, a locker door). */
+export const partKey = (id: string, part: number) => `${id}#${part}`;
+/** A part follows its own state if it has one, else the whole object's. */
+export const partTarget = (joints: Record<string, number>, id: string, part: number) => joints[partKey(id, part)] ?? joints[id] ?? 0;

@@ -34,7 +34,12 @@ export function OverviewRig({ room, wide = false }: { room: Scene["room"]; wide?
     // Look from the north-east so the door wall stays standing in the background.
     if (wide) c.setLookAt(r * 0.25, r * 1.55, -r * 2.15, 0, -0.3, 0.3, true);
     else if (mode === "convergence") c.setLookAt(r * 1.05, r * 1.45, -r * 1.15, 0, -1.1, -0.2, true);
-    else c.setLookAt(r * 1.1, r * 0.9, -r * 1.2, 0, 0.3, 0.2, true);
+    else {
+      // ?az=<degrees> turns the overview around the room (render mode screenshots of any wall).
+      const az = (Number(new URLSearchParams(location.search).get("az")) || 0) * (Math.PI / 180);
+      const [x, z] = [r * 1.1, -r * 1.2];
+      c.setLookAt(x * Math.cos(az) + z * Math.sin(az), r * 0.9, -x * Math.sin(az) + z * Math.cos(az), 0, 0.3, 0.2, true);
+    }
   }, [mode, wide, room.width, room.depth, camera, viewNonce]);
 
   useEffect(() => {

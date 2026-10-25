@@ -11,7 +11,9 @@ const CONVENTIONS = `Scene conventions (follow exactly):
 - "size" is [width, height, depth] in the object's own frame. Its front faces local +z before "rotationY" (radians, about y) is applied. rotationY = 0 faces south, PI faces north, PI/2 faces east... verify against the description's "facing".
 - Opening "offset" is the centre of the opening measured from the wall's midpoint (+x for north/south walls, +z for east/west walls).
 - Objects must sit inside the room and must not overlap each other, except things resting on a surface.
-- Interior walls, half walls and columns are objects of type "partition": size = [length, height, thickness] with the length along the object's local x, colour = the room's wall colour, material "paint", physics "static", no articulation. Furniture may stand against a partition.
+- Lockers, pigeonholes and cubbies are type "cabinet" with a hinge, a label saying what they are, and "cells": [columns, rows] for the grid of small doors (e.g. [4, 4]).
+- Openings: set "shape": "arch" for a window or door with a rounded top (a half-round window is an arch whose height is at most half its width). Set "wallLooks" (e.g. { "north": "brick" }) when one wall's surface differs from the others; "wallLook" is the default for the rest.
+- Interior walls, half walls and columns are objects of type "partition": thin (thickness 0.1-0.15 m) unless it is a column; size = [length, height, thickness] with the length along the object's local x, colour = the room's wall colour, material "paint", physics "static", no articulation. Furniture may stand against a partition.
 - Hinged door: articulation { kind: "hinge", axis: [0,1,0], pivot: [-width/2, 0, 0] or [+width/2, 0, 0] in the door's local frame, range: [0, 1.6] }. The pivot side is the hinge side.
 - Drawers use kind "slide" with range [0, depth*0.7]. Lamps and monitors use kind "switch"; lamps also get a "light". Pushable furniture (chairs) use kind "free".
 - Every object in the survey must appear exactly once, with the same id. The survey's x_m, z_m, base_y_m are in this same frame: use them as the position unless the footage clearly contradicts them, and refine only when you can justify it.
@@ -33,7 +35,9 @@ ${CONVENTIONS}`;
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
   // Doorways always get a working door, even if the model left it out.
-  const { scene, added } = ensureDoors(generated);
+  // ...unless the survey says the doorway is an open threshold.
+  const thresholds = new Set(description.room.openings.filter((o) => o.kind === "door" && o.has_door_leaf === false).map((o) => o.wall));
+  const { scene, added } = ensureDoors(generated, thresholds);
   normalizeColors(scene);
   // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
   for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }

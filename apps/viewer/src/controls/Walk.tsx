@@ -6,7 +6,7 @@ import { PointerLockControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Scene, SceneObject } from "@doorway/schema";
 import { defaultJoint } from "../scene/Placed";
-import { useApp } from "../store";
+import { partKey, partTarget, useApp } from "../store";
 import { sfx } from "../sfx";
 
 const EYE = 1.6;
@@ -19,6 +19,15 @@ const pushable = (o: SceneObject) => o.articulation?.kind === "free" || (!o.arti
 export const interactive = (o: SceneObject | undefined) => !!o && (!!o.articulation || pushable(o));
 
 /** Finds the scene object id for a hit by walking up to the Placed group. */
+/** Index of the front part (leaf / locker door) hit, found on the way up to the object's group. */
+export function partOf(o: THREE.Object3D | null): number | null {
+  while (o && !o.userData?.objectId) {
+    if (typeof o.userData?.part === "number") return o.userData.part as number;
+    o = o.parent;
+  }
+  return null;
+}
+
 export function objectIdOf(o: THREE.Object3D | null): string | null {
   while (o) {
     if (o.userData?.objectId) return o.userData.objectId as string;
@@ -28,10 +37,18 @@ export function objectIdOf(o: THREE.Object3D | null): string | null {
 }
 
 /** E / click on the hovered object: toggle hinges, slides and switches; push free objects away from the viewer. */
-export function interact(scene: Scene, id: string, camera: THREE.Camera) {
+export function interact(scene: Scene, id: string, camera: THREE.Camera, part: number | null = null) {
   const obj = scene.objects.find((o) => o.id === id);
   const s = useApp.getState();
   if (!obj || !interactive(obj)) return;
+  if (part !== null) {
+    // One cabinet door / locker, not the whole thing.
+    const key = partKey(id, part);
+    const open = partTarget(s.joints, id, part) > 0;
+    useApp.setState({ joints: { ...s.joints, [key]: open ? 0 : 1 } });
+    sfx.creak(!open);
+    return;
+  }
   if (pushable(obj)) {
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
@@ -101,14 +118,14 @@ export function Walk({ scene }: { scene: Scene }) {
       if (e.code === "Minus" || e.code === "NumpadSubtract") zoom.current.target = Math.min(1, zoom.current.target + 0.2);
       if (e.code === "Equal" || e.code === "NumpadAdd") zoom.current.target = Math.max(0, zoom.current.target - 0.2);
       if (e.code === "KeyE") {
-        const h = useApp.getState().hovered;
-        if (h) interact(scene, h, camera);
+        const st = useApp.getState();
+        if (st.hovered) interact(scene, st.hovered, camera, st.hoveredPart);
       }
     };
     const up = (e: KeyboardEvent) => void (keys.current[e.code] = false);
     const click = () => {
-      const h = useApp.getState().hovered;
-      if (h && document.pointerLockElement) interact(scene, h, camera);
+      const st = useApp.getState();
+      if (st.hovered && document.pointerLockElement) interact(scene, st.hovered, camera, st.hoveredPart);
     };
     const wheel = (e: WheelEvent) => void (zoom.current.target = THREE.MathUtils.clamp(zoom.current.target + e.deltaY * 0.0015, 0, 1));
     window.addEventListener("keydown", down);
@@ -185,17 +202,21 @@ export function Walk({ scene }: { scene: Scene }) {
     ray.far = REACH;
     const hits = ray.intersectObjects(three.children, true);
     let hovered: string | null = null;
+    let part: number | null = null;
     for (const h of hits) {
       const id = objectIdOf(h.object);
       if (!id) {
         if (h.object.type === "Mesh") break; // a wall is in the way
         continue;
       }
-      if (interactive(scene.objects.find((o) => o.id === id))) hovered = id;
+      if (interactive(scene.objects.find((o) => o.id === id))) {
+        hovered = id;
+        part = partOf(h.object);
+      }
       break;
     }
     const s = useApp.getState();
-    if (s.hovered !== hovered) s.setHovered(hovered);
+    if (s.hovered !== hovered || s.hoveredPart !== part) s.setHovered(hovered, part);
   });
 
   // No selector: any click while walking (re)captures the mouse, including the cover overlay.

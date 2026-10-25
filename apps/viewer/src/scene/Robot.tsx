@@ -75,10 +75,13 @@ export function Robot({ scene }: { scene: Scene }) {
 
 /** The robot's mesh, shared by the walk-mode robot and the task robot. Body radius 0.2 m at scale 1. */
 export const ROBOT_MESH_RADIUS = 0.2;
-export const RobotBody = forwardRef<THREE.Group, { active: boolean; scale?: number }>(function RobotBody({ active, scale = 1 }, ref) {
+export const RobotBody = forwardRef<THREE.Group, { active: boolean; scale?: number; arm?: { current: number } }>(function RobotBody({ active, scale = 1, arm }, ref) {
+  const armRef = useRef<THREE.Group>(null!);
   const lidar = useRef<THREE.Mesh>(null!);
   const ring = useMemo(() => new THREE.MeshBasicMaterial({ color: ACCENT, toneMapped: false }), []);
   useFrame((_, dt) => {
+    // The arm reaches forward while the robot is opening something.
+    if (armRef.current) armRef.current.scale.z = 0.25 + 0.75 * Math.max(0, Math.min(1, arm?.current ?? 0));
     lidar.current.rotation.y += Math.min(dt, 1 / 30) * (active ? 6 : 1.5);
     ring.color.setRGB(0.78, 0.95, 0.42).multiplyScalar(active ? 1.6 + Math.sin(performance.now() / 120) * 0.4 : 0.6);
   });
@@ -101,6 +104,15 @@ export const RobotBody = forwardRef<THREE.Group, { active: boolean; scale?: numb
       <mesh position={[0, 0.12, 0.185]} material={dark}>
         <boxGeometry args={[0.12, 0.03, 0.02]} />
       </mesh>
+      {/* arm: slides out from the mast toward whatever it is opening */}
+      <group ref={armRef} position={[0, 0.82, 0.02]}>
+        <mesh position={[0, 0, 0.22]} material={dark} castShadow>
+          <boxGeometry args={[0.035, 0.035, 0.44]} />
+        </mesh>
+        <mesh position={[0, 0, 0.45]} material={ring}>
+          <boxGeometry args={[0.07, 0.025, 0.03]} />
+        </mesh>
+      </group>
       {/* mast + face screen at eye level, so it's in view when it rolls up to you */}
       <mesh position={[0, 0.66, -0.06]} material={dark} castShadow>
         <cylinderGeometry args={[0.022, 0.028, 0.84, 16]} />

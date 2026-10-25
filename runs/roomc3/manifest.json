@@ -1,0 +1,144 @@
+{
+  "id": "roomc3",
+  "title": "Office Copy and Mail Room",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 3,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift cabinet_1 and cabinet_2 south to z = 0.3 m so they sit flush against the south wall at z = 1.7 m and clear other_3 when opening, while shortening cabinet_3 to 1.25 m and placing table_1 in the northwest corner.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: cabinet_1 is 2.9 m long, over 2.4 m (75% of the room): too big to be furniture",
+          "hypothesis": "Shift cabinet_1 and cabinet_2 south to z = 0.25 m with width 2.9 m to reach the south wall and clear other_3, and shift both cabinet_3 and partition_1 south by 0.4 m so table_1 fits at x = -1.3 m, z = -1.4 m.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Flip cabinet_1 hinge to the south end and reduce its opening range while shifting cabinet_1 and cabinet_2 flush with the south wall, and move other_3 slightly west to guarantee door clearance.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_1/branch_3/scene.json",
+          "thumb": "iter_1/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 2,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Move the shredders and printer slightly west so cabinet_1 can swing open freely while shifting cabinet_1, cabinet_2, cabinet_3, and partition_1 south into place.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Divide cabinet_1 and cabinet_2 into 6 multi-door cells so each individual cabinet door has a small swing radius that clears other_3, while aligning cabinets to the south wall and clearing the northwest corner.",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Focus precisely on fixing the cabinet_1 door collision and south wall gap by adjusting cabinet_1 and cabinet_2 positions, moving other_3 west, and reducing cabinet_1 swing range.",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": "iter_2/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 3,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: cabinet_1 front door hits other_3 while opening",
+          "hypothesis": "Move cabinet_1, cabinet_2, other_2, and other_3 directly to the target coordinates requested in the review issues.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: cabinet_1 front door hits other_3 while opening",
+          "hypothesis": "Shift cabinet_1, cabinet_2, and other_2 north to the requested coordinates while also shifting other_1 north so it stays centered on the counter, and adjust cabinet_1 articulation range so it does not collide with other_3 at x = 0.6.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: cabinet_1 front door hits other_3 while opening",
+          "hypothesis": "Move cabinet_1, cabinet_2, and other_2 north as requested, and place other_3 at x = 0.55 with multi-cell doors on cabinet_1 and cabinet_2 so the doors swing open cleanly next to the shredder.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_3/branch_3/scene.json",
+          "thumb": "iter_3/branch_3/thumb.png"
+        }
+      ]
+    }
+  ]
+}

@@ -31,8 +31,14 @@ function useFilmstrip(src: string | null) {
     c.height = 90;
     const out: string[] = [];
     v.onloadedmetadata = async () => {
+      // Recorded WebM often reports an infinite duration until you seek past the end.
+      if (!Number.isFinite(v.duration)) {
+        v.currentTime = 1e7;
+        await new Promise<void>((r) => (v.onseeked = () => r()));
+      }
+      const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 10;
       for (let i = 0; i < FRAMES && !dead; i++) {
-        v.currentTime = (v.duration * (i + 0.5)) / FRAMES;
+        v.currentTime = (dur * (i + 0.5)) / FRAMES;
         await new Promise<void>((r) => (v.onseeked = () => r()));
         c.getContext("2d")?.drawImage(v, 0, 0, c.width, c.height);
         out.push(c.toDataURL("image/jpeg", 0.6));

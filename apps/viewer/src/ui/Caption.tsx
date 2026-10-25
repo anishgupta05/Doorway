@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { RunManifest, Scene } from "@doorway/schema";
 import { useApp } from "../store";
 import { KEYS } from "../hotkeys";
+import { ROBOT } from "../features";
 
 const ATTRACT = [
   ["A phone video in.", "A working simulation out."],
@@ -29,7 +30,10 @@ export function Caption({ scene, manifest }: { scene: Scene; manifest: RunManife
 
   let title: string;
   let sub: string;
-  if (robotOpen && mode === "overview") [title, sub] = ["A robot plans in the replica", "Same task twice: on the first pass, and on the room after it was checked."];
+  if (robotOpen && mode === "overview")
+    [title, sub] = ROBOT
+      ? ["A robot plans in the replica", "Same task twice: on the first pass, and on the room after it was checked."]
+      : ["A robot learns it in physics", "Say what it should do. It's trained in a simulation of this room, then tested from 10 starts."];
   else if (building) [title, sub] = ["Written in one go", "Doorway watched your video and wrote the whole room: shapes, doors, lights."];
   else if (tests) [title, sub] = ["It works, not just looks right", "Every door, drawer and light is tried out and checked."];
   else if (split && mode === "overview") [title, sub] = ["First attempt vs. checked", "Same video. Left: Doorway's first attempt. Right: after it tried fixes and threw out the ones that broke something."];

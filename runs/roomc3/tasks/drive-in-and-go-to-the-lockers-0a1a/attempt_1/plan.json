@@ -1,0 +1,10 @@
+{
+ "train_steps": 400000,
+ "max_seconds": 15,
+ "reward": {
+  "dist": 2,
+  "disturb": 2
+ },
+ "note": "Starting with the default parameters for this straightforward navigation task to establish a baseline.",
+ "by": "argon"
+}

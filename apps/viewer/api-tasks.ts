@@ -1,8 +1,9 @@
 // Robot tasks beside the viewer (dev and preview), the same way api-runs.ts starts room builds:
+//   GET  /api/tasks?run=<id>   the room's tasks (runs/<run>/tasks/index.json), [] if it has none
 //   POST /api/tasks   { run, request } -> { id }; starts the task CLI (clarify -> train -> verify)
 // Progress is plain files the viewer polls: runs/<run>/tasks/<id>/job.json, attempt_<n>/train_log.json.
 import { spawn } from "node:child_process";
-import { createWriteStream, existsSync, mkdirSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Connect, Plugin } from "vite";
 import { taskId } from "../../packages/orchestrator/src/task/id.ts";
@@ -22,9 +23,19 @@ export function apiTasks(runsDir = "../../runs"): Plugin {
   };
 
   const handler: Connect.NextHandleFunction = (req, res, next) => {
-    const url = (req.url ?? "").split("?")[0];
+    const [url, query = ""] = (req.url ?? "").split("?");
     if (url !== "/api/tasks") return next();
-    if (req.method !== "POST") return json(res, 405, { error: "POST only" });
+    if (req.method === "GET") {
+      const run = new URLSearchParams(query).get("run") ?? "";
+      const index = join(runs, run, "tasks", "index.json");
+      if (!ID.test(run) || !existsSync(index)) return json(res, 200, []);
+      try {
+        return json(res, 200, JSON.parse(readFileSync(index, "utf8")));
+      } catch {
+        return json(res, 200, []);
+      }
+    }
+    if (req.method !== "POST") return json(res, 405, { error: "GET or POST" });
     let body = "";
     req.on("data", (c) => (body += c));
     req.on("end", () => {

@@ -31,7 +31,9 @@ const j = async <T,>(url: string): Promise<T> => {
 };
 const base = (run: string, task: string) => `/runs/${run}/tasks/${task}`;
 
-export const listTasks = (run: string) => j<TaskEntry[]>(`/runs/${run}/tasks/index.json`).catch(() => [] as TaskEntry[]);
+/** The local API answers [] for a room with no tasks; a static host only has the files, so fall back to them. */
+export const listTasks = (run: string) =>
+  j<TaskEntry[]>(`/api/tasks?run=${run}`).catch(() => j<TaskEntry[]>(`/runs/${run}/tasks/index.json`)).catch(() => [] as TaskEntry[]);
 export const getJob = (run: string, task: string) => j<TaskJob>(`${base(run, task)}/job.json`);
 export const getTrainLog = (run: string, task: string, n: number) => j<TrainPoint[]>(`${base(run, task)}/attempt_${n}/train_log.json`).catch(() => [] as TrainPoint[]);
 export const getTrajectory = (run: string, task: string, path: string) => j<Trajectory>(`${base(run, task)}/${path}`);

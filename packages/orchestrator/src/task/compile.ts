@@ -126,7 +126,30 @@ export function compile(scene: Scene, c: Clarified, id: string, mjcf: string): S
   if (c.type === "push_object") {
     return { ...base, object: o.id, target: { point: mj(pushTarget(scene, o, c.near!)!) }, start: [...start, 0], success: { radius: 0.3 }, train_steps: 500_000 };
   }
-  return { ...base, target: { body: o.id }, start: [...start, 0], success: { radius: 0.4 }, train_steps: 200_000 };
+  // Through an open doorway if there is one: the robot drives in from outside, which is what "go to" looks like on stage.
+  const way = openDoorway(scene);
+  return { ...base, target: { body: o.id }, start: way ?? [...start, 0], success: { radius: 0.4 }, train_steps: way ? 400_000 : 200_000 };
+}
+
+/**
+ * A spot 0.6 m outside a doorway that has no door in it (nothing to push open first), facing
+ * into the room, in MuJoCo coords [x, y, yaw]. Same start as the viewer planner (robot/tasks.ts).
+ */
+function openDoorway(scene: Scene): [number, number, number] | null {
+  const { width: w, depth: d } = scene.room;
+  const doors = scene.objects.filter((o) => o.type === "door");
+  for (const op of scene.room.openings.filter((x) => x.kind === "door")) {
+    const [at, inward]: [[number, number], [number, number]] =
+      op.wall === "north" ? [[op.offset, -d / 2 - 0.6], [0, 1]]
+      : op.wall === "south" ? [[op.offset, d / 2 + 0.6], [0, -1]]
+      : op.wall === "east" ? [[w / 2 + 0.6, op.offset], [-1, 0]]
+      : [[-w / 2 - 0.6, op.offset], [1, 0]];
+    // A door object within the opening's width of it means the doorway is closed.
+    if (doors.some((o) => Math.hypot(o.position[0] - at[0] + inward[0] * 0.6, o.position[2] - at[1] + inward[1] * 0.6) < op.width)) continue;
+    const dir = mj(inward);
+    return [...mj(at), round(Math.atan2(dir[1], dir[0]))];
+  }
+  return null;
 }
 
 /** One line per object the robot could be asked about, for the clarifier's context. */

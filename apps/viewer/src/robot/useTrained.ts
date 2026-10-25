@@ -5,8 +5,10 @@ import { useApp } from "../store";
 import { ACTIVE, getJob, getSpec, getTrainLog, getTrajectory, listTasks, usePoll } from "../data/tasks";
 
 export function useTrained(run: string | null) {
+  const open = useApp((s) => s.robotOpen);
   const sel = useApp((s) => (s.trained && s.trained.run === run ? s.trained.task : null));
-  const tasks = usePoll(useMemo(() => (run ? () => listTasks(run) : null), [run]), true, 3000) ?? [];
+  // Only while the panel is open: nothing else needs the room's task list.
+  const tasks = usePoll(useMemo(() => (run && open ? () => listTasks(run) : null), [run, open]), true, 3000) ?? [];
   const polled = usePoll(useMemo(() => (run && sel ? () => getJob(run, sel) : null), [run, sel]), true, 1000);
   const job = polled && polled.id === sel ? polled : null;
   const live = !!job && ACTIVE.includes(job.status);

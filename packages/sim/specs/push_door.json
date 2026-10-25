@@ -1,0 +1,11 @@
+{
+  "id": "open-door",
+  "type": "push_door",
+  "mjcf": "../fixtures/mock_room.xml",
+  "door": "door_1",
+  "start": [1.6, -2.75, 1.5708],
+  "success": { "angle_deg": 60 },
+  "max_seconds": 15,
+  "train_steps": 200000,
+  "seed": 0
+}

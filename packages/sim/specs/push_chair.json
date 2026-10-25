@@ -1,0 +1,11 @@
+{
+  "id": "push-chair",
+  "type": "push_object",
+  "mjcf": "../fixtures/mock_room.xml",
+  "object": "chair_2",
+  "target": { "point": [1.0, -0.6] },
+  "success": { "radius": 0.3 },
+  "max_seconds": 15,
+  "train_steps": 500000,
+  "seed": 0
+}

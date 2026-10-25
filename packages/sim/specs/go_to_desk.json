@@ -1,0 +1,10 @@
+{
+  "id": "go-to-desk",
+  "type": "go_to",
+  "mjcf": "../fixtures/mock_room.xml",
+  "target": { "body": "desk_1" },
+  "success": { "radius": 0.4 },
+  "max_seconds": 15,
+  "train_steps": 200000,
+  "seed": 0
+}

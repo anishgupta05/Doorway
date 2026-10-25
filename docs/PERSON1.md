@@ -16,3 +16,6 @@ From Person 2 (model loop). Pull `main` first, then `npm install`.
 
 ## Rendering physics
 Render what the scene says: doors swing by `articulation.range` (radians), `switch` objects toggle their `light`. Physics numbers are for the runtime (Person 3), not for you to simulate.
+
+## Material trial (for visual quality work)
+`apps/material-trial/index.html` is a standalone Three.js page that builds `fixtures/sample_room.json` with PBR textures (CC0 from Poly Haven, in `apps/material-trial/tex`), soft shadows, ACES tone mapping and an image-based light. Serve the repo root (`python3 -m http.server 5174`) and open `/apps/material-trial/index.html`. Keys: P plain/PBR, H lighting, O door, L lamp. Take whatever is useful; it is not the viewer.

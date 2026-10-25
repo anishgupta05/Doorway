@@ -10,10 +10,14 @@
     "typecheck": "tsc -p packages/schema --noEmit",
     "validate": "tsx scripts/validate.ts",
     "mock": "tsx scripts/make-mock-run.ts",
-    "test:patch": "tsx scripts/test-patch.ts"
+    "test:patch": "tsx scripts/test-patch.ts",
+    "smoke": "tsx --env-file=.env scripts/smoke.ts"
   },
   "devDependencies": {
     "tsx": "^4.23.15",
     "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "@google/genai": "^2.31.0"
   }
 }

@@ -1,0 +1,475 @@
+{
+  "summary": "An office copy and storage room featuring a large circular window set in an exposed brick wall. It feels bright, functional, and compact.",
+  "room": {
+    "width_m": 4.2,
+    "depth_m": 2.6,
+    "height_m": 2.9,
+    "wall_color": "#ebe9e2",
+    "floor_material": "carpet",
+    "floor_color": "#8a857e",
+    "ceiling_color": "#eae8e1",
+    "wall_look": "brick",
+    "unseen_walls": [],
+    "openings": [
+      {
+        "kind": "window",
+        "wall": "north",
+        "width_m": 2.6,
+        "height_m": 2.2,
+        "position_along_wall": "center",
+        "sill_m": 0.7
+      },
+      {
+        "kind": "door",
+        "wall": "east",
+        "width_m": 1.1,
+        "height_m": 2.4,
+        "position_along_wall": "right",
+        "sill_m": 0
+      }
+    ]
+  },
+  "objects": [
+    {
+      "id": "cabinet_1",
+      "type": "cabinet",
+      "label": "white base counter cabinet",
+      "material": "paint",
+      "color": "#e9e7e0",
+      "decor": false,
+      "size_m": [
+        2.8,
+        0.9,
+        0.6
+      ],
+      "x_m": 0.4,
+      "z_m": -1,
+      "base_y_m": 0,
+      "location": "against the north wall, right of the room centre",
+      "facing": "south",
+      "can_do": "opens_hinge",
+      "hinge_side": "left",
+      "seen_at_s": [
+        10,
+        12,
+        18,
+        41
+      ]
+    },
+    {
+      "id": "cabinet_2",
+      "type": "cabinet",
+      "label": "white wall cabinet",
+      "material": "paint",
+      "color": "#e9e7e0",
+      "decor": false,
+      "size_m": [
+        2.4,
+        0.9,
+        0.4
+      ],
+      "x_m": 0.8,
+      "z_m": -1.1,
+      "base_y_m": 1.5,
+      "location": "mounted on the north wall above cabinet_1",
+      "facing": "south",
+      "can_do": "opens_hinge",
+      "hinge_side": "left",
+      "seen_at_s": [
+        11,
+        14,
+        16,
+        39
+      ]
+    },
+    {
+      "id": "other_1",
+      "type": "other",
+      "label": "Canon office copier",
+      "material": "plastic",
+      "color": "#e3e1da",
+      "decor": false,
+      "size_m": [
+        0.65,
+        1.15,
+        0.65
+      ],
+      "x_m": -1.25,
+      "z_m": -0.95,
+      "base_y_m": 0,
+      "location": "against the north wall, left of cabinet_1",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        20,
+        22,
+        34
+      ]
+    },
+    {
+      "id": "other_2",
+      "type": "other",
+      "label": "paper shredder",
+      "material": "plastic",
+      "color": "#26282a",
+      "decor": false,
+      "size_m": [
+        0.42,
+        0.65,
+        0.35
+      ],
+      "x_m": -0.65,
+      "z_m": -1.05,
+      "base_y_m": 0,
+      "location": "between other_1 and cabinet_1 against the north wall",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        11,
+        19,
+        21
+      ]
+    },
+    {
+      "id": "other_3",
+      "type": "other",
+      "label": "black waste bin",
+      "material": "plastic",
+      "color": "#2b2d30",
+      "decor": false,
+      "size_m": [
+        0.42,
+        0.65,
+        0.35
+      ],
+      "x_m": -0.2,
+      "z_m": -1.05,
+      "base_y_m": 0,
+      "location": "right of other_2, next to cabinet_1",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        10,
+        18,
+        20
+      ]
+    },
+    {
+      "id": "other_4",
+      "type": "other",
+      "label": "stainless steel trash can",
+      "material": "metal",
+      "color": "#a8aaad",
+      "decor": false,
+      "size_m": [
+        0.4,
+        0.75,
+        0.4
+      ],
+      "x_m": -1.75,
+      "z_m": -1,
+      "base_y_m": 0,
+      "location": "in the northwest corner, left of other_1",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        22,
+        33,
+        34
+      ]
+    },
+    {
+      "id": "cabinet_3",
+      "type": "cabinet",
+      "label": "grey metal locker bank",
+      "material": "metal",
+      "color": "#58656e",
+      "decor": false,
+      "size_m": [
+        0.45,
+        1.85,
+        1.6
+      ],
+      "x_m": -1.85,
+      "z_m": 0.1,
+      "base_y_m": 0,
+      "location": "against the west wall",
+      "facing": "east",
+      "can_do": "opens_hinge",
+      "hinge_side": "right",
+      "seen_at_s": [
+        23,
+        25,
+        32
+      ]
+    },
+    {
+      "id": "other_5",
+      "type": "other",
+      "label": "paper trimmer",
+      "material": "wood",
+      "color": "#c59b65",
+      "look": "wood",
+      "decor": true,
+      "size_m": [
+        0.45,
+        0.1,
+        0.4
+      ],
+      "x_m": -0.55,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on the left end of cabinet_1",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        10,
+        18,
+        40
+      ]
+    },
+    {
+      "id": "other_6",
+      "type": "other",
+      "label": "electric stapler",
+      "material": "plastic",
+      "color": "#383a3d",
+      "decor": true,
+      "size_m": [
+        0.45,
+        0.18,
+        0.2
+      ],
+      "x_m": 0.25,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on cabinet_1, right of other_5",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        11,
+        18,
+        41
+      ]
+    },
+    {
+      "id": "other_7",
+      "type": "other",
+      "label": "heavy duty hole punch",
+      "material": "metal",
+      "color": "#505255",
+      "decor": true,
+      "size_m": [
+        0.25,
+        0.22,
+        0.25
+      ],
+      "x_m": 0.7,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on cabinet_1, right of other_6",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        12,
+        18,
+        41
+      ]
+    },
+    {
+      "id": "box_1",
+      "type": "box",
+      "label": "black mesh desk organizer",
+      "material": "metal",
+      "color": "#1e1f21",
+      "decor": true,
+      "size_m": [
+        0.22,
+        0.12,
+        0.15
+      ],
+      "x_m": 0.92,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on cabinet_1, right of other_7",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        12,
+        41
+      ]
+    },
+    {
+      "id": "monitor_1",
+      "type": "monitor",
+      "label": "Juice power bank rental station",
+      "material": "plastic",
+      "color": "#222629",
+      "decor": true,
+      "size_m": [
+        0.3,
+        0.45,
+        0.22
+      ],
+      "x_m": 1.25,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on cabinet_1, right of box_1",
+      "facing": "south",
+      "can_do": "switches_on_off",
+      "seen_at_s": [
+        12,
+        13,
+        42
+      ]
+    },
+    {
+      "id": "other_8",
+      "type": "other",
+      "label": "hand sanitizer bottle",
+      "material": "plastic",
+      "color": "#c8d6cd",
+      "decor": true,
+      "size_m": [
+        0.08,
+        0.18,
+        0.08
+      ],
+      "x_m": 1.5,
+      "z_m": -1,
+      "base_y_m": 0.9,
+      "location": "on cabinet_1, right of monitor_1",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        12,
+        13,
+        42
+      ]
+    },
+    {
+      "id": "box_2",
+      "type": "box",
+      "label": "black tissue box",
+      "material": "plastic",
+      "color": "#1a1a1a",
+      "decor": true,
+      "size_m": [
+        0.24,
+        0.13,
+        0.13
+      ],
+      "x_m": 1.65,
+      "z_m": -0.95,
+      "base_y_m": 0.9,
+      "location": "on the right end of cabinet_1",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        12,
+        13,
+        42
+      ]
+    },
+    {
+      "id": "other_9",
+      "type": "other",
+      "label": "wooden Wi-Fi sign",
+      "material": "wood",
+      "color": "#b88a58",
+      "look": "wood",
+      "decor": true,
+      "size_m": [
+        0.14,
+        0.18,
+        0.02
+      ],
+      "x_m": 0.78,
+      "z_m": -1.28,
+      "base_y_m": 1.25,
+      "location": "mounted on the north wall between cabinet_1 and cabinet_2",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        11,
+        13,
+        18
+      ]
+    },
+    {
+      "id": "other_10",
+      "type": "other",
+      "label": "folding step stool",
+      "material": "metal",
+      "color": "#333638",
+      "decor": true,
+      "size_m": [
+        0.45,
+        0.12,
+        0.35
+      ],
+      "x_m": 0.1,
+      "z_m": -1.1,
+      "base_y_m": 2.4,
+      "location": "resting on top of cabinet_2",
+      "facing": "south",
+      "can_do": "none",
+      "seen_at_s": [
+        16,
+        38
+      ]
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "label": "dried grass in pink vase",
+      "material": "ceramic",
+      "color": "#d8c2be",
+      "decor": true,
+      "size_m": [
+        0.2,
+        0.45,
+        0.2
+      ],
+      "x_m": -1.8,
+      "z_m": -0.9,
+      "base_y_m": 1.85,
+      "location": "on top of cabinet_3 in the northwest corner",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        22,
+        24,
+        35
+      ]
+    },
+    {
+      "id": "box_3",
+      "type": "box",
+      "label": "small white storage box",
+      "material": "plastic",
+      "color": "#dcdad3",
+      "decor": true,
+      "size_m": [
+        0.25,
+        0.15,
+        0.2
+      ],
+      "x_m": -1.85,
+      "z_m": -0.65,
+      "base_y_m": 1.85,
+      "location": "on top of cabinet_3 next to plant_1",
+      "facing": "east",
+      "can_do": "none",
+      "seen_at_s": [
+        23,
+        24,
+        35
+      ]
+    }
+  ],
+  "uncertain": [
+    "Exact room depth along the south wall since the camera stays near the centre.",
+    "Contents inside the closed white cabinets and grey lockers."
+  ]
+}

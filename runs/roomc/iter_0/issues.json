@@ -1,0 +1,57 @@
+[
+  {
+    "objectId": "cabinet_1",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_1 hits other_3 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_2",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_2 hits cabinet_1 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "other_1",
+    "severity": "high",
+    "message": "Interaction test fails: other_1 switch with no light. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "other_2",
+    "severity": "high",
+    "message": "Interaction test fails: other_2 switch with no light. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_3",
+    "severity": "high",
+    "message": "Interaction test fails: cabinet_3 hits other_1 while opening. Fix its hinge side, pivot, range or clearance so it can really be used."
+  },
+  {
+    "objectId": "cabinet_1",
+    "message": "Cabinet is about 0.8m too wide; its left edge should stop around x=0m instead of extending to x=-1.0m, as it currently overlaps and hides the paper shredder (other_2) and waste bin (other_3).",
+    "severity": "high"
+  },
+  {
+    "objectId": "other_5",
+    "message": "Paper trimmer is mounted vertically against the north wall above the left end of cabinet_1 (around y=1.15m, z=-1.25m) rather than lying flat on top of the counter.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "other_1",
+    "message": "Canon office copier is missing detail; it renders as a plain white cube and should be positioned slightly further east (around x=-1.1m) so the trash can (other_4) is clearly visible to its left.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_2",
+    "message": "Wall cabinet is about 0.3m too wide on its left side; its left edge should align roughly with the left edge of cabinet_1 around x=0m.",
+    "severity": "medium"
+  },
+  {
+    "objectId": "cabinet_3",
+    "message": "Grey locker bank renders with horizontal drawer-style handles instead of a 3x4 grid of individual locker doors with keypad locks on the top right of each door.",
+    "severity": "low"
+  },
+  {
+    "objectId": "door_1",
+    "message": "East entrance is an open doorway or glass partition with a black frame in the footage, rather than a solid opaque hinged door.",
+    "severity": "low"
+  }
+]

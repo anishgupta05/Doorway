@@ -50,6 +50,8 @@ type State = {
   legendOpen: boolean;
   /** The local run API answered: uploads and the rooms library only exist then (not on a static host). */
   apiOk: boolean;
+  /** Bumped by the "reset view" button to re-frame the overview camera. */
+  viewNonce: number;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -111,6 +113,7 @@ export const useApp = create<State>((set) => ({
   loadError: false,
   legendOpen: false,
   apiOk: false,
+  viewNonce: 0,
   renderMode: false,
   shake: false,
   wipe: 0.5,

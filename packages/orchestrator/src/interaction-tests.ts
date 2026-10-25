@@ -7,7 +7,7 @@ import type { Scene, SceneObject } from "@doorway/schema";
 export type TestResult = { id: string; ok: boolean; text: string };
 
 /** Types that block movement. Rugs, lamps and monitors sit on or under things. */
-const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "other"]);
+const SOLID = new Set<SceneObject["type"]>(["table", "chair", "cabinet", "shelf", "sofa", "bed", "plant", "box", "partition", "other"]);
 
 type Box = { id: string; cx: number; cz: number; hw: number; hd: number; rot: number };
 

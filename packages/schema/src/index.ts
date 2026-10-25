@@ -35,6 +35,8 @@ export const ObjectType = z.enum([
   "sofa",
   "bed",
   "box",
+  /** Interior wall, half wall or column. size = [length, height, thickness]; length runs along local x. */
+  "partition",
   "other",
 ]);
 export type ObjectType = z.infer<typeof ObjectType>;

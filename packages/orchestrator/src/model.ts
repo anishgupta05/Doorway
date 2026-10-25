@@ -26,6 +26,8 @@ function need(name: string): string {
 const sha = (s: string | Buffer) => createHash("sha256").update(s).digest("hex");
 
 function cached(key: string, fn: () => Promise<string>): Promise<string> {
+  // DOORWAY_NOCACHE=1 measures the model itself (e.g. score repeatability): no reads, no writes.
+  if (process.env.DOORWAY_NOCACHE) return fn();
   mkdirSync(CACHE_DIR, { recursive: true });
   const file = join(CACHE_DIR, `${key}.txt`);
   if (existsSync(file)) return Promise.resolve(readFileSync(file, "utf8"));

@@ -67,9 +67,9 @@ export async function runLoop(o: LoopOptions) {
   const times = sampleTimes(v0.camera_path[v0.camera_path.length - 1].t, o.frames);
 
   const critique = async (scene: Scene, rel: string): Promise<Comparison> => {
-    if (truth) return fakeCompare(truth, scene);
+    if (truth) return withTestIssues(fakeCompare(truth, scene), scene);
     const frames = await renderer.frames(o.id, rel, times);
-    return compareScene(scene, description!, video, { frames, times });
+    return withTestIssues(await compareScene(scene, description!, video, { frames, times }), scene);
   };
 
   try {
@@ -126,7 +126,10 @@ export async function runLoop(o: LoopOptions) {
           if (hook) return reject(hook, child);
           const tests = interactionTests(child);
           write(`iter_${k}/branch_${i}/tests.json`, tests);
-          const failed = tests.find((t) => !t.ok);
+          // A scene that already fails a test (e.g. the one-pass door clips a wall) must not doom every patch:
+          // only a failure the parent did not have rejects the branch.
+          const alreadyFailing = new Set(interactionTests(current.scene).filter((t) => !t.ok).map((t) => t.id));
+          const failed = tests.find((t) => !t.ok && !alreadyFailing.has(t.id));
           if (failed) return reject(`Interaction test: ${failed.id} ${failed.text}`, child);
           write(rel, child);
           await renderer.thumb(o.id, rel, join(dir, thumb)).catch(() => {});
@@ -135,6 +138,7 @@ export async function runLoop(o: LoopOptions) {
         }),
       );
 
+      for (const r of results) if (r.branch.verdict === "pass" && r.branch.score <= currentScore) lessons.push(`${r.branch.hypothesis} → scored ${r.branch.score}, which did not beat ${currentScore}`);
       const passing = results.filter((r) => r.branch.verdict === "pass");
       const best = passing.sort((a, b) => b.branch.score - a.branch.score)[0];
       const branches = results.map((r) => r.branch).sort((a, b) => a.i - b.i);
@@ -174,4 +178,14 @@ function deletedByPatch(scene: Scene, patch: Patch): string[] {
     .filter((m): m is RegExpExecArray => !!m)
     .map((m) => scene.objects[Number(m[1])]?.id)
     .filter((id): id is string => !!id);
+}
+
+/** Interaction-test failures are issues too: they lower the score and tell proposeFixes what to repair. */
+function withTestIssues(c: Comparison, scene: Scene): Comparison {
+  const fails = interactionTests(scene)
+    .filter((t) => !t.ok)
+    .map((t): Issue => ({ objectId: t.id, severity: "high", message: `Interaction test fails: ${t.id} ${t.text}. Fix its hinge side, pivot, range or clearance so it can really be used.` }));
+  if (!fails.length) return c;
+  const penalty = Math.min(0.3, fails.length * 0.1);
+  return { score: Math.max(0, Number((c.score - penalty).toFixed(3))), issues: [...fails, ...c.issues] };
 }

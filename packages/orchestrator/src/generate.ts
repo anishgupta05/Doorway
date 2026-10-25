@@ -30,6 +30,7 @@ ${CONVENTIONS}`;
     video,
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
+  normalizeColors(scene);
   const problems = checkScene(scene);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
   if (missing.length) problems.push(`missing described objects: ${missing.join(", ")}`);
@@ -47,4 +48,15 @@ export function checkLayout(description: Description, scene: Scene, tolerance = 
     if (drift > tolerance) out.push(`${d.id}: placed ${drift.toFixed(1)} m from the surveyed spot (${d.location})`);
   }
   return out;
+}
+
+/** Argon sometimes writes hex colours without the leading '#'; fix it here instead of spending a loop iteration on it. */
+export function normalizeColors(node: unknown): void {
+  if (Array.isArray(node)) return node.forEach(normalizeColors);
+  if (!node || typeof node !== "object") return;
+  const o = node as Record<string, unknown>;
+  for (const [k, v] of Object.entries(o)) {
+    if (/color$/i.test(k) && typeof v === "string" && /^[0-9a-f]{3,8}$/i.test(v)) o[k] = `#${v}`;
+    else normalizeColors(v);
+  }
 }

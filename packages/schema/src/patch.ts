@@ -31,6 +31,8 @@ const MAX_EXTENT = 100;
  */
 export function checkScene(scene: Scene): string[] {
   const problems: string[] = [];
+  const badColours = collectColours(scene).filter((c) => !/^#[0-9a-f]{3,8}$/i.test(c));
+  if (badColours.length) problems.push(`invalid colour value ${JSON.stringify(badColours[0])} (use #rrggbb)`);
   const byId = new Map<string, Scene["objects"][number]>();
   for (const o of scene.objects) {
     if (byId.has(o.id)) problems.push(`duplicate object id ${o.id}`);
@@ -84,4 +86,15 @@ export function applyPatch(scene: Scene, patch: Patch): Scene {
 export function deletedIds(parent: Scene, child: Scene): string[] {
   const kept = new Set(child.objects.map((o) => o.id));
   return parent.objects.map((o) => o.id).filter((id) => !kept.has(id));
+}
+
+function collectColours(node: unknown, out: string[] = []): string[] {
+  if (Array.isArray(node)) node.forEach((n) => collectColours(n, out));
+  else if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node)) {
+      if (/color$/i.test(k) && typeof v === "string") out.push(v);
+      else collectColours(v, out);
+    }
+  }
+  return out;
 }

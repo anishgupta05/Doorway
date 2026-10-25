@@ -16,11 +16,8 @@ const CONVENTIONS = `Scene conventions (follow exactly):
 - Every object in the survey must appear exactly once, with the same id. The survey's x_m, z_m, base_y_m are in this same frame: use them as the position unless the footage clearly contradicts them, and refine only when you can justify it.
 - Room width, depth and height come from the survey room, adjusted only if the footage clearly shows otherwise.
 - interactions: one "open" for each door/drawer, one "toggle" (effect "light") for each lamp, one "push" for each chair.
-- Any object with can_do "none" or "pushable" and no switch/hinge/slide has NO "articulation" field unless it is pushable (then kind "free"). Never emit "articulation": {}.
 - physics: door "kinematic", chairs "dynamic" (mass 4-8 kg), everything else "static". Realistic masses in kg.
 - camera_path: at least 2 keys. Use the timestamps where the description says objects were seen, with the camera at eye height (about 1.5 m), inside the room, looking at the objects visible at that time. If the footage shows the camera moving, follow that motion.
-- Survey objects with decor=true become scene objects with decor: true: small, resting on their surface (position y = base_y_m), no interactions, and the fields "articulation" and "physics" must be left out entirely (never an empty object). Use "parts" (a few boxes, cylinders, spheres with real colours) so a bottle looks like a bottle and a laptop like a laptop. Keep the survey's "look".
-- Room: copy wall_look to room.wallLook and unseen_walls to room.unseenWalls.
 - "name" is a short title for the room. version is 1.`;
 
 export async function generateScene(description: Description, video?: UploadedVideo) {
@@ -37,16 +34,6 @@ ${CONVENTIONS}`;
   // Doorways always get a working door, even if the model left it out.
   const { scene, added } = ensureDoors(generated);
   normalizeColors(scene);
-  // Decor is garnish: whatever the model attached, it cannot move or have physics.
-  const decorIds = new Set(description.objects.filter((o) => o.decor).map((o) => o.id));
-  for (const o of scene.objects) {
-    if (o.decor || decorIds.has(o.id)) {
-      o.decor = true;
-      delete o.articulation;
-      delete o.physics;
-    }
-  }
-  scene.interactions = scene.interactions.filter((i) => !decorIds.has(i.target));
   const problems = checkScene(scene);
   if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));

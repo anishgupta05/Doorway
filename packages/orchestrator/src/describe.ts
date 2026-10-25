@@ -31,6 +31,9 @@ export const Description = z.object({
     material: z.enum(["wood", "darkwood", "fabric", "leather", "metal", "plastic", "glass", "ceramic", "paint", "plant"]),
     color: z.string().describe("hex"),
     size_m: z.tuple([z.number(), z.number(), z.number()]).describe("width, height, depth"),
+    x_m: z.number().describe("Centre of the object's footprint along x (east is +x), metres from the room's centre."),
+    z_m: z.number().describe("Centre of the object's footprint along z (south is +z, toward the first shot's camera), metres from the room's centre."),
+    base_y_m: z.number().describe("Height of the object's bottom above the floor: 0 if on the floor, the tabletop height if resting on a surface."),
     location: z.string().describe("Plain-language placement relative to walls and other objects, e.g. 'against the north wall, 1 m from the east corner, left of desk_1'."),
     facing: Dir.optional().describe("Which wall the front of the object faces."),
     can_do: z.enum(["opens_hinge", "opens_slide", "switches_on_off", "pushable", "none"]).describe("What a person could do with it."),
@@ -44,7 +47,9 @@ export type Description = z.infer<typeof Description>;
 const PROMPT = `You are surveying a real room from a phone video so a 3D replica can be built from your text alone.
 Rules:
 - Every number is metres. Use everyday objects as scale references (door ~2.0 m tall, desk ~0.75 m high).
+- Coordinates: the origin is the centre of the floor. x grows toward the EAST (right of the first shot), z grows toward the SOUTH (toward the camera of the first shot). So an object against the far (north) wall has z close to -depth/2, and an object by the left (west) wall has x close to -width/2.
 - Walls: north is the wall furthest from the camera in the first shot; east is on the right.
+- Give x_m, z_m for every object, consistent with room width_m and depth_m, and with the relations in "location" (e.g. "left of desk_1" means a smaller x). An object should sit inside the room, with its footprint touching the wall it is "against".
 - List every distinct object a person could walk into, sit on, open or switch. Skip small clutter.
 - Prefer a rough but consistent layout to false precision. If you cannot judge something, say so in "uncertain".
 - Do not invent objects that are not visible.`;

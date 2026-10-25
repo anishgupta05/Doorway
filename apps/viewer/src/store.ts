@@ -63,6 +63,9 @@ type State = {
   legendOpen: boolean;
   /** The local run API answered: uploads and the rooms library only exist then (not on a static host). */
   apiOk: boolean;
+  /** The server asks for an access code before building (shared demo). */
+  needsCode: boolean;
+  accessCode: string;
   /** Bumped by the "reset view" button to re-frame the overview camera. */
   viewNonce: number;
   /** Width / height of vertical footage in Compare (null for landscape): the render is framed the same way. */
@@ -136,6 +139,8 @@ export const useApp = create<State>((set) => ({
   loadError: false,
   legendOpen: false,
   apiOk: false,
+  needsCode: false,
+  accessCode: "",
   viewNonce: 0,
   footageAspect: null,
   renderMode: false,

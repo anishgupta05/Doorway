@@ -39,6 +39,8 @@ function friendly(log: string, stage: string) {
 }
 
 export function apiRuns(runsDir = "../../runs"): Plugin {
+  /** When set, uploads must send this code (header x-access-code): the builder spends model credits. */
+  const code = process.env.ACCESS_CODE ?? "";
   let runs = "";
   let repo = "";
   const jobPath = (id: string) => join(runs, id, "job.json");
@@ -117,6 +119,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
     if (!url.startsWith("/api/runs")) return next();
 
     if (req.method === "GET" && url === "/api/runs") {
+      if (code) res.setHeader("x-needs-code", "1");
       const list = existsSync(runs)
         ? readdirSync(runs)
             .filter((d) => ID.test(d) && existsSync(join(runs, d, "manifest.json")) || existsSync(jobPath(d)))
@@ -132,6 +135,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
     }
 
     if (req.method === "POST" && url === "/api/runs") {
+      if (code && req.headers["x-access-code"] !== code) return json(res, 401, { error: "That access code isn't right." });
       const ext = extname(String(req.headers["x-filename"] ?? "video.mp4")).toLowerCase();
       if (!EXT.has(ext)) return json(res, 400, { error: "Please choose an MP4, MOV or WebM video." });
       const name = decodeURIComponent(String(req.headers["x-name"] ?? "")).slice(0, 80).trim();

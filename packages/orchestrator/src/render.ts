@@ -19,7 +19,11 @@ export class Renderer {
     this.browser = await chromium.launch({
       headless: true,
       executablePath: chromePath(),
-      args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"],
+      args:
+        process.platform === "darwin"
+          ? ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"]
+          : // Servers and containers have no GPU: software WebGL, and Chrome needs --no-sandbox as root.
+            ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--no-sandbox", "--disable-dev-shm-usage"],
     });
     return this;
   }

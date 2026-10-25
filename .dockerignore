@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+**/dist
+.git
+.env
+.env.*
+.vercel
+apps/styles-lab
+apps/viewer-mock
+apps/material-trial
+runs/.cache
+runs/room-*/upload.*
+runs/*/upload.*
+runs/*/job.*
+runs/*/progress.json
+shots
+*.log

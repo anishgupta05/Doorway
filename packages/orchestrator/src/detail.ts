@@ -6,7 +6,7 @@ import { Look, MaterialKind, Part, Scene, checkScene } from "@doorway/schema";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import { normalizeColors } from "./generate.js";
 
-const DetailPart = Part.extend({ color: z.string().describe("hex of this part, e.g. #1d2a44; every part needs its own") });
+const DetailPart = Part.extend({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe("hex of this part, exactly #rrggbb, e.g. #1d2a44; every part needs its own") });
 
 export const DetailUpdates = z.object({
   updates: z.array(z.object({

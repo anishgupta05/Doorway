@@ -85,7 +85,6 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           sfx.whoosh();
           break;
         case "KeyL":
-          if (!s.apiOk) break;
           useApp.setState({ roomsOpen: !s.roomsOpen });
           sfx.tick();
           break;
@@ -93,7 +92,6 @@ export function useHotkeys(opts: { stepIter: (d: number) => void; togglePlay: ()
           if (e.shiftKey) useApp.setState({ legendOpen: !s.legendOpen });
           break;
         case "KeyU":
-          if (!s.apiOk) break;
           useApp.setState({ uploadOpen: !s.uploadOpen });
           sfx.tick();
           break;

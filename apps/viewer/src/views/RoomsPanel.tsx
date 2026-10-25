@@ -61,7 +61,7 @@ export function RoomsPanel() {
                     <div className="truncate text-[14px] font-medium">{name}</div>
                   )}
                   <div className="text-[11.5px] text-muted">
-                    {busy ?? "Ready"} · {ago(r.when)}
+                    {busy ?? "Ready"}{r.when ? ` · ${ago(r.when)}` : ""}
                   </div>
                 </div>
                 <button onClick={() => setEditing(r.id)} className="text-[12px] text-muted opacity-0 transition group-hover:opacity-100 hover:text-fg">

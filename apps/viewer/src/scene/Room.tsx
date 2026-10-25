@@ -215,6 +215,13 @@ function Outside({ room }: { room: RoomSpec }) {
   const night = useMemo(() => new THREE.Color(0.07, 0.09, 0.16), []);
   useFrame((_, dt) => void sky.color.lerp(useApp.getState().night ? night : day, 1 - Math.exp(-3 * Math.min(dt, 1 / 30))));
   const frames = wallFrames(room);
+  const neighbour = useMemo(
+    () =>
+      ["#a59d91", "#a59d91", "#c9c3b9", "#6e5f50", "#958c80", "#958c80"].map(
+        (c) => new THREE.MeshStandardMaterial({ color: c, side: THREE.BackSide, roughness: 0.9 }),
+      ),
+    [],
+  );
   // Box faces: +x, -x, ceiling, floor, +z, -z. Darker floor and end wall give the corridor depth.
   const corridor = useMemo(
     () =>
@@ -228,6 +235,19 @@ function Outside({ room }: { room: RoomSpec }) {
       {room.openings.map((o, i) => {
         const f = frames.find((fr) => fr.wall === o.wall)!;
         const out = f.normal;
+        if (o.kind === "window" && o.view === "indoors") {
+          // A dim neighbouring room behind interior glass, instead of daylight.
+          const len = 3;
+          const pos: THREE.Vector3Tuple = f.alongX
+            ? [o.offset, room.height / 2, f.center.z + out.z * (WALL_T / 2 + len / 2)]
+            : [f.center.x + out.x * (WALL_T / 2 + len / 2), room.height / 2, o.offset];
+          const size: THREE.Vector3Tuple = f.alongX ? [o.width + 2.4, room.height, len] : [len, room.height, o.width + 2.4];
+          return (
+            <mesh key={i} position={pos} receiveShadow material={neighbour}>
+              <boxGeometry args={size} />
+            </mesh>
+          );
+        }
         if (o.kind === "window") {
           const dist = 4;
           const pos: THREE.Vector3Tuple = f.alongX ? [o.offset, 1.4, f.center.z + out.z * dist] : [f.center.x + out.x * dist, 1.4, o.offset];

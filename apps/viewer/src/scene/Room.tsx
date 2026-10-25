@@ -215,6 +215,14 @@ function Outside({ room }: { room: RoomSpec }) {
   const night = useMemo(() => new THREE.Color(0.07, 0.09, 0.16), []);
   useFrame((_, dt) => void sky.color.lerp(useApp.getState().night ? night : day, 1 - Math.exp(-3 * Math.min(dt, 1 / 30))));
   const frames = wallFrames(room);
+  // Box faces: +x, -x, ceiling, floor, +z, -z. Darker floor and end wall give the corridor depth.
+  const corridor = useMemo(
+    () =>
+      ["#c9c0b2", "#c9c0b2", "#e9e5dd", "#7d6c5a", "#b3a998", "#b3a998"].map(
+        (c) => new THREE.MeshStandardMaterial({ color: c, side: THREE.BackSide, roughness: 0.85 }),
+      ),
+    [],
+  );
   return (
     <>
       {room.openings.map((o, i) => {
@@ -235,9 +243,8 @@ function Outside({ room }: { room: RoomSpec }) {
           : [f.center.x + out.x * (WALL_T / 2 + len / 2), room.height / 2, o.offset];
         const size: THREE.Vector3Tuple = f.alongX ? [o.width + 1.4, room.height, len] : [len, room.height, o.width + 1.4];
         return (
-          <mesh key={i} position={pos} receiveShadow>
+          <mesh key={i} position={pos} receiveShadow material={corridor}>
             <boxGeometry args={size} />
-            <meshStandardMaterial color="#d6d0c6" side={THREE.BackSide} roughness={0.9} />
           </mesh>
         );
       })}

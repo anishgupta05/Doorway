@@ -3,13 +3,16 @@
 // Scripted motion, not a controller — it's here to show what the sim is for.
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import type { Scene } from "@doorway/schema";
 import { useApp } from "../store";
 import { ACCENT, material } from "./materials";
 import { WALL_T } from "./Room";
 
-const SPEED = 0.55;
+const SPEED = 0.42;
+/** Seconds after the door is fully open before the robot sets off. */
+const WAIT = 0.7;
 
 export function Robot({ scene }: { scene: Scene }) {
   const door = scene.objects.find((o) => o.type === "door" && o.articulation?.kind === "hinge");
@@ -21,17 +24,14 @@ export function Robot({ scene }: { scene: Scene }) {
     const [dx, , dz] = door.position;
     const p = (x: number, z: number) => new THREE.Vector3(x, 0, z);
     const out = 1.1 + WALL_T;
-    return [
-      p(dx + n[0] * out, dz + n[1] * out),
-      p(dx - n[0] * 0.7, dz - n[1] * 0.7),
-      p(dx * 0.35 - n[0] * 1.5, dz * 0.35 - n[1] * 1.5),
-    ];
+    // Corridor → threshold → stop just inside, in front of whoever opened the door.
+    return [p(dx + n[0] * out, dz + n[1] * out), p(dx, dz), p(dx - n[0] * 0.95, dz - n[1] * 0.95)];
   }, [door, opening]);
 
   const g = useRef<THREE.Group>(null!);
   const lidar = useRef<THREE.Mesh>(null!);
   const ring = useMemo(() => new THREE.MeshBasicMaterial({ color: ACCENT, toneMapped: false }), []);
-  const state = useRef({ leg: 0, started: false });
+  const state = useRef({ leg: 0, started: false, openSince: 0 });
 
   useFrame((_, rawDt) => {
     if (!route || !door) return;
@@ -42,9 +42,13 @@ export function Robot({ scene }: { scene: Scene }) {
       g.current.userData.nonce = s.resetNonce;
       st.leg = 0;
       st.started = false;
+      st.openSince = 0;
       g.current.position.copy(route[0]);
     }
-    if (!st.started && (s.joints[door.id] ?? 0) > 0.5) st.started = true;
+    const open = (s.joints[door.id] ?? 0) > 0.5;
+    if (!open) st.openSince = 0;
+    else if (!st.openSince) st.openSince = performance.now();
+    if (!st.started && st.openSince && performance.now() - st.openSince > WAIT * 1000 + 600) st.started = true;
     lidar.current.rotation.y += dt * (st.started ? 6 : 1.5);
     ring.color.setRGB(0.78, 0.95, 0.42).multiplyScalar(st.started ? 1.6 + Math.sin(performance.now() / 120) * 0.4 : 0.6);
     if (!st.started || st.leg >= route.length - 1) return;
@@ -82,6 +86,25 @@ export function Robot({ scene }: { scene: Scene }) {
       <mesh position={[0, 0.12, 0.185]} material={dark}>
         <boxGeometry args={[0.12, 0.03, 0.02]} />
       </mesh>
+      {/* mast + face screen at eye level, so it's in view when it rolls up to you */}
+      <mesh position={[0, 0.66, -0.06]} material={dark} castShadow>
+        <cylinderGeometry args={[0.022, 0.028, 0.84, 16]} />
+      </mesh>
+      <group position={[0, 1.12, -0.04]}>
+        <RoundedBox args={[0.3, 0.19, 0.07]} radius={0.03} smoothness={3} material={dark} castShadow />
+        <mesh position={[0, 0, 0.0355]}>
+          <planeGeometry args={[0.25, 0.14]} />
+          <meshBasicMaterial color="#0d1013" />
+        </mesh>
+        {[-0.055, 0.055].map((x) => (
+          <mesh key={x} position={[x, 0.008, 0.037]} material={ring}>
+            <circleGeometry args={[0.018, 24]} />
+          </mesh>
+        ))}
+        <mesh position={[0, -0.035, 0.037]} material={ring}>
+          <planeGeometry args={[0.05, 0.008]} />
+        </mesh>
+      </group>
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * 0.17, 0.045, 0]} rotation={[0, 0, Math.PI / 2]} material={dark}>
           <cylinderGeometry args={[0.045, 0.045, 0.03, 24]} />

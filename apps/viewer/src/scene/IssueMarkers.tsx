@@ -34,16 +34,26 @@ export function IssueMarkers({ scene, issues, fixed, k }: { scene: Scene; issues
     });
     if (!clash && tagged.size < MAX_LABELS) tagged.set(i.objectId, tagged.size);
   }
+  // A fixed pool of marker slots that only ever grows: switching rooms swaps every object,
+  // and unmounting that many drei <Html> roots at once throws under React 19.
+  const pool = useRef(MIN_SLOTS);
+  pool.current = Math.max(pool.current, scene.objects.length);
   return (
     <group>
-      {scene.objects.map((o) => {
+      {Array.from({ length: pool.current }, (_, slot) => {
+        const o = scene.objects[slot];
+        if (!o) return <Marker key={slot} o={PARKED} lift={0} labeled={false} state="none" nonce={0} />;
         const hit = openById.get(o.id) ?? doneById.get(o.id);
         const state = openById.has(o.id) ? "open" : doneById.has(o.id) ? "fixed" : "none";
-        return <Marker key={o.id} o={o} issue={hit?.i} lift={(tagged.get(o.id) ?? 0) * 0.3} labeled={tagged.has(o.id)} state={state} nonce={k ?? 0} />;
+        return <Marker key={slot} o={o} issue={hit?.i} lift={(tagged.get(o.id) ?? 0) * 0.3} labeled={tagged.has(o.id)} state={state} nonce={k ?? 0} />;
       })}
     </group>
   );
 }
+
+const MIN_SLOTS = 48;
+/** Stand-in for an empty slot: hidden, far below the floor. */
+const PARKED = { id: "parked", type: "box", position: [0, -50, 0], rotationY: 0, size: [0.1, 0.1, 0.1], decor: false } as unknown as SceneObject;
 
 function dedupe(list: Issue[]) {
   const seen = new Map<string, Issue>();

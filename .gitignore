@@ -20,3 +20,6 @@ runs/*/progress.json
 /*.mp4
 /*.mov
 .vercel
+
+# robot task checkpoints (regenerable; trajectories and logs are kept)
+runs/*/tasks/*/attempt_*/policy.zip

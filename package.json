@@ -19,7 +19,8 @@
     "export:mjcf": "tsx scripts/export-mjcf.ts",
     "check:mjcf": "tsx scripts/mjcf-check.ts",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
-    "loop": "npm run loop -w @doorway/orchestrator --"
+    "loop": "npm run loop -w @doorway/orchestrator --",
+    "task": "npm run task -w @doorway/orchestrator --"
   },
   "devDependencies": {
     "playwright-core": "^1.64.1",

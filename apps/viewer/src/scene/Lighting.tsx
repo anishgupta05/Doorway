@@ -13,13 +13,24 @@ import { SHADOW_ONLY_LAYER } from "./Room";
 const DAY = { sun: 3.4, hemi: 0.8, env: 0.75, sunColor: new THREE.Color("#fff0d8"), hemiColor: new THREE.Color("#fff7ec") };
 const NIGHT = { sun: 0.25, hemi: 0.07, env: 0.06, sunColor: new THREE.Color("#9fb6ff"), hemiColor: new THREE.Color("#8ea2d8") };
 
-export function Lighting({ room }: { room: Room }) {
+export function Lighting({ room, wide = false }: { room: Room; wide?: boolean }) {
   const sun = useRef<THREE.DirectionalLight>(null!);
   const hemi = useRef<THREE.HemisphereLight>(null!);
   const win = room.openings.find((o) => o.kind === "window");
   // Sun comes from outside the first window's wall, high and slightly to the side.
   const dir = win?.wall === "south" ? [0.35, 1, 1] : win?.wall === "east" ? [1, 1, 0.35] : win?.wall === "west" ? [-1, 1, 0.35] : [-0.35, 1, -1];
   const sunPos = new THREE.Vector3(...(dir as [number, number, number])).normalize().multiplyScalar(9);
+
+  // Side-by-side rooms need a wider shadow frustum.
+  useLayoutEffect(() => {
+    const c = sun.current.shadow.camera;
+    const e = wide ? 10 : 5;
+    c.left = -e;
+    c.right = e;
+    c.top = e;
+    c.bottom = -e;
+    c.updateProjectionMatrix();
+  }, [wide]);
 
   useLayoutEffect(() => {
     const s = sun.current;

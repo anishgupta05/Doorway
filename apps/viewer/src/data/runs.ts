@@ -100,8 +100,25 @@ export function useCurrentScene() {
     return () => void (live = false);
   }, [runId, prevBranch?.scene]);
 
+  // Previous iteration's issues: whatever is gone now is what this iteration fixed.
+  const prevIssuesRel = k !== null && k > 0 ? manifest?.iterations[k - 1]?.issues ?? null : null;
+  const [prevIssues, setPrevIssues] = useState<Issue[]>([]);
+  useEffect(() => {
+    if (!runId || !prevIssuesRel) return setPrevIssues([]);
+    let live = true;
+    loadIssues(runId, prevIssuesRel).then((i) => live && setPrevIssues(i));
+    return () => void (live = false);
+  }, [runId, prevIssuesRel]);
+  const issues = state?.issues ?? [];
+  const issueKey = (i: Issue) => `${i.objectId}|${i.message}`;
+  const open = new Set(issues.map(issueKey));
+  const fixed = prevIssues.filter((i) => !open.has(issueKey(i)));
+  const prevScore = k !== null && k > 0 ? manifest?.iterations[k - 1]?.branches[manifest.iterations[k - 1].selected]?.score : undefined;
+
   return {
     runId,
+    fixed,
+    prevScore,
     manifest,
     k,
     iteration,
@@ -109,6 +126,6 @@ export function useCurrentScene() {
     preview: !!preview,
     scene: state?.scene ?? null,
     prevScene: prev,
-    issues: state?.issues ?? [],
+    issues,
   };
 }

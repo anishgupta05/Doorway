@@ -60,20 +60,20 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   const groups = useRef<(THREE.Group | null)[]>([]);
   const outside = useRef<THREE.Group>(null!);
   const walls = useRef<THREE.Group>(null!);
+  const root = useRef<THREE.Group>(null!);
+  const local = useMemo(() => new THREE.Vector3(), []);
   const floor = useMemo(() => {
     const tex = floorTexture(room.floorColor, room.floorMaterial, room.width + 2 * WALL_T, room.depth + 2 * WALL_T);
     return new THREE.MeshStandardMaterial({ map: tex, roughness: room.floorMaterial === "tile" ? 0.35 : 0.68 });
   }, [room.floorColor, room.floorMaterial, room.width, room.depth]);
 
   useFrame(({ camera }) => {
-    const inside =
-      Math.abs(camera.position.x) < room.width / 2 + 0.05 &&
-      Math.abs(camera.position.z) < room.depth / 2 + 0.05 &&
-      camera.position.y < room.height;
+    const cam = root.current.worldToLocal(local.copy(camera.position));
+    const inside = Math.abs(cam.x) < room.width / 2 + 0.05 && Math.abs(cam.z) < room.depth / 2 + 0.05 && cam.y < room.height;
     frames.forEach((f, i) => {
       const g = groups.current[i];
       if (!g) return;
-      const facing = tmp.copy(camera.position).sub(f.center).setY(0).dot(f.normal) > 0;
+      const facing = tmp.copy(cam).sub(f.center).setY(0).dot(f.normal) > 0;
       const hide = cutaway && !inside && facing;
       g.traverse((o) => {
         if (hide) o.layers.set(SHADOW_ONLY_LAYER);
@@ -87,7 +87,7 @@ export function Room({ room, cutaway }: { room: RoomSpec; cutaway: boolean }) {
   });
 
   return (
-    <group>
+    <group ref={root}>
       {/* plinth: the room sits on a dark slab like an architectural model */}
       <RoundedBox
         args={[room.width + 2 * WALL_T + 0.5, 0.12, room.depth + 2 * WALL_T + 0.5]}
@@ -215,6 +215,14 @@ function Outside({ room }: { room: RoomSpec }) {
   const night = useMemo(() => new THREE.Color(0.07, 0.09, 0.16), []);
   useFrame((_, dt) => void sky.color.lerp(useApp.getState().night ? night : day, 1 - Math.exp(-3 * Math.min(dt, 1 / 30))));
   const frames = wallFrames(room);
+  // Box faces: +x, -x, ceiling, floor, +z, -z. Darker floor and end wall give the corridor depth.
+  const corridor = useMemo(
+    () =>
+      ["#c9c0b2", "#c9c0b2", "#e9e5dd", "#7d6c5a", "#b3a998", "#b3a998"].map(
+        (c) => new THREE.MeshStandardMaterial({ color: c, side: THREE.BackSide, roughness: 0.85 }),
+      ),
+    [],
+  );
   return (
     <>
       {room.openings.map((o, i) => {
@@ -235,9 +243,8 @@ function Outside({ room }: { room: RoomSpec }) {
           : [f.center.x + out.x * (WALL_T / 2 + len / 2), room.height / 2, o.offset];
         const size: THREE.Vector3Tuple = f.alongX ? [o.width + 1.4, room.height, len] : [len, room.height, o.width + 1.4];
         return (
-          <mesh key={i} position={pos} receiveShadow>
+          <mesh key={i} position={pos} receiveShadow material={corridor}>
             <boxGeometry args={size} />
-            <meshStandardMaterial color="#d6d0c6" side={THREE.BackSide} roughness={0.9} />
           </mesh>
         );
       })}

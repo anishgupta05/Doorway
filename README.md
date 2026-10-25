@@ -144,6 +144,38 @@ Keep `main` demo-ready at all times. Nobody commits to it directly.
 4. **The moment:** hand a judge the keyboard. They walk to the door, press **E**, and it opens. Flip the light.
 5. **Close:** "Splats give you frozen geometry. This knows what a door is." Then the path to Isaac and MuJoCo export.
 
+## Running the demo
+```bash
+npm install
+npm run dev            # http://localhost:5173 (development)
+npm run demo           # production build + preview on http://localhost:4173 (present from this)
+```
+The viewer reads whatever is in `runs/`. `runs/index.json` picks the runs: `{ "live": "<runId>", "backup": "<runId>" }`.
+To show a real run, point `backup` at it and run `npm run thumbs -- <runId>` to render branch thumbnails.
+
+| Key | Beat |
+|---|---|
+| `1` | Real footage vs v0, with a drag wipe. `←` `→` step iterations: issue markers turn green and a toast shows what was fixed |
+| `2` | Convergence: parallel branches, guards stamp REJECTED, the survivor glows, the room morphs. Click a rejected card to load it |
+| `F` | Before / after: v0 next to the final room |
+| `B` | The room builds itself from `scene.json` |
+| `T` | Interaction tests: door swing, drawer travel, lamp, push |
+| `3` | Switch to the pre-converged backup run |
+| `N` | Night (lamps on) |
+| `X` | Export to MuJoCo (MJCF download) |
+| `4` | Walk: click, WASD, `E` to open the door. A robot rolls in |
+| `R` / `Esc` / `M` | Reset joints / back to overview / mute |
+
+Idle in overview for 20 s and it drifts into attract mode with rotating captions.
+
+**Before presenting**
+- [ ] `npx tsx scripts/smoke-ui.ts http://localhost:4173`: every hotkey runs with no page errors
+- [ ] `npx tsx scripts/walk-test.ts`: pointer lock works, the door opens, the robot comes in
+- [ ] Wi-Fi off, reload, run the whole script (fonts, sounds, video and runs are all local)
+- [ ] Chrome full screen on the projector; sleep and notifications off
+
+**Scripts:** `npm run mock` (regenerate the mock run), `npm run record-truth` (stand-in footage for the mock), `npm run shot -- <url> <dir> <name=Key@ms>…` (screenshots), `npm run export:mjcf -- scene.json out.xml`.
+
 ## Verification
 - `pnpm --filter guards test`: rejects patches that delete an object, remove the door hinge, or break the schema. `testInteractions` passes on the fixture and fails on a door with `range: 0`.
 - `pnpm --filter orchestrator loop -- --video fixtures/test.mp4 --iters 2 --branches 3`: writes `runs/<id>/iter_*/branch_*`, and the selected score is ≥ the parent's.

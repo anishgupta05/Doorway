@@ -35,6 +35,8 @@ ${CONVENTIONS}`;
   // Doorways always get a working door, even if the model left it out.
   const { scene, added } = ensureDoors(generated);
   normalizeColors(scene);
+  // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
+  for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }
   const problems = checkScene(scene);
   if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
@@ -61,7 +63,18 @@ export function normalizeColors(node: unknown): void {
   if (!node || typeof node !== "object") return;
   const o = node as Record<string, unknown>;
   for (const [k, v] of Object.entries(o)) {
-    if (/color$/i.test(k) && typeof v === "string" && /^[0-9a-f]{3,8}$/i.test(v)) o[k] = `#${v}`;
+    if (/color$/i.test(k) && typeof v === "string") o[k] = repairColour(v);
     else normalizeColors(v);
   }
+}
+
+/** Argon writes colours as "e5e4df", "rgb(230,231,226)" or even a mangled markdown link; recover a #rrggbb when there is one. */
+export function repairColour(v: string): string {
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v;
+  if (/^[0-9a-f]{3,8}$/i.test(v)) return `#${v}`;
+  const hex = /#([0-9a-f]{6})\b/i.exec(v);
+  if (hex) return `#${hex[1]}`;
+  const rgb = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i.exec(v);
+  if (rgb) return "#" + [1, 2, 3].map((i) => Math.min(255, Number(rgb[i])).toString(16).padStart(2, "0")).join("");
+  return v;
 }

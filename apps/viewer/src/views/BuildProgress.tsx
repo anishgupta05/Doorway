@@ -60,15 +60,36 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
   const [t0] = useState(() => Date.now());
   const [now, setNow] = useState(Date.now());
   const started = useRef(false);
+  // No local builder (static host): replay a finished build on a timeline, clearly labelled.
+  const [demo] = useState(() => !useApp.getState().apiOk);
   const frames = useFilmstrip(building.src);
 
   useEffect(() => {
-    if (started.current || !building.file) return;
+    if (demo || started.current || !building.file) return;
     started.current = true;
     uploadVideo(building.file, name, setUpload)
       .then((r) => setId(r.id))
       .catch((e) => setError(e.message));
-  }, [building.file, name]);
+  }, [building.file, name, demo]);
+
+  useEffect(() => {
+    if (!demo) return;
+    const live = useApp.getState().index?.live ?? null;
+    const step = (k: number): LoopProgress => ({ stage: "test", k, detail: "" });
+    const plan: [number, () => void][] = [
+      [200, () => setUpload(0.25)],
+      [1000, () => setUpload(0.65)],
+      [2000, () => setUpload(1)],
+      [2800, () => (setId(live), setJob({ stage: "watching" }))],
+      [9500, () => setJob({ stage: "drawing" })],
+      [15500, () => (setJob({ stage: "checking" }), setLoop(step(1)))],
+      [19000, () => setLoop(step(2))],
+      [22500, () => setLoop(step(3))],
+      [26000, () => (setJob({ stage: "done" }), sfx.pass())],
+    ];
+    const timers = plan.map(([ms, f]) => setTimeout(f, ms));
+    return () => timers.forEach(clearTimeout);
+  }, [demo]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 500);
@@ -76,7 +97,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
   }, []);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || demo) return;
     let stop = false;
     const tick = async () => {
       try {
@@ -130,9 +151,12 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
           aria-label="Room name"
           className="w-[360px] rounded-lg border border-transparent bg-transparent px-2 py-1 text-2xl font-semibold tracking-tight outline-none transition hover:border-line focus:border-accent/60 focus:bg-panel"
         />
+        <div className="flex items-center gap-4">
+          {demo && <span className="rounded-full border border-line px-3 py-1 text-[12px] text-muted">Demo mode · replaying a finished build</span>}
         <button onClick={() => useApp.setState({ building: null })} className="text-[13px] text-muted hover:text-fg">
           {done || error ? "Close" : "Hide"}
         </button>
+        </div>
       </div>
 
       <div className="grid flex-1 grid-cols-[1fr_340px] gap-8 px-8 pt-6 pb-4">

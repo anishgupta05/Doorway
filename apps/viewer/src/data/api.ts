@@ -11,7 +11,23 @@ const j = async (url: string) => {
   return r.json();
 };
 
-export const listRooms = (): Promise<Room[]> => j("/api/runs");
+/** Rooms on disk via the local API; on a static host, the rooms named in runs/index.json. */
+export async function listRooms(): Promise<Room[]> {
+  try {
+    return await j("/api/runs");
+  } catch {
+    const index = await j("/runs/index.json");
+    const ids = [...new Set<string>([index.live, index.backup])];
+    const rooms = await Promise.all(
+      ids.map(async (id) => {
+        const m = await j(`/runs/${id}/manifest.json`).catch(() => null);
+        const meta = await j(`/runs/${id}/meta.json`).catch(() => null);
+        return m ? { id, name: meta?.name ?? m.title ?? id, status: m.status ?? "done", when: 0 } : null;
+      }),
+    );
+    return rooms.filter((r): r is Room => r !== null);
+  }
+}
 export const getJob = (id: string): Promise<Job> => j(`/runs/${id}/job.json`);
 export const getProgress = (id: string): Promise<LoopProgress | null> => j(`/runs/${id}/progress.json`).catch(() => null);
 
@@ -37,7 +53,8 @@ export function uploadVideo(file: File, name: string, onProgress: (p: number) =>
 
 export async function renameRoom(id: string, name: string) {
   const r = await fetch(`/api/runs/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ name }) });
-  if (!r.ok) throw new Error("rename failed");
+  // On a static host there is nowhere to save the name, so keep it for this visit only.
+  if (!r.ok && useApp.getState().apiOk) throw new Error("rename failed");
   useApp.setState((s) => ({ names: { ...s.names, [id]: name } }));
 }
 

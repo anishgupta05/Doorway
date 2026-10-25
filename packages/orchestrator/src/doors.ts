@@ -17,11 +17,14 @@ function doorPose(room: Scene["room"], o: Opening): { position: [number, number,
   }
 }
 
-export function ensureDoors(scene: Scene): { scene: Scene; added: string[] } {
+/** Door openings the survey says are open thresholds (no door panel), by wall. */
+export type OpenThresholds = Set<Opening["wall"]>;
+
+export function ensureDoors(scene: Scene, open: OpenThresholds = new Set()): { scene: Scene; added: string[] } {
   const out = structuredClone(scene);
   const added: string[] = [];
   const doors = () => out.objects.filter((o) => o.type === "door");
-  for (const o of out.room.openings.filter((x) => x.kind === "door")) {
+  for (const o of out.room.openings.filter((x) => x.kind === "door" && !open.has(x.wall))) {
     const pose = doorPose(out.room, o);
     const near = doors().some((d) => Math.hypot(d.position[0] - pose.position[0], d.position[2] - pose.position[2]) < Math.max(0.5, o.width / 2));
     if (near) continue;

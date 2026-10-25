@@ -5,6 +5,11 @@ import { useRobotTask } from "./robot/useRobotTask";
 import { RobotPanel } from "./robot/RobotPanel";
 import { TrainPanel } from "./robot/TrainPanel";
 import { useTrained } from "./robot/useTrained";
+import { ROBOT, TRAINED_TASKS } from "./features";
+import { MissionPanel } from "./robot/MissionPanel";
+import { actionsFor } from "./robot/actions";
+import { planMission } from "./robot/mission";
+import { startPoint } from "./robot/tasks";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
@@ -19,6 +24,7 @@ import { UploadPanel } from "./views/UploadPanel";
 import { RoomsPanel } from "./views/RoomsPanel";
 import { BuildProgress } from "./views/BuildProgress";
 import { EmptyState } from "./ui/EmptyState";
+import { ViewControls } from "./ui/ViewControls";
 
 export function App() {
   useRunData();
@@ -27,10 +33,23 @@ export function App() {
   const split = useSplitPair(runId, manifest);
   const robotOpen = useApp((s) => s.robotOpen);
   const robot = useRobotTask(split?.before ?? null, split?.after ?? null);
+  const robotTab = useApp((s) => s.robotTab);
+  const queue = useApp((s) => s.missionQueue);
+  const missionRun = useApp((s) => s.mission);
+  // Missions run in the room on stage: every door, locker and switch in it is something to do.
+  const actions = useMemo(() => (scene ? actionsFor(scene) : []), [scene]);
+  const mission = useMemo(() => {
+    if (!scene) return null;
+    const byId = new Map(actions.map((a) => [a.id, a]));
+    const steps = queue.map((id) => byId.get(id)).filter((a): a is NonNullable<typeof a> => !!a);
+    return planMission(scene, steps, startPoint(scene));
+  }, [scene, actions, queue]);
+  // Stable, so re-renders (e.g. status updates) don't restart a running job.
+  const missionStart = useMemo(() => (scene ? startPoint(scene) : null), [scene]);
   const mode = useApp((s) => s.mode);
   const trained = useTrained(runId);
   // Trained tasks run in the verified room, so replaying one shows the latest version.
-  const replay = robotOpen && mode === "overview" && trained.replay ? trained.replay : null;
+  const replay = TRAINED_TASKS && robotOpen && mode === "overview" && trained.replay ? trained.replay : null;
   useEffect(() => {
     if (replay && useApp.getState().version === "v0") useApp.getState().setVersion("latest");
   }, [replay]);
@@ -62,17 +81,22 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={robotOpen ? robot : null} trained={replay} />
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={ROBOT && robotOpen && robotTab === "compare" ? robot : null}
+          mission={ROBOT && robotOpen && robotTab === "mission" && mission && missionStart ? { mission, start: missionStart, runKey: missionRun?.key ?? null } : null}
+          trained={replay}
+        />
       </div>
       <TopBar current={current} />
       {scene && <Caption scene={scene} manifest={manifest} />}
+      <ViewControls />
       <Legend />
       <AnimatePresence>
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
-        {robotOpen && mode === "overview" && <RobotPanel key="robot" t={robot} />}
-        {robotOpen && mode === "overview" && scene && runId && <TrainPanel key="train" run={runId} scene={scene} t={trained} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "compare" && <RobotPanel key="robot" t={robot} />}
+        {ROBOT && robotOpen && mode === "overview" && robotTab === "mission" && scene && <MissionPanel key="mission" scene={scene} actions={actions} mission={mission} />}
+        {TRAINED_TASKS && robotOpen && mode === "overview" && scene && runId && <TrainPanel key="train" run={runId} scene={scene} t={trained} />}
         {uploadOpen && <UploadPanel key="upload" />}
         {roomsOpen && <RoomsPanel key="rooms" />}
         {building2 && <BuildProgress key="progress" building={building2} />}

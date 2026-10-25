@@ -59,11 +59,79 @@ export function checkScene(scene: Scene): string[] {
       problems.push(`${it.target}: cannot toggle without a switch`);
     }
   }
+  problems.push(...checkLayout(scene));
+  return problems;
+}
+
+// ---- layout geometry (floor plan, metres) ----
+type Obj = Scene["objects"][number];
+interface Rect { x: number; z: number; hx: number; hz: number; rot: number }
+
+/** Footprint of an object on the floor; its local x axis is (cos, -sin), local z is (sin, cos) in world x,z (three.js rotation about y). */
+const footprint = (o: Obj): Rect => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
+
+/** Minimum translation that separates a from b (SAT on two rotated rectangles); null if they do not overlap. depth = how far they interpenetrate. */
+export function separation(a: Rect, b: Rect): { depth: number; dx: number; dz: number } | null {
+  const axes = [a.rot, b.rot].flatMap((r) => [[Math.cos(r), -Math.sin(r)], [Math.sin(r), Math.cos(r)]]);
+  const radius = (r: Rect, [ax, az]: number[]) => {
+    const c = Math.cos(r.rot), s = Math.sin(r.rot);
+    return r.hx * Math.abs(ax * c - az * s) + r.hz * Math.abs(ax * s + az * c);
+  };
+  let best: { depth: number; dx: number; dz: number } | null = null;
+  for (const [ax, az] of axes) {
+    const d = (b.x - a.x) * ax + (b.z - a.z) * az;
+    const depth = radius(a, [ax, az]) + radius(b, [ax, az]) - Math.abs(d);
+    if (depth <= 0) return null;
+    if (!best || depth < best.depth) best = { depth, dx: ax * Math.sign(d || 1), dz: az * Math.sign(d || 1) };
+  }
+  return best; // push b along (dx, dz) by depth to clear a
+}
+
+/** Objects that take up floor space and block walking; rugs lie flat, drawers sit inside furniture, decor is garnish, doors are checked separately. */
+const solid = (o: Obj) => !o.decor && o.type !== "rug" && o.type !== "door" && o.type !== "drawer";
+/** A door a person walks through, as opposed to a cabinet door (also type "door", but small). */
+export const isRoomDoor = (o: Obj) => o.type === "door" && o.size[1] >= 1.6;
+const OVERLAP_TOLERANCE = 0.1; // chairs tuck under tables a little
+export const DOOR_CLEARANCE = 0.45; // metres kept free on each side of a door
+/** The patch of floor a door needs clear on both sides, as a rectangle in the door's frame. */
+export const doorZone = (d: Obj): Rect => ({ x: d.position[0], z: d.position[2], hx: d.size[0] / 2, hz: DOOR_CLEARANCE, rot: d.rotationY });
+
+/** Layout problems that are physically impossible: overlapping furniture, blocked doors, objects outside the room, runaway parts. */
+export function checkLayout(scene: Scene): string[] {
+  const problems: string[] = [];
+  const { width: W, depth: D } = scene.room;
+  const objs = scene.objects.filter(solid);
+  for (let i = 0; i < objs.length; i++) {
+    const a = objs[i];
+    const r = footprint(a);
+    const c = Math.cos(r.rot), s = Math.sin(r.rot);
+    const reachX = r.hx * Math.abs(c) + r.hz * Math.abs(s), reachZ = r.hx * Math.abs(s) + r.hz * Math.abs(c);
+    if (Math.abs(r.x) + reachX > W / 2 + 0.05 || Math.abs(r.z) + reachZ > D / 2 + 0.05) problems.push(`${a.id}: sticks out of the room`);
+    for (let j = i + 1; j < objs.length; j++) {
+      const b = objs[j];
+      const lo = Math.max(a.position[1], b.position[1]), hi = Math.min(a.position[1] + a.size[1], b.position[1] + b.size[1]);
+      if (hi - lo < 0.05) continue; // one rests on the other
+      const sep = separation(r, footprint(b));
+      if (sep && sep.depth > OVERLAP_TOLERANCE) problems.push(`${a.id} and ${b.id} overlap by ${sep.depth.toFixed(2)} m`);
+    }
+    for (const d of scene.objects.filter(isRoomDoor)) {
+      if (a.position[1] > 1.8) continue;
+      const sep = separation(doorZone(d), r);
+      if (sep && sep.depth > 0.02) problems.push(`${a.id} blocks ${d.id} (needs ${DOOR_CLEARANCE} m clear in front of it)`);
+    }
+  }
+  for (const o of scene.objects) {
+    if (o.type === "door" || !o.parts?.length) continue;
+    const [w, h, d] = o.size;
+    const bad = o.parts.filter((p) => Math.abs(p.offset[0]) + p.size[0] / 2 > w * 0.75 || Math.abs(p.offset[2]) + p.size[2] / 2 > d * 0.75 || p.offset[1] + p.size[1] / 2 > h * 1.3);
+    if (bad.length) problems.push(`${o.id}: ${bad.length} part(s) stick far outside its ${w}x${h}x${d} box`);
+  }
   return problems;
 }
 
 /** Applies the patch to a copy and re-validates; throws if the result is not a valid Scene. */
-export function applyPatch(scene: Scene, patch: Patch): Scene {
+/** `settle` may adjust the patched scene (e.g. nudge overlapping furniture apart) before it is validated. */
+export function applyPatch(scene: Scene, patch: Patch, settle?: (scene: Scene) => void): Scene {
   const next = structuredClone(scene) as any;
   for (const { op, path, value } of Patch.parse(patch)) {
     const keys = path.split("/").slice(1).map(unescape);
@@ -84,6 +152,7 @@ export function applyPatch(scene: Scene, patch: Patch): Scene {
     else node[last] = value;
   }
   const result = Scene.parse(next);
+  settle?.(result);
   const problems = checkScene(result);
   if (problems.length) throw new Error(problems.join("; "));
   return result;

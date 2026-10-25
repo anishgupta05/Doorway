@@ -20,6 +20,8 @@ type State = {
   /** Extra yaw (radians) for pushed objects, e.g. a chair the sim robot turned while pushing it. */
   turns: Record<string, number>;
   hovered: string | null;
+  /** Which front part (cabinet leaf / locker door index) of the hovered object, if any. */
+  hoveredPart: number | null;
   /** Bumped on reset so components can snap back. */
   resetNonce: number;
   /** Seconds into the source video; drives the camera in compare mode. */
@@ -42,6 +44,12 @@ type State = {
   /** A physics-trained robot task being replayed in the room (runs/<run>/tasks/<task>/), and a nonce to restart it. */
   trained: { run: string; task: string } | null;
   trainedNonce: number;
+  /** Robot panel tab: compare v0 vs verified plans, or run a mission of actions. */
+  robotTab: "compare" | "mission";
+  /** Action ids queued for the mission (see robot/actions.ts). */
+  missionQueue: string[];
+  /** A running/finished mission: which leg, and each leg's status. */
+  mission: { key: string; current: number; status: ("pending" | "driving" | "acting" | "done" | "failed")[] } | null;
   /** Overview: v0 and the final room side by side. */
   split: boolean;
   uploadOpen: boolean;
@@ -55,6 +63,8 @@ type State = {
   legendOpen: boolean;
   /** The local run API answered: uploads and the rooms library only exist then (not on a static host). */
   apiOk: boolean;
+  /** Bumped by the "reset view" button to re-frame the overview camera. */
+  viewNonce: number;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -67,6 +77,8 @@ type State = {
   idle: boolean;
   /** Switchable lights in the current scene (set by the stage). */
   lampIds: string[];
+  /** Walls currently cut away because the camera is outside looking through them; things against them hide too. */
+  hiddenWalls: string[];
 
   setMode: (m: Mode) => void;
   setVersion: (v: Version) => void;
@@ -75,7 +87,7 @@ type State = {
   setIter: (k: number | null) => void;
   toggleJoint: (id: string, initial?: number) => void;
   push: (id: string, dx: number, dz: number) => void;
-  setHovered: (id: string | null) => void;
+  setHovered: (id: string | null, part?: number | null) => void;
   setVideoTime: (t: number) => void;
   reset: () => void;
   toggleNight: () => void;
@@ -96,6 +108,7 @@ export const useApp = create<State>((set) => ({
   pushes: {},
   turns: {},
   hovered: null,
+  hoveredPart: null,
   resetNonce: 0,
   videoTime: 0,
   night: false,
@@ -111,6 +124,9 @@ export const useApp = create<State>((set) => ({
   robotDone: {},
   trained: null,
   trainedNonce: 0,
+  robotTab: "mission",
+  missionQueue: [],
+  mission: null,
   split: false,
   uploadOpen: false,
   roomsOpen: false,
@@ -119,6 +135,7 @@ export const useApp = create<State>((set) => ({
   loadError: false,
   legendOpen: false,
   apiOk: false,
+  viewNonce: 0,
   renderMode: false,
   shake: false,
   wipe: 0.5,
@@ -126,6 +143,7 @@ export const useApp = create<State>((set) => ({
   convergencePlay: null,
   idle: false,
   lampIds: [],
+  hiddenWalls: [],
 
   setMode: (mode) => set({ mode, hovered: null, split: false }),
   setVersion: (version) => set({ version, iter: null, preview: null }),
@@ -138,7 +156,7 @@ export const useApp = create<State>((set) => ({
       const [x, z] = s.pushes[id] ?? [0, 0];
       return { pushes: { ...s.pushes, [id]: [x + dx, z + dz] } };
     }),
-  setHovered: (hovered) => set({ hovered }),
+  setHovered: (hovered, hoveredPart = null) => set({ hovered, hoveredPart }),
   setVideoTime: (videoTime) => set({ videoTime }),
   reset: () => set((s) => ({ joints: {}, pushes: {}, turns: {}, resetNonce: s.resetNonce + 1 })),
   // Going dark also switches lamps on, so night mode lands with a moment.
@@ -162,3 +180,7 @@ export function iterFor(version: Version, manifest: RunManifest | undefined, ove
 
 // Dev only: lets test scripts read the store (e.g. scripts/train-test.ts checks the door swings).
 if (import.meta.env.DEV) (window as unknown as { __app: typeof useApp }).__app = useApp;
+/** Joint key for one front part of an object (a cabinet leaf, a locker door). */
+export const partKey = (id: string, part: number) => `${id}#${part}`;
+/** A part follows its own state if it has one, else the whole object's. */
+export const partTarget = (joints: Record<string, number>, id: string, part: number) => joints[partKey(id, part)] ?? joints[id] ?? 0;

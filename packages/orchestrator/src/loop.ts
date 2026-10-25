@@ -15,7 +15,7 @@ import { proposeFixes, type Proposal } from "./fixes.js";
 import { guards } from "./branch.js";
 import type { Description } from "./describe.js";
 import { fakeCompare, fakePropose } from "./fake.js";
-import { normalizeColors } from "./generate.js";
+import { normalizeColors, resolveLayout, toHex } from "./generate.js";
 import { interactionTests, type TestResult } from "./interaction-tests.js";
 import { uploadVideo, type UploadedVideo } from "./model.js";
 import { Renderer, sampleTimes } from "./render.js";
@@ -37,8 +37,8 @@ type Progress = { stage: string; k: number; detail: string; updatedAt: number };
 export async function runLoop(o: LoopOptions) {
   const log = o.log ?? console.log;
   const dir = join(RUNS, o.id);
-  const v0 = Scene.parse(JSON.parse(readFileSync(join(dir, "scene.v0.json"), "utf8")));
-  normalizeColors(v0); // scenes generated before colour normalisation would otherwise fail every branch's colour check
+  // Repair what is safe to repair, so guards judge each fix on what *it* changes.
+  const v0 = repairScene(Scene.parse(JSON.parse(readFileSync(join(dir, "scene.v0.json"), "utf8"))));
   const truth = o.fake ? Scene.parse(JSON.parse(readFileSync(join(dir, "truth.json"), "utf8"))) : null;
   const videoFile = ["video.mp4", "video.webm"].find((f) => existsSync(join(dir, f))) ?? null;
   if (!o.fake && videoFile !== "video.mp4") throw new Error(`runs/${o.id}/video.mp4 is required (run describe first)`);
@@ -116,13 +116,14 @@ export async function runLoop(o: LoopOptions) {
               .catch(() => {})
               .then(() => ({ branch: { ...base, score: 0, verdict: "fail" as const, reason, thumb } }));
           };
+          c.patch = repairPatch(c.patch);
           const deleted = deletedByPatch(current.scene, c.patch);
           if (deleted.length) return reject(`Hook: deleted ${deleted.join(", ")}`);
           let child: Scene;
           try {
-            child = applyPatch(current.scene, c.patch);
+            child = applyPatch(current.scene, c.patch, (sc) => { resolveLayout(sc); }); // small overlaps are nudged apart, not rejected
           } catch (e) {
-            return reject(`Hook: ${(e as Error).message.split("\n")[0].slice(0, 140)}`);
+            return reject(`Hook: ${readableError(e as Error)}`);
           }
           const hook = guards(current.scene, child);
           if (hook) return reject(hook, child);
@@ -142,10 +143,11 @@ export async function runLoop(o: LoopOptions) {
 
       for (const r of results) if (r.branch.verdict === "pass" && r.branch.score <= currentScore) lessons.push(`${r.branch.hypothesis} → scored ${r.branch.score}, which did not beat ${currentScore}`);
       const passing = results.filter((r) => r.branch.verdict === "pass");
-      const best = passing.sort((a, b) => b.branch.score - a.branch.score)[0];
+      // Highest score wins; on a tie, the branch that leaves fewer open issues.
+      const best = passing.sort((a, b) => b.branch.score - a.branch.score || a.crit!.issues.length - b.crit!.issues.length)[0];
       const branches = results.map((r) => r.branch).sort((a, b) => a.i - b.i);
       let selected: number;
-      if (best && best.branch.score > currentScore) {
+      if (best && (best.branch.score > currentScore || (best.branch.score === currentScore && best.crit!.issues.length < current.crit.issues.length))) {
         selected = best.branch.i;
         current = { scene: best.scene!, crit: best.crit! };
         currentScore = best.branch.score;
@@ -191,4 +193,55 @@ function withTestIssues(c: Comparison, scene: Scene): Comparison {
   if (!fails.length) return c;
   const penalty = Math.min(0.3, fails.length * 0.1);
   return { score: Math.max(0, Number((c.score - penalty).toFixed(3))), issues: [...fails, ...c.issues] };
+}
+
+/** Colour names → hex; decor can't move or have physics. Both are safe, mechanical fixes. */
+export function repairScene(scene: Scene): Scene {
+  const s = structuredClone(scene);
+  normalizeColors(s);
+  const decor = new Set<string>();
+  for (const o of s.objects) {
+    if (o.decor) {
+      decor.add(o.id);
+      delete o.articulation;
+      delete o.physics;
+    }
+  }
+  s.interactions = s.interactions.filter((i) => !decor.has(i.target));
+  // An interaction must match what its object can do: "toggle" gets a switch, impossible "open"s are dropped.
+  const byId = new Map(s.objects.map((o) => [o.id, o]));
+  s.interactions = s.interactions.filter((i) => {
+    const o = byId.get(i.target);
+    if (!o) return false;
+    if (i.verb === "toggle" && !o.articulation) o.articulation = { kind: "switch", initial: false };
+    // Furniture meant to open but given no joint gets front doors (a hinge), rather than losing the action.
+    if (i.verb === "open" && !o.articulation && ["cabinet", "shelf", "box", "other"].includes(o.type)) {
+      o.articulation = { kind: "hinge", axis: [0, 1, 0], pivot: [-o.size[0] / 2, 0, o.size[2] / 2], range: [0, 1.6] };
+    }
+    if (i.verb === "toggle") return o.articulation?.kind === "switch";
+    if (i.verb === "open") return o.articulation?.kind === "hinge" || o.articulation?.kind === "slide";
+    return true;
+  });
+  return Scene.parse(s);
+}
+
+/** The same colour repair, applied to the values a proposed patch writes. */
+function repairPatch(patch: Patch): Patch {
+  return patch.map((op) => {
+    if (op.value === undefined) return op;
+    if (/colou?r$/i.test(op.path) && typeof op.value === "string") return { ...op, value: toHex(op.value) ?? "#c8c6c2" };
+    const value = structuredClone(op.value);
+    normalizeColors(value);
+    return { ...op, value };
+  });
+}
+
+/** zod errors arrive as a JSON array of issues; turn them into one readable line. */
+function readableError(e: Error): string {
+  try {
+    const issues = JSON.parse(e.message) as { path: (string | number)[]; message: string }[];
+    return issues.slice(0, 2).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ").slice(0, 160);
+  } catch {
+    return e.message.split("\n")[0].slice(0, 160);
+  }
 }

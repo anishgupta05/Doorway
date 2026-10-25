@@ -24,7 +24,10 @@ export function material(kind: MaterialKind = "paint", color = "#d8d4cc", look?:
   const key = `${kind}|${color}|${look ?? ""}`;
   let m = cache.get(key);
   if (!m) {
-    m = new THREE.MeshPhysicalMaterial({ color, ...PRESETS[kind] });
+    const c = new THREE.Color(color);
+    const peak = Math.max(c.r, c.g, c.b);
+    if (peak > 0.9) c.multiplyScalar(0.9 / peak); // pure white blooms like a lamp; keep surfaces below that
+    m = new THREE.MeshPhysicalMaterial({ color: c, ...PRESETS[kind] });
     if (look && look !== "wood") {
       const t = lookTexture(look).clone();
       t.repeat.set(look === "paper" ? 1 : 4, look === "paper" ? 1 : 4);

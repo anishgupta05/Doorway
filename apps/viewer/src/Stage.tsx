@@ -11,13 +11,16 @@ import { CompareRig, OverviewRig } from "./scene/Rigs";
 import { CameraTrail } from "./scene/CameraTrail";
 import { DiffGhosts } from "./scene/DiffGhosts";
 import { TestViz } from "./scene/TestViz";
-import { Robot } from "./scene/Robot";
 import { Walk } from "./controls/Walk";
 import { IssueMarkers } from "./scene/IssueMarkers";
 import { Html } from "@react-three/drei";
 import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
 import { RobotSim } from "./robot/RobotSim";
+import { ROBOT, TRAINED_TASKS } from "./features";
+import { MissionSim } from "./robot/MissionSim";
+import type { Mission } from "./robot/mission";
+import type { Vec2 } from "./robot/planner";
 import type { useRobotTask } from "./robot/useRobotTask";
 import { TrainedReplay } from "./robot/TrainedReplay";
 import type { SimSpec, Trajectory } from "./data/tasks";
@@ -34,6 +37,7 @@ export function Stage({
   split = null,
   robot = null,
   trained = null,
+  mission = null,
 }: {
   scene: Scene | null;
   prevScene: Scene | null;
@@ -42,8 +46,9 @@ export function Stage({
   k?: number | null;
   split?: SplitPair | null;
   robot?: ReturnType<typeof useRobotTask> | null;
-  /** A passing physics-trained task to replay (shown instead of the planner robot). */
+  /** A passing physics-trained task to replay (shown instead of the planner and mission robots). */
   trained?: { traj: Trajectory; spec: SimSpec | null } | null;
+  mission?: { mission: Mission; start: Vec2; runKey: string | null } | null;
 }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
@@ -58,8 +63,10 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
-  const trainedOn = !!trained && mode === "overview" && !splitOn;
-  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn && !trainedOn;
+  const trainedOn = TRAINED_TASKS && !!trained && mode === "overview" && !splitOn;
+  const compareOn = ROBOT && !!robot?.sim && !!robot.task && mode === "overview" && !splitOn && !trainedOn;
+  // Any robot view hides the camera trail and issue markers, so the robot's work is clear.
+  const robotOn = compareOn || trainedOn || (ROBOT && !!mission && mode === "overview");
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}
@@ -89,7 +96,8 @@ export function Stage({
           })()}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
           {tests && <TestViz scene={scene} />}
-          {robotOn && (
+          {mission && mode === "overview" && !splitOn && !trainedOn && <MissionSim mission={mission.mission} start={mission.start} runKey={mission.runKey} />}
+          {compareOn && (
             <RobotSim
               grid={robot!.sim!.grid}
               start={robot!.task!.start}
@@ -104,7 +112,6 @@ export function Stage({
             />
           )}
           {trainedOn && <TrainedReplay scene={scene} traj={trained!.traj} spec={trained!.spec} />}
-          {mode === "walk" && <Robot scene={scene} />}
           {outside && <OverviewRig room={scene.room} wide={splitOn} />}
           {mode === "compare" && <CompareRig scene={scene} />}
           {mode === "walk" && <Walk scene={scene} />}

@@ -34,4 +34,14 @@ assert.throws(() => applyPatch(scene, [{ op: "replace", path: `/objects/${i}/col
 assert.throws(() => applyPatch(scene, [{ op: "replace", path: `/objects/${i}/color`, value: "banana" }]), /colour/);
 applyPatch(scene, [{ op: "replace", path: `/objects/${i}/color`, value: "#d4ae80" }]);
 
+// Layout rules: overlap, door clearance, bounds, runaway parts.
+const dIdx = scene.objects.findIndex((o) => o.type === "door");
+const dr = scene.objects[dIdx];
+const inFront = (sc: typeof scene) => { const c = structuredClone(sc); const k = c.objects.findIndex((o) => o.id === "chair_1"); c.objects[k].position = [dr.position[0], 0, dr.position[2]]; return c; };
+assert.ok(checkScene(inFront(scene)).some((p) => /blocks/.test(p)), "chair standing in the doorway must be rejected");
+const out = structuredClone(scene); out.objects[i].position = [scene.room.width, 0, 0];
+assert.ok(checkScene(out).some((p) => /sticks out/.test(p)), "object outside the room must be rejected");
+const wide = structuredClone(scene); wide.objects[i].parts = [{ shape: "cylinder", offset: [0, 0.5, 0], size: [9, 0.1, 9] }];
+assert.ok(checkScene(wide).some((p) => /part/.test(p)), "runaway part must be rejected");
+
 console.log("patch tests ok");

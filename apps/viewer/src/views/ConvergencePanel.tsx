@@ -154,8 +154,8 @@ function BranchCard({
             <span className={`tabular ${failed ? "text-bad" : selected ? "text-accent" : ""}`}>{judged ? (failed ? "—" : pct(b.score)) : "…"}</span>
           </div>
           {/* hypothesis comes from the model: plain text only */}
-          <div className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/90">{hypothesis(b.hypothesis) || "—"}</div>
-          {failed && b.reason && <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-bad">{reason(b.reason)}</div>}
+          <div title={hypothesis(b.hypothesis)} className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/90">{hypothesis(b.hypothesis) || "—"}</div>
+          {failed && b.reason && <div title={reason(b.reason)} className="mt-1 line-clamp-3 text-[11px] leading-snug text-bad">{reason(b.reason)}</div>}
         </div>
       </div>
     </motion.button>

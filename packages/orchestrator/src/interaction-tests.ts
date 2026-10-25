@@ -37,11 +37,29 @@ export function interactionTests(scene: Scene): TestResult[] {
     if (!a) continue;
     // Anything this object could hit: solid things on the floor, except itself and what it's mounted in.
     const obstacles = scene.objects
-      .filter((x) => x.id !== o.id && SOLID.has(x.type) && x.position[1] < 1.2)
+      // Only things at the same height as the moving part: a wall cabinet's doors pass over the counter below.
+      .filter((x) => x.id !== o.id && SOLID.has(x.type) && x.position[1] < o.position[1] + o.size[1] && x.position[1] + x.size[1] > o.position[1] + 0.05)
       .filter((x) => !(o.type === "drawer" && x.type === "cabinet" && inside(footprint(x), o.position[0], o.position[2])))
       .map(footprint);
 
-    if (a.kind === "hinge") {
+    if (a.kind === "hinge" && o.type !== "door") {
+      // A hinged cabinet/wardrobe opens a door on its front face, not its whole body:
+      // sweep one front leaf (≤ 0.6 m) 90° out from the front-left edge.
+      const [w, , d] = o.size;
+      const leaf = w / Math.max(1, Math.ceil(w / 0.6));
+      let hit: string | null = null;
+      for (let i = 1; i <= 18 && !hit; i++) {
+        const t = ((Math.PI / 2) * i) / 18;
+        for (const f of [0.5, 1]) {
+          const [x, z] = toWorld(o, -w / 2 + leaf * f * Math.cos(t), d / 2 + leaf * f * Math.sin(t));
+          if (!inRoom(x, z)) hit = "the wall";
+          const b = obstacles.find((ob) => inside(ob, x, z, 0.02));
+          if (b) hit = b.id;
+          if (hit) break;
+        }
+      }
+      out.push(hit ? { id: o.id, ok: false, text: `front door hits ${hit} while opening` } : { id: o.id, ok: true, text: "front door opens clear" });
+    } else if (a.kind === "hinge") {
       const [lo, hi] = a.range;
       const sweep = Math.abs(hi - lo);
       if (sweep < (60 * Math.PI) / 180) {
@@ -77,7 +95,8 @@ export function interactionTests(scene: Scene): TestResult[] {
       const b = obstacles.find((ob) => inside(ob, x, z, 0.02));
       out.push(b ? { id: o.id, ok: false, text: `hits ${b.id} when pulled out` } : { id: o.id, ok: true, text: `slides ${Math.round(travel * 100)} cm clear` });
     } else if (a.kind === "switch") {
-      out.push(o.light || o.type === "monitor" ? { id: o.id, ok: true, text: "switches" } : { id: o.id, ok: false, text: "switch with no light" });
+      // Lamps must actually light something; other switchable devices (copiers, screens) just switch.
+      out.push(o.type !== "lamp" || o.light ? { id: o.id, ok: true, text: "switches" } : { id: o.id, ok: false, text: "lamp with no light" });
     }
   }
   return out;

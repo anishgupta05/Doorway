@@ -8,10 +8,15 @@ import { Select } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { SceneObject } from "@doorway/schema";
 import { useApp } from "../store";
+import { SHADOW_ONLY_LAYER } from "./Room";
 
 /** Current articulation value (0..1) for children that animate themselves, e.g. lamps. */
 const JointValue = createContext<{ current: number }>({ current: 0 });
 export const useJointValue = () => useContext(JointValue);
+
+/** Whether the articulation moves the whole object (doors, drawers) rather than its front parts. */
+export const wholeBodyJoint = (obj: SceneObject) =>
+  (obj.articulation?.kind === "hinge" && obj.type === "door") || (obj.articulation?.kind === "slide" && obj.type === "drawer");
 
 export const defaultJoint = (obj: SceneObject) =>
   obj.articulation?.kind === "switch" && obj.articulation.initial ? 1 : 0;
@@ -19,7 +24,8 @@ export const defaultJoint = (obj: SceneObject) =>
 const tmpAxis = new THREE.Vector3();
 const tmpQuat = new THREE.Quaternion();
 
-export function Placed({ obj, children }: { obj: SceneObject; children: ReactNode }) {
+export function Placed({ obj, children, wall }: { obj: SceneObject; children: ReactNode; wall?: string }) {
+  const hidden = useRef(false);
   const outer = useRef<THREE.Group>(null!);
   const pivot = useRef<THREE.Group>(null!);
   const value = useRef(defaultJoint(obj));
@@ -48,12 +54,22 @@ export function Placed({ obj, children }: { obj: SceneObject; children: ReactNod
 
   const hovered = useApp((s) => s.hovered === obj.id);
   const art = obj.articulation;
-  const pv = art?.kind === "hinge" ? art.pivot : ([0, 0, 0] as const);
+  // Doors swing as a whole and drawers slide as a whole. Anything else that is hinged or
+  // slides (cabinets, wardrobes, lockers) stays put and moves its front parts (see Fronts).
+  const whole = wholeBodyJoint(obj);
+  const pv = whole && art?.kind === "hinge" ? art.pivot : ([0, 0, 0] as const);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 1 / 30);
     const s = useApp.getState();
     const g = outer.current;
+
+    // Things against a wall that is cut away go with it (they would hang in mid-air in front of the room).
+    const hide = !!wall && s.hiddenWalls.includes(wall);
+    if (hide !== hidden.current) {
+      hidden.current = hide;
+      g.traverse((o) => o.layers.set(hide ? SHADOW_ONLY_LAYER : 0));
+    }
 
     const [px, pz] = s.pushes[obj.id] ?? [0, 0];
     const tx = obj.position[0] + px;
@@ -81,6 +97,7 @@ export function Placed({ obj, children }: { obj: SceneObject; children: ReactNod
     velocity.current += a * dt;
     value.current += velocity.current * dt;
 
+    if (!whole) return;
     const p = pivot.current;
     const [lo, hi] = art.range;
     const amount = lo + (hi - lo) * value.current;

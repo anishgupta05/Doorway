@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Scene } from "@doorway/schema";
-import { useApp } from "../store";
+import { partTarget, useApp } from "../store";
 import { defaultJoint } from "../scene/Placed";
 
-function verb(scene: Scene, id: string, joints: Record<string, number>) {
+function verb(scene: Scene, id: string, joints: Record<string, number>, part: number | null) {
   const o = scene.objects.find((x) => x.id === id);
   if (!o) return null;
   const name = (o.label ?? o.id).toLowerCase();
+  if (part !== null) {
+    const what = /locker|pigeon|cubby/i.test(`${o.label ?? ""} ${o.id}`) || o.cells ? `locker ${part + 1}` : `door ${part + 1} of the ${name}`;
+    return `${partTarget(joints, id, part) > 0 ? "Close" : "Open"} ${what}`;
+  }
   const open = (joints[id] ?? defaultJoint(o)) > 0;
   switch (o.articulation?.kind) {
     case "hinge":
@@ -34,7 +38,8 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
     return () => document.removeEventListener("pointerlockchange", on);
   }, []);
 
-  const hint = hovered ? verb(scene, hovered, joints) : null;
+  const hoveredPart = useApp((s) => s.hoveredPart);
+  const hint = hovered ? verb(scene, hovered, joints, hoveredPart) : null;
 
   return (
     <>
@@ -74,6 +79,7 @@ export function WalkOverlay({ scene }: { scene: Scene }) {
                 <span><Key>W A S D</Key> move</span>
                 <span><Key>mouse</Key> look</span>
                 <span><Key>E</Key> interact</span>
+                <span><Key>scroll</Key> zoom out</span>
                 <span><Key>Esc</Key> release</span>
               </div>
             </div>

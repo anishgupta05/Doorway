@@ -55,6 +55,12 @@ export const Part = z.object({
   size: Vec3,
   color: z.string().optional(),
   material: MaterialKind.optional(),
+  /** What surface image this part needs, e.g. "laptop keyboard and trackpad from above". Written by the detail pass, read by the texture step. */
+  textureHint: z.string().optional(),
+  /** Which face of the box the image goes on. Default: top for flat parts, front otherwise. */
+  textureFace: z.enum(["top", "front", "back", "left", "right"]).optional(),
+  /** Generated image, relative to runs/ (e.g. "booth1/tex/laptop_1_0.png"). Served at /runs/<path>. */
+  texture: z.string().optional(),
 });
 export type Part = z.infer<typeof Part>;
 
@@ -119,6 +125,8 @@ export const SceneObject = z.object({
   decor: z.boolean().default(false),
   articulation: Articulation.optional(),
   light: LightSpec.optional(),
+  /** Grid of small doors on the front, [columns, rows], e.g. a 4×4 locker bank. */
+  cells: z.tuple([z.number().int().min(1).max(12), z.number().int().min(1).max(12)]).optional(),
   physics: Physics.optional(),
 });
 export type SceneObject = z.infer<typeof SceneObject>;
@@ -139,6 +147,11 @@ export const Opening = z.object({
    * (glass partition, interior window). Objects seen through it are NOT part of this scene.
    */
   view: z.enum(["outdoors", "indoors"]).default("outdoors"),
+  /**
+   * Outline of the opening. "arch" = a rectangle with a semicircular top (radius width/2);
+   * if height ≤ width/2 it is a half-round window with a flat bottom.
+   */
+  shape: z.enum(["rect", "arch"]).default("rect"),
 });
 export type Opening = z.infer<typeof Opening>;
 
@@ -153,6 +166,8 @@ export const Room = z.object({
   floorMaterial: z.enum(["wood", "concrete", "carpet", "tile"]).default("wood"),
   /** Pattern painted on the walls, e.g. "brick". Default is plain painted plaster. */
   wallLook: Look.optional(),
+  /** Per-wall override of wallLook, e.g. { north: "brick" } for a single brick wall. */
+  wallLooks: z.partialRecord(Wall, Look).optional(),
   /** Walls the video never showed. The viewer draws them open instead of inventing a surface. */
   unseenWalls: z.array(Wall).default([]),
   openings: z.array(Opening).default([]),

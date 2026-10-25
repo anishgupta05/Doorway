@@ -2,6 +2,7 @@
 //   POST  /api/runs          raw video body (headers: x-filename, x-name) -> { id }; starts the builder
 //   GET   /api/runs          every room on disk: id, name, status, when
 //   PATCH /api/runs/:id      { name } -> runs/<id>/meta.json (the room's display name)
+//   POST  /api/command       { text, room, actions, objects } -> { steps, reply } (plain language → robot job)
 // The builder is the orchestrator's own CLIs run in order: describe -> generate -> loop.
 // Progress is plain files the viewer polls: runs/<id>/job.json (this file) and progress.json (the loop).
 import { spawn } from "node:child_process";
@@ -91,6 +92,28 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
 
   const handler: Connect.NextHandleFunction = (req, res, next) => {
     const url = (req.url ?? "").split("?")[0];
+
+    // POST /api/command { text, room, actions, objects } -> { steps, reply }: plain language → robot steps.
+    if (req.method === "POST" && url === "/api/command") {
+      let body = "";
+      req.on("data", (c: Buffer) => (body += c));
+      req.on("end", () => {
+        const child = spawn("npx", ["tsx", "--env-file-if-exists=.env", "packages/orchestrator/src/cli-command.ts"], { cwd: repo, env: process.env });
+        let out = "";
+        child.stdout.on("data", (c: Buffer) => (out += c));
+        child.on("close", () => {
+          try {
+            const r = JSON.parse(out);
+            json(res, r.error ? 500 : 200, r);
+          } catch {
+            json(res, 500, { error: "The robot couldn't understand that." });
+          }
+        });
+        child.stdin.end(body);
+      });
+      return;
+    }
+
     if (!url.startsWith("/api/runs")) return next();
 
     if (req.method === "GET" && url === "/api/runs") {
@@ -131,7 +154,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
       req.pipe(file);
       file.on("finish", () => {
         if (failed) return;
-        writeFileSync(join(dir, "meta.json"), JSON.stringify({ name: name || "New room" }));
+        if (name) writeFileSync(join(dir, "meta.json"), JSON.stringify({ name }));
         setJob(id, { stage: "watching", step: 0, startedAt: Date.now() });
         runJob(id, upload);
         json(res, 200, { id });

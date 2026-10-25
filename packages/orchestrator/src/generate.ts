@@ -1,5 +1,5 @@
 // Stage 2: Argon turns the description (and the footage) into a schema-valid scene.json.
-import { Scene, checkScene } from "@doorway/schema";
+import { Scene, checkScene, checkLayout as checkPhysical, doorZone, isRoomDoor, separation } from "@doorway/schema";
 import { ensureDoors } from "./doors.js";
 import { callJson, models, type UploadedVideo } from "./model.js";
 import type { Description } from "./describe.js";
@@ -11,7 +11,9 @@ const CONVENTIONS = `Scene conventions (follow exactly):
 - "size" is [width, height, depth] in the object's own frame. Its front faces local +z before "rotationY" (radians, about y) is applied. rotationY = 0 faces south, PI faces north, PI/2 faces east... verify against the description's "facing".
 - Opening "offset" is the centre of the opening measured from the wall's midpoint (+x for north/south walls, +z for east/west walls).
 - Objects must sit inside the room and must not overlap each other, except things resting on a surface.
-- Interior walls, half walls and columns are objects of type "partition": size = [length, height, thickness] with the length along the object's local x, colour = the room's wall colour, material "paint", physics "static", no articulation. Furniture may stand against a partition.
+- Lockers, pigeonholes and cubbies are type "cabinet" with a hinge, a label saying what they are, and "cells": [columns, rows] for the grid of small doors (e.g. [4, 4]).
+- Openings: set "shape": "arch" for a window or door with a rounded top (a half-round window is an arch whose height is at most half its width). Set "wallLooks" (e.g. { "north": "brick" }) when one wall's surface differs from the others; "wallLook" is the default for the rest.
+- Interior walls, half walls and columns are objects of type "partition": thin (thickness 0.1-0.15 m) unless it is a column; size = [length, height, thickness] with the length along the object's local x, colour = the room's wall colour, material "paint", physics "static", no articulation. Furniture may stand against a partition.
 - Hinged door: articulation { kind: "hinge", axis: [0,1,0], pivot: [-width/2, 0, 0] or [+width/2, 0, 0] in the door's local frame, range: [0, 1.6] }. The pivot side is the hinge side.
 - Drawers use kind "slide" with range [0, depth*0.7]. Lamps and monitors use kind "switch"; lamps also get a "light". Pushable furniture (chairs) use kind "free".
 - Every object in the survey must appear exactly once, with the same id. The survey's x_m, z_m, base_y_m are in this same frame: use them as the position unless the footage clearly contradicts them, and refine only when you can justify it.
@@ -33,8 +35,21 @@ ${CONVENTIONS}`;
     context: ["ROOM SURVEY:\n" + JSON.stringify(description)],
   });
   // Doorways always get a working door, even if the model left it out.
-  const { scene, added } = ensureDoors(generated);
+  // ...unless the survey says the doorway is an open threshold.
+  const thresholds = new Set(description.room.openings.filter((o) => o.kind === "door" && o.has_door_leaf === false).map((o) => o.wall));
+  const { scene, added } = ensureDoors(generated, thresholds);
   normalizeColors(scene);
+  // Decor is purely visual: if Argon marked something decor and also gave it physics or an articulation, trust decor.
+  for (const o of scene.objects) if (o.decor) { delete o.articulation; delete o.physics; scene.interactions = scene.interactions.filter((i) => i.target !== o.id); }
+  // Facing is judged on Argon's own geometry (what touches a wall there), before growing or nudging moves things off the walls.
+  const turned = snapFacing(scene);
+  if (turned.length) console.log(`turned to face into the room (back to the wall): ${turned.join(", ")}`);
+  const grown = fitRoom(scene);
+  if (grown > 1) console.log(`room grown x${grown.toFixed(2)} so the furniture fits`);
+  const nudged = resolveLayout(scene);
+  if (nudged.length) console.log(`moved to clear overlaps/doors: ${nudged.join(", ")}`);
+  const flipped = fixDoorSwing(scene);
+  if (flipped.length) console.log(`door swing flipped (furniture in the way): ${flipped.join(", ")}`);
   const problems = checkScene(scene);
   if (added.length) console.log(`added doors: ${added.join(", ")}`);
   const missing = description.objects.map((o) => o.id).filter((id) => !scene.objects.some((o) => o.id === id));
@@ -55,13 +70,260 @@ export function checkLayout(description: Description, scene: Scene, tolerance = 
   return out;
 }
 
-/** Argon sometimes writes hex colours without the leading '#'; fix it here instead of spending a loop iteration on it. */
+const NAMED: Record<string, string> = {
+  white: "#ebebeb", black: "#1a1a1a", charcoal: "#36393d", gray: "#8a8d91", grey: "#8a8d91", lightgray: "#c9cbce", lightgrey: "#c9cbce", darkgray: "#4a4d51", darkgrey: "#4a4d51",
+  silver: "#b8bbbf", beige: "#d8cdb6", cream: "#efe6d0", ivory: "#eee8d8", tan: "#c9a46e", brown: "#6b4a2f", darkbrown: "#3e2a1c", walnut: "#5a3d28", oak: "#b88a52",
+  navy: "#1d2a44", blue: "#3b6fb5", teal: "#3c7f86", green: "#4f8a4e", olive: "#6b6b3a", red: "#b5392f", orange: "#d9822b", yellow: "#e2c14a", gold: "#c9a227", pink: "#d9a0b0", purple: "#6e4d8c",
+  chrome: "#c4c7cb", steel: "#9aa0a6", aluminum: "#bcc0c4", aluminium: "#bcc0c4",
+};
+
+/** Colour as a safe "#rrggbb": fixes missing '#', maps colour words, caps near-white (pure white blows out under bloom). Unknown values return null. */
+export function toHex(v: string): string | null {
+  const t = v.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  let hex: string | null = /^[0-9a-f]{3,8}$/i.test(t) ? `#${t}` : /^#[0-9a-f]{3,8}$/i.test(t) ? t : (NAMED[t] ?? null);
+  if (!hex) return null;
+  if (hex.length === 4) hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
+  const k = Math.min(1, 215 / Math.max(r, g, b, 1));
+  return k < 1 ? `#${[r, g, b].map((c) => Math.round(c * k).toString(16).padStart(2, "0")).join("")}` : hex;
+}
+
+/** Argon writes colours as words ("charcoal"), without '#', or pure white; fix it here instead of spending a loop iteration on it. */
 export function normalizeColors(node: unknown): void {
   if (Array.isArray(node)) return node.forEach(normalizeColors);
   if (!node || typeof node !== "object") return;
   const o = node as Record<string, unknown>;
   for (const [k, v] of Object.entries(o)) {
-    if (/color$/i.test(k) && typeof v === "string" && /^[0-9a-f]{3,8}$/i.test(v)) o[k] = `#${v}`;
-    else normalizeColors(v);
+    if (/colou?r$/i.test(k) && typeof v === "string") {
+      const hex = toHex(v) ?? toHex(repairColour(v));
+      if (hex) o[k] = hex;
+      else delete o[k]; // unknown word: let the viewer pick the material's default
+    } else normalizeColors(v);
   }
+}
+
+/**
+ * A hinged door that would sweep through furniture opens the other way instead (booth doors open
+ * out into the corridor). Returns ids of the doors that were flipped. Only for vertical hinge axes.
+ */
+export function fixDoorSwing(scene: Scene, margin = 0.05): string[] {
+  const flipped: string[] = [];
+  const blockers = scene.objects.filter((o) => !o.decor && o.type !== "door");
+  for (const d of scene.objects) {
+    const a = d.articulation;
+    if (!isRoomDoor(d) || a?.kind !== "hinge" || a.axis[0] !== 0 || a.axis[2] !== 0 || a.axis[1] === 0) continue;
+    const hits = (sign: number) => {
+      const full = sign * Math.max(Math.abs(a.range[0]), Math.abs(a.range[1]));
+      const len = d.size[0];
+      const vx = (a.pivot[0] > 0 ? -1 : 1) * len;
+      let n = 0;
+      for (const f of [0.35, 0.7, 1]) {
+        const ang = full * f;
+        for (const t of [0.2, 0.4, 0.6, 0.8, 1]) {
+          // point on the open panel, door-local then world (three.js rotation about y)
+          const lx = vx * t, lz = 0;
+          const px = a.pivot[0] + lx * Math.cos(ang) + lz * Math.sin(ang);
+          const pz = a.pivot[2] - lx * Math.sin(ang) + lz * Math.cos(ang);
+          const c = Math.cos(d.rotationY), s = Math.sin(d.rotationY);
+          const wx = d.position[0] + px * c + pz * s;
+          const wz = d.position[2] - px * s + pz * c;
+          for (const o of blockers) {
+            const dx = wx - o.position[0], dz = wz - o.position[2];
+            const oc = Math.cos(o.rotationY), os = Math.sin(o.rotationY);
+            const ox = dx * oc - dz * os, oz = dx * os + dz * oc;
+            if (Math.abs(ox) < o.size[0] / 2 + margin && Math.abs(oz) < o.size[2] / 2 + margin && o.position[1] < 1.8) n++;
+          }
+        }
+      }
+      return n;
+    };
+    const dir = Math.abs(a.range[1]) >= Math.abs(a.range[0]) ? Math.sign(a.range[1]) || 1 : Math.sign(a.range[0]) || 1;
+    if (hits(dir) > 0 && hits(-dir) < hits(dir)) {
+      a.range = [-a.range[0], -a.range[1]];
+      flipped.push(d.id);
+    }
+  }
+  return flipped;
+}
+
+/** Argon writes colours as "e5e4df", "rgb(230,231,226)" or even a mangled markdown link; recover a #rrggbb when there is one. */
+export function repairColour(v: string): string {
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v;
+  if (/^[0-9a-f]{3,8}$/i.test(v)) return `#${v}`;
+  const hex = /#([0-9a-f]{6})\b/i.exec(v);
+  if (hex) return `#${hex[1]}`;
+  const rgb = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i.exec(v);
+  if (rgb) return "#" + [1, 2, 3].map((i) => Math.min(255, Number(rgb[i])).toString(16).padStart(2, "0")).join("");
+  return v;
+}
+
+/**
+ * Pushes objects out of each other and out of the door's walking zone, and back inside the room.
+ * The lighter / smaller object moves (chairs before tables), by the smallest distance that separates them.
+ * Whatever cannot be resolved stays and is reported by checkScene. Returns ids that moved.
+ */
+export function resolveLayout(scene: Scene, passes = 12): string[] {
+  const moved = new Set<string>();
+  if (checkPhysical(scene).length === 0) return []; // already valid: leave it alone
+  const riders = ridersByParent(scene);
+  const start = new Map(scene.objects.map((o) => [o.id, [o.position[0], o.position[2]] as [number, number]]));
+  const solids = scene.objects.filter((o) => !o.decor && !["rug", "door", "drawer"].includes(o.type));
+  const rect = (o: Scene["objects"][number]) => ({ x: o.position[0], z: o.position[2], hx: o.size[0] / 2, hz: o.size[2] / 2, rot: o.rotationY });
+  const weight = (o: Scene["objects"][number]) => (o.articulation?.kind === "free" || o.physics?.body === "dynamic" ? 0 : 1) * 1000 + o.size[0] * o.size[2];
+  const clamp = (o: Scene["objects"][number]) => {
+    const r = rect(o), c = Math.abs(Math.cos(r.rot)), sn = Math.abs(Math.sin(r.rot));
+    const rx = r.hx * c + r.hz * sn, rz = r.hx * sn + r.hz * c;
+    const lx = Math.max(0, scene.room.width / 2 - rx), lz = Math.max(0, scene.room.depth / 2 - rz);
+    o.position[0] = Math.max(-lx, Math.min(lx, o.position[0]));
+    o.position[2] = Math.max(-lz, Math.min(lz, o.position[2]));
+  };
+  for (let pass = 0; pass < passes; pass++) {
+    let changed = false;
+    for (let i = 0; i < solids.length; i++) {
+      for (let j = i + 1; j < solids.length; j++) {
+        const [a, b] = [solids[i], solids[j]];
+        const lo = Math.max(a.position[1], b.position[1]), hi = Math.min(a.position[1] + a.size[1], b.position[1] + b.size[1]);
+        if (hi - lo < 0.05) continue;
+        const sep = separation(rect(a), rect(b));
+        if (!sep || sep.depth <= 0.1) continue;
+        const [fixed, mover, sgn] = weight(a) >= weight(b) ? [a, b, 1] : [b, a, -1];
+        mover.position[0] += sgn * sep.dx * (sep.depth - 0.05);
+        mover.position[2] += sgn * sep.dz * (sep.depth - 0.05);
+        void fixed;
+        moved.add(mover.id);
+        changed = true;
+      }
+    }
+    for (const d of scene.objects.filter(isRoomDoor)) {
+      for (const o of solids) {
+        if (o.position[1] > 1.8) continue;
+        const sep = separation(doorZone(d), rect(o));
+        if (sep && sep.depth > 0.02) { o.position[0] += sep.dx * (sep.depth + 0.01); o.position[2] += sep.dz * (sep.depth + 0.01); moved.add(o.id); changed = true; }
+      }
+    }
+    solids.forEach(clamp);
+    if (!changed) break;
+  }
+  // Whatever rests on a piece of furniture travels with it.
+  for (const [parent, ids] of riders) {
+    const p = scene.objects.find((o) => o.id === parent)!;
+    const [x0, z0] = start.get(parent)!;
+    for (const id of ids) {
+      const r = scene.objects.find((o) => o.id === id)!;
+      r.position[0] += p.position[0] - x0;
+      r.position[2] += p.position[2] - z0;
+    }
+  }
+  return [...moved];
+}
+
+/**
+ * Argon's room size is a guess from footage that rarely shows the whole room, and the door/furniture sizes are the
+ * reliable scale. If the layout is physically impossible (overlaps, blocked door), grow the room and the positions
+ * together by the smallest factor (up to +60%) that makes it valid. Things touching a wall keep touching it.
+ * Returns the factor used (1 = unchanged).
+ */
+export function fitRoom(scene: Scene, max = 1.6, step = 0.05): number {
+  const base = structuredClone(scene);
+  const bad = (sc: Scene) => checkPhysical(sc).length;
+  if (bad(scene) === 0) return 1;
+  let best = { k: 1, n: bad(scene) };
+  for (let k = 1 + step; k <= max + 1e-9; k += step) {
+    const trial = scaledRoom(base, k);
+    resolveLayout(trial); // a bigger room that still needs a small nudge is better than a much bigger one
+    const n = bad(trial);
+    if (n < best.n) best = { k, n };
+    if (n === 0) break;
+  }
+  if (best.k === 1) return 1;
+  const out = scaledRoom(base, best.k);
+  resolveLayout(out);
+  scene.room = out.room;
+  scene.objects = out.objects;
+  scene.camera_path = out.camera_path;
+  return best.k;
+}
+
+function scaledRoom(src: Scene, k: number): Scene {
+  const sc = structuredClone(src);
+  const { width: W, depth: D } = src.room;
+  sc.room.width = W * k;
+  sc.room.depth = D * k;
+  sc.room.openings = src.room.openings.map((o) => ({ ...o, offset: o.offset * k }));
+  for (const o of sc.objects) {
+    const c = Math.abs(Math.cos(o.rotationY)), s = Math.abs(Math.sin(o.rotationY));
+    const hx = (o.size[0] * c + o.size[2] * s) / 2, hz = (o.size[0] * s + o.size[2] * c) / 2;
+    const [x, z] = o.position;
+    // Doors and wall-mounted things stay on their wall; everything else scales with the room (their wall gaps grow a little).
+    const mounted = o.type === "door" || Math.min(...o.size) < 0.1;
+    const place = (pos: number, half: number, ext: number, kext: number) => {
+      if (mounted) {
+        const gapLo = Math.max(0, pos - half + ext / 2), gapHi = Math.max(0, ext / 2 - (pos + half));
+        if (gapLo < 0.1) return -kext / 2 + half + gapLo;
+        if (gapHi < 0.1) return kext / 2 - half - gapHi;
+      }
+      return pos * (kext / ext);
+    };
+    o.position = [place(x, hx, W, W * k), o.position[1], place(z, hz, D, D * k)];
+  }
+  // Things resting on furniture keep their offset on it instead of scaling away from it.
+  for (const [parent, ids] of ridersByParent(src)) {
+    const op = src.objects.find((o) => o.id === parent)!, np = sc.objects.find((o) => o.id === parent)!;
+    for (const id of ids) {
+      const o = src.objects.find((x) => x.id === id)!, n = sc.objects.find((x) => x.id === id)!;
+      n.position = [np.position[0] + (o.position[0] - op.position[0]), n.position[1], np.position[2] + (o.position[2] - op.position[2])];
+    }
+  }
+  sc.camera_path = src.camera_path.map((c) => ({ ...c, position: [c.position[0] * k, c.position[1], c.position[2] * k], lookAt: [c.lookAt[0] * k, c.lookAt[1], c.lookAt[2] * k] }));
+  return sc;
+}
+
+const BACKED = new Set(["chair", "sofa", "shelf", "cabinet", "bed"]);
+const angleDiff = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+
+/**
+ * Furniture with a back that stands against a wall faces into the room. Argon's angle guesses are often a few tens of
+ * degrees off; when the object is within `band` of a wall and within `tolerance` of facing away from it, snap it exactly.
+ * Rotation about y: local +z points to (sin r, cos r), so facing south (+z) is 0, east (+x) is PI/2, north PI, west -PI/2.
+ * Returns ids that were turned.
+ */
+export function snapFacing(scene: Scene, band = 0.25, tolerance = (70 * Math.PI) / 180): string[] {
+  const { width: W, depth: D } = scene.room;
+  const turned: string[] = [];
+  for (const o of scene.objects) {
+    if (o.decor || !BACKED.has(o.type) || o.articulation?.kind === "hinge") continue;
+    const c = Math.abs(Math.cos(o.rotationY)), s = Math.abs(Math.sin(o.rotationY));
+    const hx = (o.size[0] * c + o.size[2] * s) / 2, hz = (o.size[0] * s + o.size[2] * c) / 2;
+    // [gap to the wall, rotation that faces away from it]
+    const walls: [number, number][] = [
+      [o.position[2] - hz + D / 2, 0],               // north wall: face south
+      [D / 2 - (o.position[2] + hz), Math.PI],       // south wall: face north
+      [W / 2 - (o.position[0] + hx), -Math.PI / 2],  // east wall: face west
+      [o.position[0] - hx + W / 2, Math.PI / 2],     // west wall: face east
+    ];
+    const [gap, target] = walls.reduce((a, b) => (b[0] < a[0] ? b : a));
+    if (gap < band && angleDiff(o.rotationY, target) < tolerance && angleDiff(o.rotationY, target) > 0.02) {
+      o.rotationY = target;
+      turned.push(o.id);
+    }
+  }
+  return turned;
+}
+
+/** For each piece of furniture, the objects resting on it (a laptop on a table, a jacket on a chair seat): their base is within its height and their centre is over it. */
+export function ridersByParent(scene: Scene): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const o of scene.objects) {
+    if (o.position[1] < 0.2 || o.type === "door") continue;
+    for (const p of scene.objects) {
+      if (p === o || p.type === "door" || p.type === "drawer" || o.position[1] < p.position[1] + 0.15 || o.position[1] > p.position[1] + p.size[1] + 0.12) continue;
+      const dx = o.position[0] - p.position[0], dz = o.position[2] - p.position[2];
+      const lx = dx * Math.cos(p.rotationY) - dz * Math.sin(p.rotationY), lz = dx * Math.sin(p.rotationY) + dz * Math.cos(p.rotationY);
+      if (Math.abs(lx) <= p.size[0] / 2 + 0.05 && Math.abs(lz) <= p.size[2] / 2 + 0.05) {
+        out.set(p.id, [...(out.get(p.id) ?? []), o.id]);
+        break;
+      }
+    }
+  }
+  return out;
 }

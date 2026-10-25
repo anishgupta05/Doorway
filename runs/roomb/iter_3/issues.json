@@ -1,0 +1,12 @@
+[
+  {
+    "objectId": "chair_1",
+    "message": "The chair is modelled with blocky rectangular parts instead of a curved shell seat and backrest, and its backrest should be angled slightly closer to the east wall.",
+    "severity": "low"
+  },
+  {
+    "objectId": "table_1",
+    "message": "The tabletop is slightly too large (about 0.1 m too wide) and is missing the laptop and bottle resting on top of it.",
+    "severity": "low"
+  }
+]

@@ -1,0 +1,144 @@
+{
+  "id": "roomb",
+  "title": "Compact Office Phone Booth",
+  "video": "video.mp4",
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.7,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from the video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": "iter_0/branch_0/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 0,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Fix all placement and orientation issues by rotating and shifting chair_1 toward the east wall to face table_1, while angling table_1 and offsetting its support post.",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": "iter_1/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.7,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Reshape chair_1 into a rounded tub-style armchair using cylindrical geometry and rotate it clockwise toward the southwest.",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": "iter_1/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Combine rounded tub-chair geometry, east-wall positioning, and diagonal alignment between chair_1 and table_1 with an offset table post.",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": "iter_1/branch_2/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 3,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Angle the armchair backrest closer to the east wall, shift it slightly east, and change its blocky box parts to cylinders for a rounder shell appearance.",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": "iter_2/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Reduce the laptop stand tabletop width by 0.1 m to match the footage and adjust the armchair orientation towards the east wall.",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": "iter_2/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Refine both furniture pieces by narrowing the table, rounding the chair seat cushion into a cylinder, and rotating the chair closer to the east wall.",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": "iter_2/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_2/branch_3/scene.json",
+          "thumb": "iter_2/branch_3/thumb.png"
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 3,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Angle the armchair backrest closer to the east wall, shift it slightly east, and change its blocky box parts to cylinders for a rounder shell appearance.",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": "iter_3/branch_0/thumb.png"
+        },
+        {
+          "i": 1,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Reduce the laptop stand tabletop width by 0.1 m to match the footage and adjust the armchair orientation towards the east wall.",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": "iter_3/branch_1/thumb.png"
+        },
+        {
+          "i": 2,
+          "score": 0.75,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Refine both furniture pieces by narrowing the table, rounding the chair seat cushion into a cylinder, and rotating the chair closer to the east wall.",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": "iter_3/branch_2/thumb.png"
+        },
+        {
+          "i": 3,
+          "score": 0.85,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "No branch beat the current scene: keep it",
+          "scene": "iter_3/branch_3/scene.json",
+          "thumb": "iter_3/branch_3/thumb.png"
+        }
+      ]
+    }
+  ]
+}

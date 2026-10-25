@@ -1,5 +1,6 @@
 // Give the robot a job: pick what it should open or switch on (or where to go), in order,
 // and run it. Each step shows its route length and live status.
+import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Scene } from "@doorway/schema";
 import { useApp } from "../store";
@@ -51,6 +52,8 @@ export function MissionPanel({ scene, actions, mission }: { scene: Scene; action
         <div className="text-sm font-medium">Robot</div>
         <RobotTabs />
       </div>
+
+      <Ask scene={scene} actions={actions} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
         {groups.map((g) => {
@@ -144,5 +147,64 @@ export function MissionPanel({ scene, actions, mission }: { scene: Scene; action
         )}
       </div>
     </motion.div>
+  );
+}
+
+/** Plain-language job: Argon turns the sentence into steps from this room's actions, then the robot runs them. */
+function Ask({ scene, actions }: { scene: Scene; actions: Action[] }) {
+  const apiOk = useApp((s) => s.apiOk);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [reply, setReply] = useState<string | null>(null);
+  if (!apiOk) return null;
+  const send = async () => {
+    if (!text.trim() || busy) return;
+    setBusy(true);
+    setReply(null);
+    sfx.tick();
+    try {
+      const r = await fetch("/api/command", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          room: scene.name,
+          actions: actions.map(({ id, label, group }) => ({ id, label, group })),
+          objects: scene.objects.filter((o) => !o.decor).map((o) => ({ id: o.id, label: o.label ?? o.type, position: o.position })),
+        }),
+      });
+      const out = (await r.json()) as { steps?: string[]; reply?: string; error?: string };
+      if (!r.ok || !out.steps) throw new Error(out.error ?? "no plan");
+      setReply(out.reply ?? null);
+      // Queue the steps and set off straight away.
+      useApp.setState({ missionQueue: out.steps, joints: {}, mission: out.steps.length ? { key: `${Date.now()}`, current: 0, status: out.steps.map(() => "pending") } : null });
+      sfx.whoosh();
+    } catch {
+      setReply("Sorry, I couldn't work that out. Try naming what to open.");
+      sfx.reject();
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="border-y border-line bg-panel/60 px-4 py-3">
+      <div className="flex gap-2">
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            e.stopPropagation(); // typing must not trigger the demo hotkeys
+            if (e.key === "Enter") void send();
+          }}
+          placeholder="Tell the robot what to do…"
+          className="min-w-0 flex-1 rounded-lg border border-line bg-ink px-3 py-2 text-[13px] text-fg outline-none placeholder:text-dim focus:border-accent/60"
+        />
+        <button onClick={() => void send()} disabled={busy || !text.trim()} className="rounded-lg bg-accent px-3 text-[12.5px] font-medium text-ink disabled:opacity-40">
+          {busy ? "Thinking…" : "Go"}
+        </button>
+      </div>
+      {reply && <div className="mt-2 text-[12.5px] text-muted">🤖 {reply}</div>}
+      {!reply && !busy && <div className="mt-1.5 font-mono text-[10px] text-dim">e.g. "open the top-left locker, then turn on the printer"</div>}
+    </div>
   );
 }

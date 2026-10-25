@@ -71,6 +71,8 @@ export interface JsonCall<T extends z.ZodType> {
   video?: UploadedVideo;
   /** Extra text parts, e.g. the current scene JSON. */
   context?: string[];
+  /** Inline images (e.g. rendered frames), each preceded by its caption. */
+  images?: { caption: string; mimeType: string; data: Buffer }[];
   temperature?: number;
 }
 
@@ -79,10 +81,15 @@ export async function callJson<T extends z.ZodType>(c: JsonCall<T>): Promise<z.i
   const jsonSchema = z.toJSONSchema(c.schema, { target: "draft-7" }) as Record<string, unknown>;
   delete jsonSchema.$schema;
   flattenTuples(jsonSchema);
-  const key = sha(JSON.stringify({ m: c.model, p: c.prompt, s: jsonSchema, v: c.video?.hash, x: c.context, t: c.temperature ?? 0 }));
+  const imgs = (c.images ?? []).map((i) => ({ c: i.caption, h: sha(i.data) }));
+  const key = sha(JSON.stringify({ m: c.model, p: c.prompt, s: jsonSchema, v: c.video?.hash, x: c.context, i: imgs, t: c.temperature ?? 0 }));
   const parts: Part[] = [];
   if (c.video) parts.push(createPartFromUri(c.video.uri, c.video.mimeType));
   for (const x of c.context ?? []) parts.push({ text: x });
+  for (const img of c.images ?? []) {
+    parts.push({ text: img.caption });
+    parts.push({ inlineData: { mimeType: img.mimeType, data: img.data.toString("base64") } });
+  }
   parts.push({ text: c.prompt });
 
   const run = async (extra?: string) => {

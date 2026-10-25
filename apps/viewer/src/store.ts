@@ -17,6 +17,8 @@ type State = {
   joints: Record<string, number>;
   /** Accumulated pushes for free objects, world-space [dx, dz]. */
   pushes: Record<string, [number, number]>;
+  /** Extra yaw (radians) for pushed objects, e.g. a chair the sim robot turned while pushing it. */
+  turns: Record<string, number>;
   hovered: string | null;
   /** Bumped on reset so components can snap back. */
   resetNonce: number;
@@ -37,6 +39,9 @@ type State = {
   robotTask: string | null;
   robotStep: 0 | 1 | 2 | 3;
   robotDone: Record<string, boolean>;
+  /** A physics-trained robot task being replayed in the room (runs/<run>/tasks/<task>/), and a nonce to restart it. */
+  trained: { run: string; task: string } | null;
+  trainedNonce: number;
   /** Overview: v0 and the final room side by side. */
   split: boolean;
   uploadOpen: boolean;
@@ -89,6 +94,7 @@ export const useApp = create<State>((set) => ({
   iter: null,
   joints: {},
   pushes: {},
+  turns: {},
   hovered: null,
   resetNonce: 0,
   videoTime: 0,
@@ -103,6 +109,8 @@ export const useApp = create<State>((set) => ({
   robotTask: null,
   robotStep: 0,
   robotDone: {},
+  trained: null,
+  trainedNonce: 0,
   split: false,
   uploadOpen: false,
   roomsOpen: false,
@@ -132,7 +140,7 @@ export const useApp = create<State>((set) => ({
     }),
   setHovered: (hovered) => set({ hovered }),
   setVideoTime: (videoTime) => set({ videoTime }),
-  reset: () => set((s) => ({ joints: {}, pushes: {}, resetNonce: s.resetNonce + 1 })),
+  reset: () => set((s) => ({ joints: {}, pushes: {}, turns: {}, resetNonce: s.resetNonce + 1 })),
   // Going dark also switches lamps on, so night mode lands with a moment.
   toggleNight: () => set((s) => ({ night: !s.night, joints: !s.night ? { ...s.joints, ...Object.fromEntries(s.lampIds.map((id) => [id, 1])) } : s.joints })),
   toggleTests: () => set((s) => ({ tests: !s.tests })),
@@ -151,3 +159,6 @@ export function iterFor(version: Version, manifest: RunManifest | undefined, ove
   if (override !== null) return Math.min(override, manifest.iterations.length - 1);
   return version === "v0" ? 0 : manifest.iterations.length - 1;
 }
+
+// Dev only: lets test scripts read the store (e.g. scripts/train-test.ts checks the door swings).
+if (import.meta.env.DEV) (window as unknown as { __app: typeof useApp }).__app = useApp;

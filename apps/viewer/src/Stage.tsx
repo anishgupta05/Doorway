@@ -19,6 +19,8 @@ import type { Issue } from "@doorway/schema";
 import { useApp } from "./store";
 import { RobotSim } from "./robot/RobotSim";
 import type { useRobotTask } from "./robot/useRobotTask";
+import { TrainedReplay } from "./robot/TrainedReplay";
+import type { SimSpec, Trajectory } from "./data/tasks";
 import { sfx } from "./sfx";
 
 export type SplitPair = { before: Scene; after: Scene; beforeScore?: number; afterScore?: number; iterations: number };
@@ -31,6 +33,7 @@ export function Stage({
   k = null,
   split = null,
   robot = null,
+  trained = null,
 }: {
   scene: Scene | null;
   prevScene: Scene | null;
@@ -39,6 +42,8 @@ export function Stage({
   k?: number | null;
   split?: SplitPair | null;
   robot?: ReturnType<typeof useRobotTask> | null;
+  /** A passing physics-trained task to replay (shown instead of the planner robot). */
+  trained?: { traj: Trajectory; spec: SimSpec | null } | null;
 }) {
   const mode = useApp((s) => s.mode);
   const tests = useApp((s) => s.tests);
@@ -53,7 +58,8 @@ export function Stage({
   const showFps = qs.has("perf");
   const forcedDpr = Number(qs.get("dpr")) || null;
   const splitOn = useApp((s) => s.split) && !!split && mode === "overview";
-  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn;
+  const trainedOn = !!trained && mode === "overview" && !splitOn;
+  const robotOn = !!robot?.sim && !!robot.task && mode === "overview" && !splitOn && !trainedOn;
   return (
     <Canvas
       shadows={qs.get("off")?.includes("shadows") ? false : "percentage"}
@@ -75,10 +81,10 @@ export function Stage({
             {splitOn ? <SplitRooms pair={split!} /> : <SceneView scene={scene} cutaway={outside} />}
             <Effects quality={quality} />
           </Selection>
-          {mode === "overview" && !tests && !renderMode && !splitOn && !building && !robotOn && <CameraTrail keys={scene.camera_path} autoplay />}
+          {mode === "overview" && !tests && !renderMode && !splitOn && !building && !robotOn && !trainedOn && <CameraTrail keys={scene.camera_path} autoplay />}
           {/* Always mounted (see IssueMarkers); emptied when the current view shouldn't show it. */}
           {!renderMode && (() => {
-            const show = (mode === "compare" || (mode === "overview" && !tests && !building && !robotOn)) && !splitOn;
+            const show = (mode === "compare" || (mode === "overview" && !tests && !building && !robotOn && !trainedOn)) && !splitOn;
             return <IssueMarkers scene={scene} issues={show ? issues : []} fixed={show ? fixed : []} k={k} />;
           })()}
           {mode === "convergence" && prevScene && !building && !preview && <DiffGhosts prev={prevScene} scene={scene} />}
@@ -97,6 +103,7 @@ export function Stage({
               }}
             />
           )}
+          {trainedOn && <TrainedReplay scene={scene} traj={trained!.traj} spec={trained!.spec} />}
           {mode === "walk" && <Robot scene={scene} />}
           {outside && <OverviewRig room={scene.room} wide={splitOn} />}
           {mode === "compare" && <CompareRig scene={scene} />}

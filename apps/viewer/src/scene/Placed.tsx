@@ -62,7 +62,7 @@ export function Placed({ obj, children }: { obj: SceneObject; children: ReactNod
     g.position.x = THREE.MathUtils.damp(g.position.x, tx, 6, dt);
     g.position.y = THREE.MathUtils.damp(g.position.y, ty, 6, dt);
     g.position.z = THREE.MathUtils.damp(g.position.z, tz, 6, dt);
-    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, obj.rotationY, 6, dt);
+    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, obj.rotationY + (s.turns[obj.id] ?? 0), 6, dt);
 
     const sc = scale.current;
     sc.x = THREE.MathUtils.damp(sc.x, 1, 7, dt);

@@ -3,6 +3,8 @@ import { AnimatePresence } from "framer-motion";
 import { Stage, type SplitPair } from "./Stage";
 import { useRobotTask } from "./robot/useRobotTask";
 import { RobotPanel } from "./robot/RobotPanel";
+import { TrainPanel } from "./robot/TrainPanel";
+import { useTrained } from "./robot/useTrained";
 import { loadScene, useCurrentScene, useRunData } from "./data/runs";
 import { useHotkeys } from "./hotkeys";
 import { useApp } from "./store";
@@ -26,6 +28,12 @@ export function App() {
   const robotOpen = useApp((s) => s.robotOpen);
   const robot = useRobotTask(split?.before ?? null, split?.after ?? null);
   const mode = useApp((s) => s.mode);
+  const trained = useTrained(runId);
+  // Trained tasks run in the verified room, so replaying one shows the latest version.
+  const replay = robotOpen && mode === "overview" && trained.replay ? trained.replay : null;
+  useEffect(() => {
+    if (replay && useApp.getState().version === "v0") useApp.getState().setVersion("latest");
+  }, [replay]);
   const wipe = useApp((s) => s.wipe);
   const playing = useApp((s) => s.comparePlaying);
   const building = useApp((s) => s.buildCount !== null);
@@ -54,7 +62,7 @@ export function App() {
     <div className="relative isolate h-full w-full">
       {mode === "compare" && scene && <CompareView scene={scene} manifest={manifest} runId={runId} k={k} issues={issues} playing={playing} />}
       <div className="absolute inset-0" style={mode === "compare" ? { clipPath: `inset(0 0 0 ${wipe * 100}%)` } : undefined}>
-        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={robotOpen ? robot : null} />
+        <Stage scene={scene} prevScene={prevScene} issues={issues} fixed={fixed} k={k} split={split} robot={robotOpen ? robot : null} trained={replay} />
       </div>
       <TopBar current={current} />
       {scene && <Caption scene={scene} manifest={manifest} />}
@@ -64,6 +72,7 @@ export function App() {
         {building && scene && <BuildPanel key="build" scene={scene} />}
         {exportOpen && scene && <ExportPanel key="export" scene={scene} />}
         {robotOpen && mode === "overview" && <RobotPanel key="robot" t={robot} />}
+        {robotOpen && mode === "overview" && scene && runId && <TrainPanel key="train" run={runId} scene={scene} t={trained} />}
         {uploadOpen && <UploadPanel key="upload" />}
         {roomsOpen && <RoomsPanel key="rooms" />}
         {building2 && <BuildProgress key="progress" building={building2} />}

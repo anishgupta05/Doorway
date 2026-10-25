@@ -42,7 +42,8 @@ Rules:
 - Paths contain no spaces: "/objects/3/position/0", never "/ objects ...".
 - If an issue says an interaction test fails (a door hits a wall, a drawer is blocked), fix that first: flip the hinge side/pivot, shrink the range, or move what is in the way.
 - Keep objects inside the room and off each other. Positions are the footprint centre at the base.
-- The ${n} repairs must take different approaches, e.g. (a) fix only the single worst issue precisely, (b) fix all position/orientation issues together, (c) fix size/colour/material issues. Do not submit near-duplicates.
+- Keep every repair SMALL: touch at most 3 objects, and move an object by at most 0.4 m unless an issue says it is in the wrong place entirely. A repair that rearranges the whole room is rejected. The room is small: moving one object into another's space, or into the 0.45 m clear zone in front of a door, is rejected too (tiny overlaps are nudged apart automatically).
+- The ${n} repairs must take different approaches: the first fixes only the single worst issue precisely; each other one targets a DIFFERENT issue (different object) from the list. Do not submit near-duplicates, and do not bundle every issue into one patch.
 - Do not repeat anything listed under FAILED ATTEMPTS.`;
 
 export async function proposeFixes(

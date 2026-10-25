@@ -38,6 +38,8 @@ Rules:
 - Never remove an object and never remove an articulation, physics or interactions entry. Do not change object ids.
 - To add a missing object, use { "op": "add", "path": "/objects/-", "value_json": "<full object JSON>" } with every field the existing objects have (id, type, position, rotationY, size, color as "#rrggbb", ...). "type" MUST be one of: ${ObjectType.options.join(", ")}. Small items with no matching type (laptop, jacket, can, sandals) use "other" with a descriptive label. Add its interaction too if it can be used.
 - Whiteboards, murals, posters, windows and brick are wall SURFACES, not objects: change a wall colour or material or add a thin (<= 0.1 m) wall-mounted panel under 2 m long. Never add anything longer than 75% of the room or taller than the room.
+- Objects with "decor": true are purely visual: never add or change "articulation" or "physics" on them. To make something usable or movable, leave decor false (do not flip it to true on an object that has articulation or physics).
+- Paths contain no spaces: "/objects/3/position/0", never "/ objects ...".
 - If an issue says an interaction test fails (a door hits a wall, a drawer is blocked), fix that first: flip the hinge side/pivot, shrink the range, or move what is in the way.
 - Keep objects inside the room and off each other. Positions are the footprint centre at the base.
 - The ${n} repairs must take different approaches, e.g. (a) fix only the single worst issue precisely, (b) fix all position/orientation issues together, (c) fix size/colour/material issues. Do not submit near-duplicates.

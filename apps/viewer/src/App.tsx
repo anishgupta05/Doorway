@@ -17,6 +17,7 @@ import { UploadPanel } from "./views/UploadPanel";
 import { RoomsPanel } from "./views/RoomsPanel";
 import { BuildProgress } from "./views/BuildProgress";
 import { EmptyState } from "./ui/EmptyState";
+import { ViewControls } from "./ui/ViewControls";
 
 export function App() {
   useRunData();
@@ -58,6 +59,7 @@ export function App() {
       </div>
       <TopBar current={current} />
       {scene && <Caption scene={scene} manifest={manifest} />}
+      <ViewControls />
       <Legend />
       <AnimatePresence>
         {mode === "convergence" && manifest && runId && <ConvergencePanel key="conv" manifest={manifest} runId={runId} k={k} />}

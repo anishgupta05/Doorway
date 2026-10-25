@@ -79,7 +79,7 @@ const loader = new THREE.TextureLoader();
 const texCache = {};
 function tex(name, srgb) {
   const k = name + srgb;
-  if (!texCache[k]) { const t = loader.load(`/apps/realism-trial/tex/${name}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 8; texCache[k] = t; }
+  if (!texCache[k]) { const t = loader.load(`/apps/realism-trial/tex/${name}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); texCache[k] = t; }
   return texCache[k];
 }
 function surface(set, repeatX, repeatY, color = "#ffffff", diffuse = true) {

@@ -1,0 +1,37 @@
+[
+  {
+    "objectId": "door_1",
+    "message": "Hinge is on the wrong side: door swings toward the wall",
+    "severity": "high"
+  },
+  {
+    "objectId": "lamp_1",
+    "message": "Desk lamp visible at 0:04 is missing",
+    "severity": "high"
+  },
+  {
+    "objectId": "desk_1",
+    "message": "Desk sits ~0.4 m too far from the west wall",
+    "severity": "medium"
+  },
+  {
+    "objectId": "shelf_1",
+    "message": "Bookshelf too short: ~1.4 m vs ~1.9 m in footage",
+    "severity": "medium"
+  },
+  {
+    "objectId": "chair_2",
+    "message": "Side chair ~0.7 m off and facing the wrong way",
+    "severity": "medium"
+  },
+  {
+    "objectId": "rug_1",
+    "message": "Rug footprint too small",
+    "severity": "low"
+  },
+  {
+    "objectId": "sofa_1",
+    "message": "Sofa color too blue: footage shows warm grey",
+    "severity": "low"
+  }
+]

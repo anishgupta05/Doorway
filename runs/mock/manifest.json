@@ -1,0 +1,160 @@
+{
+  "id": "mock",
+  "title": "Sample office",
+  "video": null,
+  "status": "done",
+  "iterations": [
+    {
+      "k": 0,
+      "selected": 0,
+      "issues": "iter_0/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.46,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "One-pass generation from video",
+          "scene": "iter_0/branch_0/scene.json",
+          "thumb": null
+        }
+      ]
+    },
+    {
+      "k": 1,
+      "selected": 1,
+      "issues": "iter_1/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.55,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Add lamp_1 on desk",
+          "scene": "iter_1/branch_0/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 1,
+          "score": 0.63,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Flip door_1 hinge to the left jamb; add lamp_1 on desk",
+          "scene": "iter_1/branch_1/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Hook: deleted chair_2",
+          "hypothesis": "Replace chair_2 + chair_1 with a single bench",
+          "scene": "iter_1/branch_2/scene.json",
+          "thumb": null
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "selected": 1,
+      "issues": "iter_2/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: door_1 no longer opens (range collapsed to 0)",
+          "hypothesis": "Re-fit door_1 to opening width",
+          "scene": "iter_2/branch_0/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 1,
+          "score": 0.76,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift desk group 0.4 m west; stretch shelf_1 to 1.9 m",
+          "scene": "iter_2/branch_1/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 2,
+          "score": 0.7,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Stretch shelf_1 to 1.9 m",
+          "scene": "iter_2/branch_2/scene.json",
+          "thumb": null
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "selected": 1,
+      "issues": "iter_3/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0.8,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Enlarge rug_1 to 2.2 × 1.5 m",
+          "scene": "iter_3/branch_0/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 1,
+          "score": 0.87,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Turn chair_2 toward the sofa and move it 0.7 m in; enlarge rug_1",
+          "scene": "iter_3/branch_1/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 2,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: chair_1 intersects desk_1 after push",
+          "hypothesis": "Tuck chair_1 under desk",
+          "scene": "iter_3/branch_2/scene.json",
+          "thumb": null
+        }
+      ]
+    },
+    {
+      "k": 4,
+      "selected": 1,
+      "issues": "iter_4/issues.json",
+      "branches": [
+        {
+          "i": 0,
+          "score": 0,
+          "verdict": "fail",
+          "reason": "Interaction test: drawer_1 no longer opens",
+          "hypothesis": "Merge drawer_1 into cabinet_1 geometry",
+          "scene": "iter_4/branch_0/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 1,
+          "score": 0.94,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Shift sofa_1 to warm grey #8c8f86",
+          "scene": "iter_4/branch_1/scene.json",
+          "thumb": null
+        },
+        {
+          "i": 2,
+          "score": 0.89,
+          "verdict": "pass",
+          "reason": null,
+          "hypothesis": "Retint walls slightly warmer",
+          "scene": "iter_4/branch_2/scene.json",
+          "thumb": null
+        }
+      ]
+    }
+  ]
+}

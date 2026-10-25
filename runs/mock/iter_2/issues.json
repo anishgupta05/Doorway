@@ -1,0 +1,17 @@
+[
+  {
+    "objectId": "chair_2",
+    "message": "Side chair ~0.7 m off and facing the wrong way",
+    "severity": "medium"
+  },
+  {
+    "objectId": "rug_1",
+    "message": "Rug footprint too small",
+    "severity": "low"
+  },
+  {
+    "objectId": "sofa_1",
+    "message": "Sofa color too blue: footage shows warm grey",
+    "severity": "low"
+  }
+]

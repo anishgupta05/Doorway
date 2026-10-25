@@ -1,6 +1,7 @@
 // Interaction-test view: runs each declared interaction in turn and draws what it
 // checks — the door's swing arc, the drawer's travel, the lamp's light, the chair's
 // push — then stamps a pass/fail badge measured from the live joint state.
+import { cap } from "../ui/plain";
 import { useEffect, useMemo, useState } from "react";
 import { Html, Line } from "@react-three/drei";
 import * as THREE from "three";
@@ -133,7 +134,7 @@ function TestGlyph({ o, lift, active, result }: { o: SceneObject; lift: number; 
           }`}
         >
           <span className={result ? (result.ok ? "text-accent" : "text-bad") : ""}>{result ? (result.ok ? "✓" : "✗") : active ? "…" : "○"}</span>
-          <span>{o.label ?? o.type}</span>
+          <span>{cap(o.label ?? o.type)}</span>
           {result && <span className="text-muted">· {result.text}</span>}
         </div>
       </Html>

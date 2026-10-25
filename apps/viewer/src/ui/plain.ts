@@ -24,7 +24,8 @@ const colorName = (hex: string) => {
   }
   return name;
 };
-const cap = (t: string) => t.replace(/^./, (c) => c.toUpperCase());
+/** Uppercase the first letter only: model labels like "grey upholstered armchair" read as names. */
+export const cap = (t: string) => t.replace(/^./, (c) => c.toUpperCase());
 
 /** One fix idea in everyday words. Extra ";"-separated changes collapse to "+ N more". */
 export const hypothesis = (t: string | null | undefined) => {

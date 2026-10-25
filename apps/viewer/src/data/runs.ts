@@ -37,9 +37,13 @@ export function useRunData() {
   const index = useApp((s) => s.index);
 
   useEffect(() => {
+    const want = new URLSearchParams(location.search).get("run");
     getJson("/runs/index.json")
-      .then((j) => setIndex(j as RunIndex))
-      .catch((e) => console.error("runs/index.json", e));
+      .then((j) => setIndex(want ? { ...(j as RunIndex), live: want } : (j as RunIndex)))
+      .catch((e) => {
+        console.error("runs/index.json", e);
+        useApp.setState({ loadError: true });
+      });
   }, [setIndex]);
 
   useEffect(() => {
@@ -51,11 +55,16 @@ export function useRunData() {
       for (const id of ids) {
         try {
           const m = RunManifest.parse(await getJson(runUrl(id, "manifest.json")));
+          useApp.setState({ loadError: false });
+          getJson(runUrl(id, "meta.json"))
+            .then((meta) => meta?.name && useApp.setState((s) => ({ names: { ...s.names, [id]: String(meta.name) } })))
+            .catch(() => {});
           const prev = useApp.getState().manifests[id];
           if (!prev || JSON.stringify(prev) !== JSON.stringify(m)) setManifest(id, m);
           running ||= m.status === "running";
         } catch (e) {
           console.error(`manifest ${id}`, e);
+          if (id === index.live) useApp.setState({ loadError: true });
         }
       }
       if (!stop && running) setTimeout(tick, 3000);

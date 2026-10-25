@@ -68,6 +68,7 @@ function ProceduralBody({ obj }: { obj: SceneObject }) {
     case "plant": return <Plant o={obj} />;
     case "monitor": return <Monitor o={obj} />;
     case "sofa": return <Sofa o={obj} />;
+    case "partition": return <Partition o={obj} />;
     default: return <RB s={obj.size} p={[0, obj.size[1] / 2, 0]} r={0.02} m={mainMat(obj)} />;
   }
 }
@@ -406,3 +407,22 @@ function Sofa({ o }: { o: SceneObject }) {
 }
 
 export const asV3 = (v: Vec3) => v as V3;
+
+/** An interior wall: painted like the room's walls, with skirting on both faces. */
+function Partition({ o }: { o: SceneObject }) {
+  const [w, h, d] = o.size;
+  const wall = material("paint", o.color ?? "#ece8e1");
+  const trim = material("paint", "#f4f2ed");
+  return (
+    <group>
+      <mesh position={[0, h / 2, 0]} material={wall} castShadow receiveShadow>
+        <boxGeometry args={[w, h, d]} />
+      </mesh>
+      {[1, -1].map((side) => (
+        <mesh key={side} position={[0, 0.04, side * (d / 2 + 0.006)]} material={trim} castShadow receiveShadow>
+          <boxGeometry args={[w, 0.08, 0.012]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}

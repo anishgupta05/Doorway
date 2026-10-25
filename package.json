@@ -7,12 +7,19 @@
     "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -p packages/schema --noEmit",
+    "typecheck": "tsc -p packages/schema --noEmit && tsc -p packages/export --noEmit && tsc -p apps/viewer --noEmit",
     "validate": "tsx scripts/validate.ts",
     "mock": "tsx scripts/make-mock-run.ts",
-    "test:patch": "tsx scripts/test-patch.ts"
+    "test:patch": "tsx scripts/test-patch.ts",
+    "dev": "npm run dev -w @doorway/viewer",
+    "demo": "npm run build -w @doorway/viewer && npm run preview -w @doorway/viewer",
+    "shot": "tsx scripts/shot.ts",
+    "thumbs": "tsx scripts/thumbs.ts",
+    "record-truth": "tsx scripts/record-truth.ts",
+    "export:mjcf": "tsx scripts/export-mjcf.ts"
   },
   "devDependencies": {
+    "playwright-core": "^1.64.1",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3"
   }

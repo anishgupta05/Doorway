@@ -214,6 +214,8 @@ schedule.forEach((step, idx) => {
 const truthVideo = join(root, "fixtures", "room.webm");
 const video = existsSync(truthVideo) ? "video.webm" : null;
 if (video) copyFileSync(truthVideo, join(outDir, video));
+// Ground truth, for recording stand-in footage (scripts/record-truth.ts).
+write("truth.json", truth);
 const manifest = RunManifest.parse({ id: runId, title: "Sample office", video, status: "done", iterations });
 write("manifest.json", manifest);
 

@@ -14,7 +14,10 @@
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "postprocessing": "https://cdn.jsdelivr.net/npm/postprocessing@6.37.1/build/index.js",
+  "n8ao": "https://cdn.jsdelivr.net/npm/n8ao@1.9.4/dist/N8AO.js"
 } }
 </script>
 </head>
@@ -30,6 +33,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { N8AOPass } from "n8ao";
 
 const sceneUrl = new URLSearchParams(location.search).get("scene") ?? "/fixtures/sample_room.json";
 const S = await (await fetch(sceneUrl)).json();
@@ -173,11 +177,26 @@ async function build(o) {
 await Promise.all(S.objects.map(build));
 
 // ---------- post: ambient occlusion makes contact shadows read as real ----------
+const AO_MODE = new URLSearchParams(location.search).get("ao") ?? "n8"; // n8 | gtao
 const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
-gtao.output = GTAOPass.OUTPUT.Default; gtao.updateGtaoMaterial({ radius: 0.35, distanceExponent: 1.5, thickness: 1, scale: 1.2, samples: 12 });
-composer.addPass(gtao); composer.addPass(new OutputPass());
+let aoPass;
+if (AO_MODE === "gtao") {
+  composer.addPass(new RenderPass(scene, camera));
+  aoPass = new GTAOPass(scene, camera, innerWidth, innerHeight);
+  aoPass.output = GTAOPass.OUTPUT.Default;
+  aoPass.updateGtaoMaterial({ radius: 0.35, distanceExponent: 1.5, thickness: 1, scale: 1.2, samples: 12 });
+} else {
+  // N8AO renders the scene itself, then adds a denoised, depth-aware occlusion term.
+  aoPass = new N8AOPass(scene, camera, innerWidth, innerHeight);
+  const c = aoPass.configuration;
+  c.aoRadius = 0.5; c.distanceFalloff = 0.8; c.intensity = 2.2; c.color = new THREE.Color("#1a120c");
+  c.gammaCorrection = false; // OutputPass does tone mapping + sRGB
+  const retina = devicePixelRatio > 1.5; // AO at half resolution on Retina: 4x fewer pixels, edge-aware upsample keeps it clean
+  c.halfRes = new URLSearchParams(location.search).has("fullres") ? false : retina;
+  c.denoiseSamples = 8; c.denoiseRadius = retina ? 8 : 10; c.aoSamples = retina ? 12 : 16;
+  aoPass.setQualityMode?.("High");
+}
+composer.addPass(aoPass); composer.addPass(new OutputPass());
 
 // ---------- modes ----------
 let useReal = true, aoOn = true;
@@ -187,7 +206,7 @@ function apply() {
     const hasReal = realParts[id].children.length > 0 && S.objects.find((q) => q.id === id).type !== "door";
     realParts[id].visible = useReal && hasReal; boxParts[id].visible = !(useReal && hasReal);
   }
-  gtao.enabled = aoOn;
+  aoPass.enabled = aoOn;
   modeEl.textContent = `${useReal ? "real models" : "primitive boxes"} · AO ${aoOn ? "on" : "off"}`;
 }
 addEventListener("keydown", (e) => {

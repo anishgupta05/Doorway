@@ -34,7 +34,15 @@ function cached(key: string, fn: () => Promise<string>): Promise<string> {
 }
 
 /** Shrinks any phone video (vertical or horizontal) to a small, steady-fps mp4 for upload. */
-export function compressVideo(input: string, outDir: string, shortSide = 720, fps = 6): string {
+export type VideoQuality = "default" | "hq" | "raw";
+const QUALITY: Record<VideoQuality, { shortSide: number; fps: number | null; crf: number }> = {
+  default: { shortSide: 720, fps: 6, crf: 28 },
+  hq: { shortSide: 1080, fps: 10, crf: 22 },
+  raw: { shortSide: 0, fps: null, crf: 18 }, // original resolution and frame rate
+};
+
+export function compressVideo(input: string, outDir: string, quality: VideoQuality = "default"): string {
+  const { shortSide, fps, crf } = QUALITY[quality];
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, "video.mp4");
   // No ffmpeg on this machine: a modest mp4 can go up as is.
@@ -43,8 +51,8 @@ export function compressVideo(input: string, outDir: string, shortSide = 720, fp
     return out;
   }
   // ffmpeg applies the phone's rotation flag automatically; scale keeps aspect, short side = shortSide.
-  const scale = `scale='if(gt(iw,ih),-2,${shortSide})':'if(gt(iw,ih),${shortSide},-2)'`;
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-vf", `${scale},fps=${fps}`, "-an", "-c:v", "libx264", "-crf", "28", out]);
+  const filters = [shortSide ? `scale='if(gt(iw,ih),-2,${shortSide})':'if(gt(iw,ih),${shortSide},-2)'` : "", fps ? `fps=${fps}` : ""].filter(Boolean);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, ...(filters.length ? ["-vf", filters.join(",")] : []), "-an", "-c:v", "libx264", "-crf", String(crf), "-pix_fmt", "yuv420p", out]);
   return out;
 }
 

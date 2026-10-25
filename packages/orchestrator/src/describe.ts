@@ -1,6 +1,7 @@
 // Stage 1: a small multimodal model watches the footage and writes a structured description.
 // Later stages (generate, compare) work from this text, so nothing depends on frame alignment.
 import { z } from "zod";
+import { Look } from "@doorway/schema";
 import { callJson, models, type UploadedVideo } from "./model.js";
 
 const Dir = z.enum(["north", "south", "east", "west"]);
@@ -15,6 +16,8 @@ export const Description = z.object({
     floor_material: z.enum(["wood", "concrete", "carpet", "tile"]),
     floor_color: z.string(),
     ceiling_color: z.string(),
+    wall_look: Look.optional().describe("Pattern of the walls if they are not plain paint, e.g. brick for an exposed brick wall."),
+    unseen_walls: z.array(Dir).describe("Walls the camera never clearly showed. Do not guess their surface."),
     openings: z.array(z.object({
       kind: z.enum(["door", "window"]),
       wall: Dir,
@@ -30,6 +33,8 @@ export const Description = z.object({
     label: z.string(),
     material: z.enum(["wood", "darkwood", "fabric", "leather", "metal", "plastic", "glass", "ceramic", "paint", "plant"]),
     color: z.string().describe("hex"),
+    look: Look.optional().describe("Surface pattern if it is distinctive: weave for upholstery, plush for a soft toy or cushion, paper for notebooks and posters."),
+    decor: z.boolean().describe("true for small clutter (bottles, papers, books, toys, cups, tablet, bag); false for furniture and fixtures."),
     size_m: z.tuple([z.number(), z.number(), z.number()]).describe("width, height, depth"),
     x_m: z.number().describe("Centre of the object's footprint along x (east is +x), metres from the room's centre."),
     z_m: z.number().describe("Centre of the object's footprint along z (south is +z, toward the first shot's camera), metres from the room's centre."),
@@ -50,7 +55,9 @@ Rules:
 - Coordinates: the origin is the centre of the floor. x grows toward the EAST (right of the first shot), z grows toward the SOUTH (toward the camera of the first shot). So an object against the far (north) wall has z close to -depth/2, and an object by the left (west) wall has x close to -width/2.
 - Walls: north is the wall furthest from the camera in the first shot; east is on the right.
 - Give x_m, z_m for every object, consistent with room width_m and depth_m, and with the relations in "location" (e.g. "left of desk_1" means a smaller x). An object should sit inside the room, with its footprint touching the wall it is "against".
-- List every distinct object a person could walk into, sit on, open or switch. Skip small clutter.
+- List every piece of furniture and fixture a person could walk into, sit on, open or switch. Repeated furniture is listed once per piece: three parallel rows of desks are three (or more) entries, not one long desk. Count rows and chairs before you answer.
+- Then add the small clutter you can see, as separate objects with decor=true: bottles, mugs, papers, books, laptops, tablets, plush toys, bags, boxes, jackets, shoes. Aim for 20 to 40 pieces, each with its real colour, a size, and base_y_m on the surface it rests on. Give them a "look" when it fits. Do not invent clutter you cannot see.
+- Walls: if a wall is clearly brick, set room.wall_look to "brick". List in unseen_walls every wall the camera never clearly showed, and do not describe their windows or colour.
 - Prefer a rough but consistent layout to false precision. If you cannot judge something, say so in "uncertain".
 - Do not invent objects that are not visible.`;
 

@@ -85,24 +85,31 @@ export function doorPush(o: SceneObject): { swing: [number, number]; approach: [
   return { swing, approach, inward };
 }
 
-/** Free cell nearest the room center that's outside every door's swing. Scene [x, z], facing +x. */
+/**
+ * Free cell nearest the room center, preferring one outside every door's swing. Scene [x, z], facing +x.
+ * Only `door` objects count: the model sometimes hinges a whole cabinet, and a 2 m "swing" would cover a small room.
+ */
 export function robotStart(scene: Scene, grid = floorGrid(scene)): [number, number] {
   const swings = scene.objects.flatMap((o) => {
-    const p = hingePivot(o);
-    return p ? [{ p, r: o.size[0] + ROBOT_RADIUS + 0.05 }] : [];
+    const p = o.type === "door" ? hingePivot(o) : null;
+    return p ? [{ p, reach: o.size[0] + ROBOT_RADIUS + 0.05 }] : [];
   });
   let best: [number, number] | null = null;
   let bestD = Infinity;
+  let fallback: [number, number] | null = null;
+  let fallbackD = Infinity;
   grid.free.forEach((row, r) =>
     row.forEach((ok, c) => {
       if (!ok) return;
       const x = grid.origin[0] + c * grid.cell;
       const z = grid.origin[1] + r * grid.cell;
-      if (swings.some(({ p, r }) => Math.hypot(x - p[0], z - p[1]) < r)) return;
       const dist = Math.hypot(x, z);
+      if (dist < fallbackD) [fallback, fallbackD] = [[x, z], dist];
+      if (swings.some(({ p, reach }) => Math.hypot(x - p[0], z - p[1]) < reach)) return;
       if (dist < bestD) [best, bestD] = [[x, z], dist];
     }),
   );
-  if (!best) throw new Error("no free floor for the robot");
-  return best;
+  const start = best ?? fallback;
+  if (!start) throw new Error("no free floor for the robot");
+  return start;
 }

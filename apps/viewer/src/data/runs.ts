@@ -37,6 +37,12 @@ export function useRunData() {
   const index = useApp((s) => s.index);
 
   useEffect(() => {
+    fetch("/api/runs", { cache: "no-store" })
+      .then((r) => useApp.setState({ apiOk: r.ok && (r.headers.get("content-type") ?? "").includes("json") }))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const want = new URLSearchParams(location.search).get("run");
     getJson("/runs/index.json")
       .then((j) => setIndex(want ? { ...(j as RunIndex), live: want } : (j as RunIndex)))

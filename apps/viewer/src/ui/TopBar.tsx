@@ -26,6 +26,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
   const names = useApp((s) => s.names);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const apiOk = useApp((s) => s.apiOk);
   const title = (runId && names[runId]) || manifest?.title || "—";
   if (mode === "walk") {
     return (
@@ -77,9 +78,9 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
       </div>
 
       <div className="pointer-events-auto flex items-center gap-3">
-        <button onClick={() => useApp.setState({ roomsOpen: true })} className="rounded-full border border-line bg-panel/80 px-3.5 py-1.5 text-[13px] text-muted backdrop-blur transition hover:text-fg">
+        {apiOk && <button onClick={() => useApp.setState({ roomsOpen: true })} className="rounded-full border border-line bg-panel/80 px-3.5 py-1.5 text-[13px] text-muted backdrop-blur transition hover:text-fg">
           Rooms
-        </button>
+        </button>}
         <button
           onClick={() => {
             if (!runId) return;
@@ -91,7 +92,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
         >
           {copied ? "Link copied" : "Share"}
         </button>
-        <button
+        {apiOk && <button
           onClick={() => {
             sfx.tick();
             useApp.setState({ uploadOpen: true });
@@ -99,7 +100,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
           className="rounded-full bg-accent px-4 py-1.5 text-[13px] font-semibold text-ink transition hover:brightness-110"
         >
           + New video
-        </button>
+        </button>}
         <div className="rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[12px] backdrop-blur">
           <span className="text-muted">Match </span>
           <span className={`tabular ${preview ? "text-bad" : "text-accent"}`}>{branch ? (branch.verdict === "fail" ? "thrown out" : `${Math.round(branch.score * 100)}%`) : "—"}</span>

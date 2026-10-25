@@ -43,6 +43,8 @@ type State = {
   /** The run files couldn't be loaded: show the welcome screen instead of a spinner. */
   loadError: boolean;
   legendOpen: boolean;
+  /** The local run API answered: uploads and the rooms library only exist then (not on a static host). */
+  apiOk: boolean;
   /** Headless render mode (no UI); `shake` adds handheld camera motion for stand-in footage. */
   renderMode: boolean;
   shake: boolean;
@@ -99,6 +101,7 @@ export const useApp = create<State>((set) => ({
   names: {},
   loadError: false,
   legendOpen: false,
+  apiOk: false,
   renderMode: false,
   shake: false,
   wipe: 0.5,

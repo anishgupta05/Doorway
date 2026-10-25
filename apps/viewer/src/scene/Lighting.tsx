@@ -41,7 +41,7 @@ export function Lighting({ room }: { room: Room }) {
 
   return (
     <>
-      <hemisphereLight ref={hemi} args={["#fff7ec", "#6a5a48", 0.8]} />
+      <hemisphereLight ref={hemi} args={["#fff7ec", "#c9bba6", 0.8]} />
       <directionalLight
         ref={sun}
         position={sunPos}
@@ -71,7 +71,7 @@ export function Lighting({ room }: { room: Room }) {
 
 export function Effects({ quality = "high" }: { quality?: "high" | "low" }) {
   return (
-    <EffectComposer multisampling={0} enableNormalPass={false}>
+    <EffectComposer multisampling={0} enableNormalPass={false} autoClear={false}>
       <N8AO aoRadius={0.45} intensity={quality === "high" ? 2.4 : 1.6} distanceFalloff={0.6} halfRes={quality !== "high"} quality={quality === "high" ? "high" : "low"} />
       <Outline visibleEdgeColor={0xc6f36b} hiddenEdgeColor={0x5d7a2a} edgeStrength={4} blur width={1200} />
       <Bloom mipmapBlur luminanceThreshold={1.0} luminanceSmoothing={0.2} intensity={0.75} radius={0.7} />

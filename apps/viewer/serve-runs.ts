@@ -15,8 +15,9 @@ const TYPES: Record<string, string> = {
   ".mov": "video/quicktime",
 };
 
-export function serveRuns(runsDir: string): Plugin {
-  const root = resolve(runsDir);
+/** `runsDir` is resolved against the Vite project root (apps/viewer), not this file. */
+export function serveRuns(runsDir = "../../runs"): Plugin {
+  let root = "";
   const handler: Connect.NextHandleFunction = (req, res, next) => {
     if (!req.url?.startsWith("/runs/")) return next();
     const rel = decodeURIComponent(req.url.split("?")[0].slice("/runs/".length));
@@ -43,6 +44,7 @@ export function serveRuns(runsDir: string): Plugin {
   };
   return {
     name: "doorway-serve-runs",
+    configResolved: (config) => void (root = resolve(config.root, runsDir)),
     configureServer: (server) => void server.middlewares.use(handler),
     configurePreviewServer: (server) => void server.middlewares.use(handler),
   };

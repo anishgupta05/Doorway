@@ -1,7 +1,7 @@
 // The payoff: a small mobile robot waits in the corridor behind the door. Once the
 // door is open far enough, it drives in along a short route and scans the room.
 // Scripted motion, not a controller — it's here to show what the sim is for.
-import { useMemo, useRef } from "react";
+import { forwardRef, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
@@ -29,9 +29,8 @@ export function Robot({ scene }: { scene: Scene }) {
   }, [door, opening]);
 
   const g = useRef<THREE.Group>(null!);
-  const lidar = useRef<THREE.Mesh>(null!);
-  const ring = useMemo(() => new THREE.MeshBasicMaterial({ color: ACCENT, toneMapped: false }), []);
   const state = useRef({ leg: 0, started: false, openSince: 0 });
+  const [active, setActive] = useState(false);
 
   useFrame((_, rawDt) => {
     if (!route || !door) return;
@@ -43,14 +42,14 @@ export function Robot({ scene }: { scene: Scene }) {
       st.leg = 0;
       st.started = false;
       st.openSince = 0;
+      setActive(false);
       g.current.position.copy(route[0]);
     }
     const open = (s.joints[door.id] ?? 0) > 0.5;
     if (!open) st.openSince = 0;
     else if (!st.openSince) st.openSince = performance.now();
     if (!st.started && st.openSince && performance.now() - st.openSince > WAIT * 1000 + 600) st.started = true;
-    lidar.current.rotation.y += dt * (st.started ? 6 : 1.5);
-    ring.color.setRGB(0.78, 0.95, 0.42).multiplyScalar(st.started ? 1.6 + Math.sin(performance.now() / 120) * 0.4 : 0.6);
+    if (st.started !== active) setActive(st.started);
     if (!st.started || st.leg >= route.length - 1) return;
     const target = route[st.leg + 1];
     const pos = g.current.position;
@@ -67,10 +66,26 @@ export function Robot({ scene }: { scene: Scene }) {
   });
 
   if (!route) return null;
+  return (
+    <group ref={g} position={route[0]}>
+      <RobotBody active={active} />
+    </group>
+  );
+}
+
+/** The robot's mesh, shared by the walk-mode robot and the task robot. Body radius 0.2 m at scale 1. */
+export const ROBOT_MESH_RADIUS = 0.2;
+export const RobotBody = forwardRef<THREE.Group, { active: boolean; scale?: number }>(function RobotBody({ active, scale = 1 }, ref) {
+  const lidar = useRef<THREE.Mesh>(null!);
+  const ring = useMemo(() => new THREE.MeshBasicMaterial({ color: ACCENT, toneMapped: false }), []);
+  useFrame((_, dt) => {
+    lidar.current.rotation.y += Math.min(dt, 1 / 30) * (active ? 6 : 1.5);
+    ring.color.setRGB(0.78, 0.95, 0.42).multiplyScalar(active ? 1.6 + Math.sin(performance.now() / 120) * 0.4 : 0.6);
+  });
   const body = material("plastic", "#e9e8e4");
   const dark = material("plastic", "#22252a");
   return (
-    <group ref={g} position={route[0]}>
+    <group ref={ref} scale={scale}>
       <mesh position={[0, 0.09, 0]} material={body} castShadow receiveShadow>
         <cylinderGeometry args={[0.19, 0.2, 0.14, 48]} />
       </mesh>
@@ -112,4 +127,4 @@ export function Robot({ scene }: { scene: Scene }) {
       ))}
     </group>
   );
-}
+});

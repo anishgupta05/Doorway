@@ -38,7 +38,7 @@ export function useRunData() {
 
   useEffect(() => {
     fetch("/api/runs", { cache: "no-store" })
-      .then((r) => useApp.setState({ apiOk: r.ok && (r.headers.get("content-type") ?? "").includes("json") }))
+      .then((r) => useApp.setState({ apiOk: r.ok && (r.headers.get("content-type") ?? "").includes("json"), needsCode: r.headers.get("x-needs-code") === "1" }))
       .catch(() => {});
   }, []);
 

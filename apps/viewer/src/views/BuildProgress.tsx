@@ -168,7 +168,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
           className="w-[360px] rounded-lg border border-transparent bg-transparent px-2 py-1 text-2xl font-semibold tracking-tight outline-none transition hover:border-line focus:border-accent/60 focus:bg-panel"
         />
         <div className="flex items-center gap-4">
-          {demo && <span className="rounded-full border border-line px-3 py-1 text-[12px] text-muted">Demo mode · replaying a finished build</span>}
+          {demo && <span className="rounded-full border border-warn/60 bg-warn/10 px-3 py-1 text-[12px] font-medium text-warn">Demo only · no room builder is connected, so this replays a sample room, not your video</span>}
         <button onClick={() => useApp.setState({ building: null })} className="text-[13px] text-muted hover:text-fg">
           {done || error ? "Close" : "Hide"}
         </button>

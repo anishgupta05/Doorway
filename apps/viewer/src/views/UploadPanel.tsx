@@ -24,9 +24,14 @@ export function UploadPanel() {
     setUrl(URL.createObjectURL(f));
   };
 
-  const build = () => {
+  const build = async () => {
     if (!file || !url) return;
-    useApp.setState({ building: { id: null, name: name.trim(), src: url, file }, uploadOpen: false });
+    // Ask the builder again now: the check made at page load may not have finished (or the server was restarted),
+    // and a wrong "no builder" answer would replay the demo room instead of building this video.
+    const ok = await fetch("/api/runs", { cache: "no-store" })
+      .then((r) => r.ok && (r.headers.get("content-type") ?? "").includes("json"))
+      .catch(() => false);
+    useApp.setState({ apiOk: ok, building: { id: null, name: name.trim(), src: url, file }, uploadOpen: false });
   };
 
   return (

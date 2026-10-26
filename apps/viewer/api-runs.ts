@@ -94,9 +94,20 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
 
   const handler: Connect.NextHandleFunction = (req, res, next) => {
     const url = (req.url ?? "").split("?")[0];
+    if (!url.startsWith("/api/")) return next();
+    // The static copy of the site (another origin) talks to this server directly.
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "x-filename, x-name, x-access-code, content-type");
+    res.setHeader("Access-Control-Expose-Headers", "x-needs-code");
+    if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      return res.end();
+    }
 
     // POST /api/command { text, room, actions, objects } -> { steps, reply }: plain language → robot steps.
     if (req.method === "POST" && url === "/api/command") {
+      if (code && req.headers["x-access-code"] !== code) return json(res, 401, { error: "That access code isn't right." });
       let body = "";
       req.on("data", (c: Buffer) => (body += c));
       req.on("end", () => {
@@ -169,6 +180,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
 
     const m = /^\/api\/runs\/([a-z0-9-]+)$/.exec(url);
     if (req.method === "PATCH" && m && ID.test(m[1])) {
+      if (code && req.headers["x-access-code"] !== code) return json(res, 401, { error: "That access code isn't right." });
       let body = "";
       req.on("data", (c) => (body += c));
       req.on("end", () => {

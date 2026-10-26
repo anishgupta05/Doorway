@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Issue, RunManifest, Scene } from "@doorway/schema";
 import { iterFor, runIdFor, useApp, type RunIndex } from "../store";
 
-export const runUrl = (runId: string, rel: string) => `/runs/${runId}/${rel}`;
+import { BASE } from "./base";
+
+export const runUrl = (runId: string, rel: string) => `${BASE}/runs/${runId}/${rel}`;
 
 async function getJson(url: string) {
   const r = await fetch(url, { cache: "no-store" });
@@ -37,14 +39,14 @@ export function useRunData() {
   const index = useApp((s) => s.index);
 
   useEffect(() => {
-    fetch("/api/runs", { cache: "no-store" })
+    fetch(`${BASE}/api/runs`, { cache: "no-store" })
       .then((r) => useApp.setState({ apiOk: r.ok && (r.headers.get("content-type") ?? "").includes("json"), needsCode: r.headers.get("x-needs-code") === "1" }))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     const want = new URLSearchParams(location.search).get("run");
-    getJson("/runs/index.json")
+    getJson(`${BASE}/runs/index.json`)
       .then((j) => setIndex(want ? { ...(j as RunIndex), live: want } : (j as RunIndex)))
       .catch((e) => {
         console.error("runs/index.json", e);

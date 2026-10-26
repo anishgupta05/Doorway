@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { listRooms, openRoom, renameRoom, type Room } from "../data/api";
+import { shareUrl } from "../data/base";
 import { useApp } from "../store";
 
 const close = () => useApp.setState({ roomsOpen: false });
@@ -69,7 +70,7 @@ export function RoomsPanel() {
                 </button>
                 <button
                   onClick={() => {
-                    void navigator.clipboard?.writeText(`${location.origin}/?run=${r.id}`);
+                    void navigator.clipboard?.writeText(shareUrl(r.id));
                     setCopied(r.id);
                     setTimeout(() => setCopied(null), 1400);
                   }}

@@ -1,5 +1,6 @@
 // A box part with a generated surface image on one face (keyboard, logo, label...). The other faces use
 // the part's plain material. If the image is missing or fails to load, the plain box is drawn instead.
+import { BASE } from "../data/base";
 import { Component, type ReactNode } from "react";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -19,7 +20,7 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
 }
 
 function Face({ part, plain }: { part: Part; plain: THREE.Material }) {
-  const tex = useTexture(`/runs/${part.texture}`);
+  const tex = useTexture(`${BASE}/runs/${part.texture}`);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   const [w, h, d] = part.size;

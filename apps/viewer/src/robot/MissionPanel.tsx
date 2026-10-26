@@ -1,5 +1,6 @@
 // Give the robot a job: pick what it should open or switch on (or where to go), in order,
 // and run it. Each step shows its route length and live status.
+import { BASE } from "../data/base";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Scene } from "@doorway/schema";
@@ -163,9 +164,9 @@ function Ask({ scene, actions }: { scene: Scene; actions: Action[] }) {
     setReply(null);
     sfx.tick();
     try {
-      const r = await fetch("/api/command", {
+      const r = await fetch(`${BASE}/api/command`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-access-code": useApp.getState().accessCode },
         body: JSON.stringify({
           text,
           room: scene.name,

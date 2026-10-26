@@ -2,6 +2,7 @@ import type { useCurrentScene } from "../data/runs";
 import { useApp, type Mode } from "../store";
 import { useState } from "react";
 import { renameRoom } from "../data/api";
+import { shareUrl } from "../data/base";
 import { sfx } from "../sfx";
 
 export function DoorMark({ className = "" }: { className?: string }) {
@@ -83,7 +84,7 @@ export function TopBar({ current }: { current: ReturnType<typeof useCurrentScene
         <button
           onClick={() => {
             if (!runId) return;
-            void navigator.clipboard?.writeText(`${location.origin}/?run=${runId}`);
+            void navigator.clipboard?.writeText(shareUrl(runId));
             setCopied(true);
             setTimeout(() => setCopied(false), 1400);
           }}

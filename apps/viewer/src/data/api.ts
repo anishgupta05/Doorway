@@ -1,5 +1,6 @@
 // Client for the local run API (apps/viewer/api-runs.ts) and the job files it writes.
 import { useApp } from "../store";
+import { BASE, shareUrl } from "./base";
 
 export type Room = { id: string; name: string; status: string; when: number };
 export type Job = { stage: "watching" | "drawing" | "checking" | "done" | "error"; message?: string; step?: number; startedAt?: number };
@@ -14,28 +15,28 @@ const j = async (url: string) => {
 /** Rooms on disk via the local API; on a static host, the rooms named in runs/index.json. */
 export async function listRooms(): Promise<Room[]> {
   try {
-    return await j("/api/runs");
+    return await j(`${BASE}/api/runs`);
   } catch {
-    const index = await j("/runs/index.json");
+    const index = await j(`${BASE}/runs/index.json`);
     const ids = [...new Set<string>([index.live, index.backup])];
     const rooms = await Promise.all(
       ids.map(async (id) => {
-        const m = await j(`/runs/${id}/manifest.json`).catch(() => null);
-        const meta = await j(`/runs/${id}/meta.json`).catch(() => null);
+        const m = await j(`${BASE}/runs/${id}/manifest.json`).catch(() => null);
+        const meta = await j(`${BASE}/runs/${id}/meta.json`).catch(() => null);
         return m ? { id, name: meta?.name ?? m.title ?? id, status: m.status ?? "done", when: 0 } : null;
       }),
     );
     return rooms.filter((r): r is Room => r !== null);
   }
 }
-export const getJob = (id: string): Promise<Job> => j(`/runs/${id}/job.json`);
-export const getProgress = (id: string): Promise<LoopProgress | null> => j(`/runs/${id}/progress.json`).catch(() => null);
+export const getJob = (id: string): Promise<Job> => j(`${BASE}/runs/${id}/job.json`);
+export const getProgress = (id: string): Promise<LoopProgress | null> => j(`${BASE}/runs/${id}/progress.json`).catch(() => null);
 
 /** Uploads the raw video file; reports 0..1 as it goes. */
 export function uploadVideo(file: File, name: string, onProgress: (p: number) => void): Promise<{ id: string }> {
   return new Promise((resolve, reject) => {
     const x = new XMLHttpRequest();
-    x.open("POST", "/api/runs");
+    x.open("POST", `${BASE}/api/runs`);
     x.setRequestHeader("x-filename", file.name);
     x.setRequestHeader("x-name", encodeURIComponent(name));
     x.setRequestHeader("x-access-code", useApp.getState().accessCode);
@@ -53,7 +54,7 @@ export function uploadVideo(file: File, name: string, onProgress: (p: number) =>
 }
 
 export async function renameRoom(id: string, name: string) {
-  const r = await fetch(`/api/runs/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ name }) });
+  const r = await fetch(`${BASE}/api/runs/${id}`, { method: "PATCH", headers: { "content-type": "application/json", "x-access-code": useApp.getState().accessCode }, body: JSON.stringify({ name }) });
   // On a static host there is nowhere to save the name, so keep it for this visit only.
   if (!r.ok && useApp.getState().apiOk) throw new Error("rename failed");
   useApp.setState((s) => ({ names: { ...s.names, [id]: name } }));
@@ -76,6 +77,6 @@ export function openRoom(id: string) {
     pushes: {},
   });
   try {
-    history.replaceState(null, "", `?run=${id}`);
+    history.replaceState(null, "", shareUrl(id).replace(location.origin, ""));
   } catch {}
 }

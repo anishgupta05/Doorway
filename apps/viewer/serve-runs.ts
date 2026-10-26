@@ -34,6 +34,7 @@ export function serveRuns(runsDir = "../../runs"): Plugin {
     const size = statSync(file).size;
     res.setHeader("Content-Type", TYPES[extname(file).toLowerCase()] ?? "application/octet-stream");
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Accept-Ranges", "bytes");
     const range = /bytes=(\d*)-(\d*)/.exec(req.headers.range ?? "");
     if (range) {

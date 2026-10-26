@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { getJob, getProgress, renameRoom, uploadVideo, type Job, type LoopProgress } from "../data/api";
 import { openRoom } from "../data/api";
 import { useApp } from "../store";
+import { BASE } from "../data/base";
 import { sfx } from "../sfx";
 
 const STEPS = [
@@ -114,7 +115,7 @@ export function BuildProgress({ building }: { building: NonNullable<ReturnType<t
         if (j.stage === "done") {
           sfx.pass();
           // No name typed: take the one the model chose.
-          if (!nameRef.current.trim()) fetch(`/runs/${id}/manifest.json`, { cache: "no-store" }).then((r) => r.json()).then((m) => m.title && setName(m.title)).catch(() => {});
+          if (!nameRef.current.trim()) fetch(`${BASE}/runs/${id}/manifest.json`, { cache: "no-store" }).then((r) => r.json()).then((m) => m.title && setName(m.title)).catch(() => {});
           return;
         }
       } catch {

@@ -2,8 +2,6 @@
 
 **A phone video of a real room becomes an interactive, sim-ready 3D replica. Doorway then checks it against the footage and corrects it until it matches.**
 
-**Live demo: [doorway-iota.vercel.app](https://doorway-iota.vercel.app/?run=roomb)**
-
 Robotics engineers spend days hand-building sim environments of the real spaces their robots will work in. Scanners and Gaussian splats produce frozen geometry: they don't know what a door is. Doorway uses **Argon** (Gemini: video understanding, long decode, 1M context) to watch the video and write the whole room as a scene graph in one pass, with objects that work. Doors open, drawers slide, lights switch, small things can be picked up.
 
 A verification loop then refines it, and every step is something you can see in the viewer:

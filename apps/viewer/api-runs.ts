@@ -49,7 +49,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
     writeFileSync(jobPath(id), JSON.stringify(next, null, 2));
   };
 
-  function runJob(id: string, upload: string) {
+  function runJob(id: string, upload: string, origin: string) {
     const log = join(runs, id, "job.log");
     if (!existsSync(join(repo, ".env")) && !process.env.GEMINI_API_KEY) {
       return setJob(id, { stage: "error", message: "The room builder isn't set up on this computer yet (it needs an API key in the .env file)." });
@@ -60,7 +60,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
       if (!step) return setJob(id, { stage: "done", message: "Your room is ready." });
       setJob(id, { stage: step.stage, step: i });
       const out = createWriteStream(log, { flags: "a" });
-      const child = spawn("npm", ["run", step.script, "-w", "@doorway/orchestrator", "--", ...step.args(id, upload)], { cwd: repo, env: process.env });
+      const child = spawn("npm", ["run", step.script, "-w", "@doorway/orchestrator", "--", ...step.args(id, upload)], { cwd: repo, env: { ...process.env, VIEWER_URL: process.env.VIEWER_URL ?? origin } }); // the loop renders through this same server
       let tail = "";
       const take = (b: Buffer) => {
         out.write(b);
@@ -171,7 +171,7 @@ export function apiRuns(runsDir = "../../runs"): Plugin {
         if (failed) return;
         if (name) writeFileSync(join(dir, "meta.json"), JSON.stringify({ name }));
         setJob(id, { stage: "watching", step: 0, startedAt: Date.now() });
-        runJob(id, upload);
+        runJob(id, upload, `http://${req.headers.host ?? "localhost:5173"}`);
         json(res, 200, { id });
       });
       file.on("error", () => !failed && json(res, 500, { error: "Couldn't save the video." }));
